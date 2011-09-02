@@ -35,15 +35,15 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit test for the {@link AnsiColorNote} class.
+ * Unit test for the {@link AnsiColorizer} class.
  */
-public class AnsiColorNoteTest {
+public class AnsiColorizerTest {
 
   /**
    */
   @Test
-  public void AnsiColorNote() {
-    assertThat(annotate("line", new AnsiColorNote()),
+  public void AnsiColorizer() {
+    assertThat(annotate("line", new AnsiColorizer()),
         is("line"));
   }
 
@@ -57,7 +57,7 @@ public class AnsiColorNoteTest {
     return markupText.toString(true);
   }
 
-  private AnsiColorNote serialize(AnsiColorNote note) {
-    return (AnsiColorNote) SerializationUtils.clone(note);
+  private AnsiColorizer serialize(AnsiColorizer note) {
+    return (AnsiColorizer) SerializationUtils.clone(note);
   }
 }

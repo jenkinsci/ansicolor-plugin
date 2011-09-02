@@ -39,7 +39,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Build wrapper that decorates the build's logger to insert a
- * {@link AnsiColorizer} on each output line.
+ * {@link Ansi
+ Colorizer} on each output line.
  * 
  * @author Steven G. Brown
  */
@@ -100,7 +101,7 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
      */
     @Override
     protected void eol(byte[] b, int len) throws IOException {
-      new AnsiColorizer(System.currentTimeMillis()).encodeTo(delegate);
+      new AnsiColorizer().encodeTo(delegate);
       delegate.write(b, 0, len);
     }
 
