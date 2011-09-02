@@ -27,11 +27,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import hudson.MarkupText;
 import hudson.console.ConsoleNote;
-import hudson.tasks._ant.AntTargetNote;
 
-import org.apache.commons.lang.SerializationUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -55,9 +51,5 @@ public class AnsiColorizerTest {
       note.annotate(context, markupText, 0);
     }
     return markupText.toString(true);
-  }
-
-  private AnsiColorizer serialize(AnsiColorizer note) {
-    return (AnsiColorizer) SerializationUtils.clone(note);
   }
 }

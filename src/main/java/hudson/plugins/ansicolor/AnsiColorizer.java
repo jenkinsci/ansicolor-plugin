@@ -27,9 +27,6 @@ import hudson.MarkupText;
 import hudson.console.ConsoleAnnotator;
 import hudson.console.ConsoleNote;
 
-import java.sql.Date;
-import java.text.SimpleDateFormat;
-
 /**
  * Time-stamp note that is inserted into the console output.
  * 
