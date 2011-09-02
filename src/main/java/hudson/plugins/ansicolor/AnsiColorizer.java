@@ -33,7 +33,7 @@ import java.text.SimpleDateFormat;
 /**
  * Time-stamp note that is inserted into the console output.
  * 
- * @author Steven G. Brown
+ * @author Daniel Doubrovkine
  */
 public final class AnsiColorizer extends ConsoleNote<Object> {
 

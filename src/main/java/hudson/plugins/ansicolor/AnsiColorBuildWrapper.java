@@ -42,7 +42,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * {@link Ansi
  Colorizer} on each output line.
  * 
- * @author Steven G. Brown
+ * @author Daniel Doubrovkine
  */
 public final class AnsiColorBuildWrapper extends BuildWrapper {
 
