@@ -1,0 +1,19 @@
+target
+work
+
+# IntelliJ project files 
+*.iml
+*.iws
+*.ipr
+.idea
+
+# Eclipse project files
+.settings
+.classpath
+.project
+.metadata
+build
+
+# Vim junk files
+.*.swp
+*~
