@@ -25,9 +25,11 @@ package hudson.plugins.ansicolor;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import hudson.MarkupText;
-import hudson.console.ConsoleNote;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+
+import org.codehaus.plexus.util.StringOutputStream;
 import org.junit.Test;
 
 /**
@@ -36,20 +38,23 @@ import org.junit.Test;
 public class AnsiColorizerTest {
 
   /**
+ * @throws IOException 
    */
   @Test
-  public void AnsiColorizer() {
-    assertThat(annotate("line", new AnsiColorizer()),
-        is("line"));
+  public void testNoMarkup() throws IOException {
+    assertThat(colorize("line"), is("line"));
+  }
+  
+  @Test
+  public void testClear() throws IOException {
+	  assertThat(colorize("[0mhello world"), is("hello world"));
   }
 
-  @SuppressWarnings("unchecked")
-  private String annotate(String text, ConsoleNote... notes) {
-    Object context = new Object();
-    MarkupText markupText = new MarkupText(text);
-    for (ConsoleNote note : notes) {
-      note.annotate(context, markupText, 0);
-    }
-    return markupText.toString(true);
+  private String colorize(String text) throws IOException {
+	  StringOutputStream out = new StringOutputStream();	  
+	  AnsiColorizer colorizer = new AnsiColorizer(out, Charset.defaultCharset());
+	  colorizer.eol(text.getBytes(), text.length());
+	  return out.toString();
   }
+  
 }

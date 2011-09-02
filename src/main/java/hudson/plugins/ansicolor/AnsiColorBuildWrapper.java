@@ -25,7 +25,6 @@ package hudson.plugins.ansicolor;
 
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.console.LineTransformationOutputStream;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -35,6 +34,7 @@ import hudson.tasks.BuildWrapperDescriptor;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.fusesource.jansi.Ansi;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -71,48 +71,7 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
   @SuppressWarnings("unchecked")
   @Override
   public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) {
-    return new AnsiColorOutputStream(logger);
-  }
-
-  /**
-   * Output stream that writes each line to the provided delegate output stream
-   * after inserting a {@link AnsiColorizer}.
-   */
-  private static class AnsiColorOutputStream extends
-      LineTransformationOutputStream {
-
-    /**
-     * The delegate output stream.
-     */
-    private final OutputStream delegate;
-
-    /**
-     * Create a new {@link AnsiColorOutputStream}.
-     * 
-     * @param delegate
-     *          the delegate output stream
-     */
-    private AnsiColorOutputStream(OutputStream delegate) {
-      this.delegate = delegate;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void eol(byte[] b, int len) throws IOException {
-      new AnsiColorizer().encodeTo(delegate);
-      delegate.write(b, 0, len);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void close() throws IOException {
-      super.close();
-      delegate.close();
-    }
+    return new AnsiColorizer(logger, build.getCharset());
   }
 
   /**

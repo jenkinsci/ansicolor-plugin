@@ -23,36 +23,44 @@
  */
 package hudson.plugins.ansicolor;
 
-import hudson.MarkupText;
-import hudson.console.ConsoleAnnotator;
-import hudson.console.ConsoleNote;
+import hudson.console.LineTransformationOutputStream;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+
+import org.fusesource.jansi.AnsiString;
 
 /**
  * Time-stamp note that is inserted into the console output.
  * 
  * @author Daniel Doubrovkine
  */
-public final class AnsiColorizer extends ConsoleNote<Object> {
+public final class AnsiColorizer extends LineTransformationOutputStream {
 
-  /**
-   * Serialization UID.
-   */
-  private static final long serialVersionUID = 1L;
+	/**
+	 * Serialization UID.
+	 */
+	private static final long serialVersionUID = 1L;
+	private final OutputStream out;
+	
+	@SuppressWarnings("unused")
+	private final Charset charset;
 
-  /**
-   * Create a new {@link AnsiColorNote}.
-   */
-  AnsiColorizer() {
-  
-  }
+	public AnsiColorizer(OutputStream out, Charset charset) {
+		this.out = out;
+		this.charset = charset;
+	}
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public ConsoleAnnotator<Object> annotate(Object context, MarkupText text,
-      int charPos) {
-    return null;
-  }
-  
+	@Override
+	protected void eol(byte[] b, int len) throws IOException {
+		AnsiString ansiString = new AnsiString(new String(b));		
+		out.write(ansiString.getPlain().toString().getBytes(), 0, ansiString.length());
+	}
+
+	@Override
+	public void close() throws IOException {
+		super.close();
+		out.close();
+	}
 }
