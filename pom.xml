@@ -7,12 +7,10 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <!-- Note: Avoid parent versions 1.393 through 1.398.
-       https://groups.google.com/d/topic/jenkinsci-dev/O50B7XnINoo/discussion -->
-
   <scm>
     <connection>scm:git:git://github.com/dblock/jenkins-ansicolor-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:dblock/jenkins-ansicolor-plugin.git</developerConnection>
+    <url>http://github.com/dblock/jenkins-ansicolor-plugin</url>
   </scm>
 
   <distributionManagement>
