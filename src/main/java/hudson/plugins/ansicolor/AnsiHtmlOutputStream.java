@@ -74,11 +74,11 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 
 	@Override
 	protected void processSetForegroundColor(int color) throws IOException {
-		writeAttribute("font color=\"" + ANSI_COLOR_MAP[color] + "\"");
+		writeAttribute("span style=\"color: " + ANSI_COLOR_MAP[color] + ";\"");
 	}
 
 	@Override
 	protected void processSetBackgroundColor(int color) throws IOException {
-		writeAttribute("span style=\"background-color: " + ANSI_COLOR_MAP[color] + "\"");
+		writeAttribute("span style=\"background-color: " + ANSI_COLOR_MAP[color] + ";\"");
 	}
 }

@@ -59,14 +59,14 @@ public class AnsiColorizerTest {
 	@Test
 	public void testGreen() throws IOException {
 		assertThat(colorize("[32mhello world"),
-				is("<font color=\"green\">hello world</font>"));
+				is("<span style=\"color: green;\">hello world</span>"));
 	}
 
 	@Test
 	public void testGreenOnWhite() throws IOException {
 		assertThat(
 				colorize("[47;32mhello world"),
-				is("<span style=\"background-color: white\"><font color=\"green\">hello world</font></span>"));
+				is("<span style=\"background-color: white;\"><span style=\"color: green;\">hello world</span></span>"));
 	}
 
 	private String colorize(String text) throws IOException {
