@@ -1,9 +1,8 @@
 Jenkins ANSI Color Plugin
 =========================
 
-Work in progress. Currently this plugin strips ANSI codes.
-
-Once finished it should appear on http://wiki.jenkins-ci.org/display/JENKINS/AnsiColor
+This plugin colorizes ANSI text in Jenkins build console output. 
+It supports ANSI colors, bold and underline text escape codes.
 
 Installation
 ============
@@ -12,8 +11,17 @@ The simplest way is by going to your installation's management screen and clicki
 The web interface will then download *.hpi files from here, and you will just need to restart your 
 Jenkins to pick up the changes.
 
+Configure your project, check *Color ANSI Console Output*. Sit back and enjoy.
+
 See [this page](https://wiki.jenkins-ci.org/display/JENKINS/Plugins#Plugins-Howtoinstallplugins) 
 for more information.
+
+License
+=======
+
+The ANSI Color Plugin is licensed under the MIT License.
+
+It uses [JANSI](https://github.com/fusesource/jansi/) (Apache 2.0 License).
 
 Contributing
 ============
@@ -30,9 +38,12 @@ Build AnsiColor
 Setting Up Eclipse
 ------------------
 
-To build this project in Eclipse, import it and then add the maven repo like this.
+To build this project in Eclipse, prepare your environment and add the maven repo like this.
 
+	mvn -DdownloadSources=true -DdownloadJavadocs=true -DoutputDirectory=target/eclipse-classes eclipse:eclipse
 	mvn -Declipse.workspace=<path-to-eclipse-workspace> eclipse:add-maven-repo
+
+Finally, import the project into Eclipse.
 
 Debugging the Plugin
 --------------------
