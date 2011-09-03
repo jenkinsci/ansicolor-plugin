@@ -11,8 +11,8 @@
        https://groups.google.com/d/topic/jenkinsci-dev/O50B7XnINoo/discussion -->
 
   <scm>
-    <connection>scm:git:git://github.com/dblock/ansicolor-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:dblock/ansicolor-plugin.git</developerConnection>
+    <connection>scm:git:git://github.com/dblock/jenkins-ansicolor-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:dblock/jenkins-ansicolor-plugin.git</developerConnection>
   </scm>
 
   <distributionManagement>
