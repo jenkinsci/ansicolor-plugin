@@ -21,16 +21,4 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.plugins.ansicolor;
 
-import hudson.Plugin;
-
-import java.util.logging.Logger;
-
-public class PluginImpl extends Plugin {
-	private final static Logger LOG = Logger.getLogger(PluginImpl.class.getName());
-
-	public void start() throws Exception {
-		LOG.info("starting ansicolor plugin (https://github.com/dblock/jenkins-ansicolor-plugin)");
-	}
-}

@@ -30,7 +30,7 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 
 /**
- * Time-stamp note that is inserted into the console output.
+ * ANSI color note that is inserted into the console output.
  * 
  * @author Daniel Doubrovkine
  */

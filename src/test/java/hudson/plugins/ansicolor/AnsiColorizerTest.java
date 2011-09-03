@@ -27,9 +27,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 
-import org.codehaus.plexus.util.StringOutputStream;
 import org.junit.Test;
 
 /**
@@ -70,10 +68,6 @@ public class AnsiColorizerTest {
 	}
 
 	private String colorize(String text) throws IOException {
-		StringOutputStream out = new StringOutputStream();
-		AnsiColorizer colorizer = new AnsiColorizer(out, Charset
-				.defaultCharset());
-		colorizer.eol(text.getBytes(), text.length());
-		return out.toString();
+		return AnsiColorNote.colorize(text);
 	}
 }

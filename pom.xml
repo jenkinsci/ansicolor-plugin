@@ -24,7 +24,7 @@
 
   <build>
     <plugins>  
-      <!-- Enforce Java 6.0 compatibility. -->
+      <!-- Enforce Java 5.0 compatibility. -->
       <plugin>
         <groupId>org.jvnet</groupId>
         <artifactId>animal-sniffer</artifactId>
@@ -39,7 +39,7 @@
             <configuration>
               <signature>
                 <groupId>org.jvnet.animal-sniffer</groupId>
-                <artifactId>java1.6</artifactId>
+                <artifactId>java1.5</artifactId>
                 <version>1.0</version>
               </signature>
             </configuration>
