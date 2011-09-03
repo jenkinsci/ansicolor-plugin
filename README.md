@@ -1,8 +1,7 @@
 Jenkins ANSI Color Plugin
 =========================
 
-This plugin colorizes ANSI text in Jenkins build console output. 
-It supports ANSI colors, bold and underline text escape codes.
+This plugin adds support for ANSI escape sequences, including color, to Console Output.
 
 Installation
 ============
