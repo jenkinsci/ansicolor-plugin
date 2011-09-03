@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jvnet.hudson.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.374</version>
+    <version>1.383</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -11,8 +11,8 @@
        https://groups.google.com/d/topic/jenkinsci-dev/O50B7XnINoo/discussion -->
 
   <scm>
-    <connection>scm:git:git://github.com/jenkinsci/ansicolor-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:jenkinsci/ansicolor-plugin.git</developerConnection>
+    <connection>scm:git:git://github.com/dblock/ansicolor-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:dblock/ansicolor-plugin.git</developerConnection>
   </scm>
 
   <distributionManagement>
@@ -24,7 +24,7 @@
 
   <build>
     <plugins>  
-      <!-- Enforce Java 5.0 compatibility. -->
+      <!-- Enforce Java 6.0 compatibility. -->
       <plugin>
         <groupId>org.jvnet</groupId>
         <artifactId>animal-sniffer</artifactId>
@@ -39,7 +39,7 @@
             <configuration>
               <signature>
                 <groupId>org.jvnet.animal-sniffer</groupId>
-                <artifactId>java1.5</artifactId>
+                <artifactId>java1.6</artifactId>
                 <version>1.0</version>
               </signature>
             </configuration>

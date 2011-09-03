@@ -43,8 +43,7 @@ public final class AnsiColorizer extends LineTransformationOutputStream {
 	 */
 	private static final long serialVersionUID = 1L;
 	private final OutputStream out;
-	
-	@SuppressWarnings("unused")
+
 	private final Charset charset;
 
 	public AnsiColorizer(OutputStream out, Charset charset) {
@@ -54,8 +53,11 @@ public final class AnsiColorizer extends LineTransformationOutputStream {
 
 	@Override
 	protected void eol(byte[] b, int len) throws IOException {
-		AnsiString ansiString = new AnsiString(new String(b));		
-		out.write(ansiString.getPlain().toString().getBytes(), 0, ansiString.length());
+		String ansiEncodedString = new String(b, 0, len, charset);
+		AnsiString ansiString = new AnsiString(ansiEncodedString);
+		String plainString = ansiString.getPlain().toString();
+		byte[] plainBytes = plainString.getBytes();
+		out.write(plainBytes, 0, plainBytes.length);
 	}
 
 	@Override
