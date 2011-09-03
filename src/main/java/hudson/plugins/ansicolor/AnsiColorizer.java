@@ -29,8 +29,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
-import org.fusesource.jansi.AnsiString;
-
 /**
  * Time-stamp note that is inserted into the console output.
  * 
@@ -42,22 +40,15 @@ public final class AnsiColorizer extends LineTransformationOutputStream {
 	 * Serialization UID.
 	 */
 	private static final long serialVersionUID = 1L;
-	private final OutputStream out;
-
-	private final Charset charset;
+	private final AnsiHtmlOutputStream out;
 
 	public AnsiColorizer(OutputStream out, Charset charset) {
-		this.out = out;
-		this.charset = charset;
+		this.out = new AnsiHtmlOutputStream(out);
 	}
 
 	@Override
 	protected void eol(byte[] b, int len) throws IOException {
-		String ansiEncodedString = new String(b, 0, len, charset);
-		AnsiString ansiString = new AnsiString(ansiEncodedString);
-		String plainString = ansiString.getPlain().toString();
-		byte[] plainBytes = plainString.getBytes();
-		out.write(plainBytes, 0, plainBytes.length);
+		out.writeLine(b, 0, len);
 	}
 
 	@Override

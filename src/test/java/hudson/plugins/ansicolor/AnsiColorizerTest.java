@@ -37,25 +37,43 @@ import org.junit.Test;
  */
 public class AnsiColorizerTest {
 
-  /**
- * @throws IOException 
-   */
-  @Test
-  public void testNoMarkup() throws IOException {
-	  assertThat(colorize("line"), is("line"));
-  }
-  
-  @Test
-  public void testClear() throws IOException {
-	  assertThat(colorize("[0m[K"), is(""));
-	  assertThat(colorize("[0mhello world"), is("hello world"));
-  }
+	/**
+	 * @throws IOException
+	 */
+	@Test
+	public void testNoMarkup() throws IOException {
+		assertThat(colorize("line"), is("line"));
+	}
 
-  private String colorize(String text) throws IOException {
-	  StringOutputStream out = new StringOutputStream();	  
-	  AnsiColorizer colorizer = new AnsiColorizer(out, Charset.defaultCharset());
-	  colorizer.eol(text.getBytes(), text.length());
-	  return out.toString();
-  }
-  
+	@Test
+	public void testClear() throws IOException {
+		assertThat(colorize("[0m[K"), is(""));
+		assertThat(colorize("[0mhello world"), is("hello world"));
+	}
+
+	@Test
+	public void testBold() throws IOException {
+		assertThat(colorize("[1mhello world"), is("<b>hello world</b>"));
+	}
+
+	@Test
+	public void testGreen() throws IOException {
+		assertThat(colorize("[32mhello world"),
+				is("<font color=\"green\">hello world</font>"));
+	}
+
+	@Test
+	public void testGreenOnWhite() throws IOException {
+		assertThat(
+				colorize("[47;32mhello world"),
+				is("<span style=\"background-color: white\"><font color=\"green\">hello world</font></span>"));
+	}
+
+	private String colorize(String text) throws IOException {
+		StringOutputStream out = new StringOutputStream();
+		AnsiColorizer colorizer = new AnsiColorizer(out, Charset
+				.defaultCharset());
+		colorizer.eol(text.getBytes(), text.length());
+		return out.toString();
+	}
 }
