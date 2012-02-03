@@ -56,7 +56,7 @@
 
   <artifactId>ansicolor</artifactId>
   <packaging>hpi</packaging>
-  <version>0.2.1-SNAPSHOT</version>
+  <version>0.2.1</version>
   <name>AnsiColor</name>
   <description>Adds ANSI coloring to the Console Output</description>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/AnsiColor+Plugin</url>
