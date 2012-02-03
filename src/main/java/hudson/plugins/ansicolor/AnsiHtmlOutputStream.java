@@ -31,6 +31,8 @@ import java.util.List;
 import org.fusesource.jansi.AnsiOutputStream;
 
 public class AnsiHtmlOutputStream extends AnsiOutputStream {
+	
+	private boolean concealOn = false;
 
 	@Override
 	public void close() throws IOException {
@@ -67,10 +69,14 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 		write(buf, offset, len);
 		closeAttributes();
 	}
-
+	
 	@Override
 	protected void processSetAttribute(int attribute) throws IOException {
 		switch (attribute) {
+		case ATTRIBUTE_CONCEAL_ON:
+			write("\u001B[8m");
+			concealOn = true;
+			break;
 		case ATTRIBUTE_INTENSITY_BOLD:
 			writeAttribute("b");
 			break;
@@ -92,6 +98,10 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 	
 	@Override
 	protected void processAttributeRest() throws IOException {
+		if (concealOn) {
+			write("\u001B[0m");
+			concealOn = false;
+		}
 		closeAttributes();
 	}
 

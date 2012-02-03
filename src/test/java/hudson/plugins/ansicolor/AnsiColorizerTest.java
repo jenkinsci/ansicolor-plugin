@@ -26,6 +26,8 @@ package hudson.plugins.ansicolor;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import hudson.console.ConsoleNote;
+
 import java.io.IOException;
 
 import org.junit.Test;
@@ -65,6 +67,13 @@ public class AnsiColorizerTest {
 		assertThat(
 				colorize("[47;32mhello world"),
 				is("<span style=\"background-color: white;\"><span style=\"color: green;\">hello world</span></span>"));
+	}
+	
+	@Test
+	public void testConsoleNote() throws IOException {
+		assertThat(
+				colorize(ConsoleNote.PREAMBLE_STR + "hello world" + ConsoleNote.POSTAMBLE_STR),
+				is(ConsoleNote.PREAMBLE_STR + "hello world" + ConsoleNote.POSTAMBLE_STR));
 	}
 
 	private String colorize(String text) throws IOException {
