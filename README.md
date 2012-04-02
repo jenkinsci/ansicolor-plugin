@@ -3,23 +3,26 @@ Jenkins ANSI Color Plugin
 
 This plugin adds support for ANSI escape sequences, including color, to Console Output.
 
-Jenkins Wiki
-============
+Jenkins
+=======
 
-This plugin is published [here](http://maven.jenkins-ci.org:8081/content/repositories/releases/org/jvnet/hudson/plugins/ansicolor/) 
+This plugin is available [here](http://maven.jenkins-ci.org:8081/content/repositories/releases/org/jvnet/hudson/plugins/ansicolor/) 
 and has [a page](https://wiki.jenkins-ci.org/display/JENKINS/AnsiColor+Plugin) on the Jenkins Wiki.
 
-Installation
-============
+Install
+=======
 
-The simplest way is by going to your installation's management screen and clicking *Manage Plugins*. 
-The web interface will then download *.hpi files from here, and you will just need to restart your 
-Jenkins to pick up the changes.
+![install](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/public/images/ansicolor-install.png "Install AnsiColor")
 
-Configure your project, check *Color ANSI Console Output*. Sit back and enjoy.
+Enable
+======
 
-See [this page](https://wiki.jenkins-ci.org/display/JENKINS/Plugins#Plugins-Howtoinstallplugins) 
-for more information.
+![enable](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/public/images/ansicolor-enable.png "Enable AnsiColor")
+
+Color!
+======
+
+![color](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/public/images/ansicolor.png "Color with AnsiColor")
 
 License
 =======
