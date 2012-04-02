@@ -3,9 +3,6 @@ Jenkins ANSI Color Plugin
 
 This plugin adds support for ANSI escape sequences, including color, to Console Output.
 
-Jenkins
-=======
-
 This plugin is available [here](http://maven.jenkins-ci.org:8081/content/repositories/releases/org/jvnet/hudson/plugins/ansicolor/) 
 and has [a page](https://wiki.jenkins-ci.org/display/JENKINS/AnsiColor+Plugin) on the Jenkins Wiki.
 
