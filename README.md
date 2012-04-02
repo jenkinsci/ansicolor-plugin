@@ -12,17 +12,17 @@ and has [a page](https://wiki.jenkins-ci.org/display/JENKINS/AnsiColor+Plugin) o
 Install
 =======
 
-![install](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/public/images/ansicolor-install.png "Install AnsiColor")
+![install](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/images/ansicolor-install.png "Install AnsiColor")
 
 Enable
 ======
 
-![enable](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/public/images/ansicolor-enable.png "Enable AnsiColor")
+![enable](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/images/ansicolor-enable.png "Enable AnsiColor")
 
 Color!
 ======
 
-![color](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/public/images/ansicolor.png "Color with AnsiColor")
+![color](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/images/ansicolor.png "Color with AnsiColor")
 
 License
 =======
