@@ -76,6 +76,14 @@ public class AnsiColorizerTest {
 				is(ConsoleNote.PREAMBLE_STR + "hello world" + ConsoleNote.POSTAMBLE_STR));
 	}
 
+	@Test
+	public void testEscapeHtml() throws IOException {
+		assertThat(colorize("\""), is("&quot;"));
+		assertThat(colorize("&"), is("&amp;"));
+		assertThat(colorize("<"), is("&lt;"));
+		assertThat(colorize(">"), is("&gt;"));
+	}
+
 	private String colorize(String text) throws IOException {
 		return AnsiColorNote.colorize(text);
 	}
