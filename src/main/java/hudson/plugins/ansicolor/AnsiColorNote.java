@@ -72,7 +72,8 @@ public class AnsiColorNote extends ConsoleNote {
     public static String colorize(String data) throws IOException {
     	ByteArrayOutputStream out = new ByteArrayOutputStream();
 		AnsiColorizer colorizer = new AnsiColorizer(out, Charset.defaultCharset());
-		colorizer.eol(data.getBytes(), data.length());
+		byte[] bytes = data.getBytes();
+		colorizer.eol(bytes, bytes.length);
 		return out.toString();
     }
 
