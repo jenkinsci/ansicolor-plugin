@@ -84,6 +84,11 @@ public class AnsiColorizerTest {
 		assertThat(colorize(">"), is("&gt;"));
 	}
 
+	@Test
+	public void testUTF8Character() throws IOException {
+		assertThat(colorize("[1m\u3053\u3093\u306b\u3061\u306f"), is("<b>\u3053\u3093\u306b\u3061\u306f</b>"));
+	}
+
 	private String colorize(String text) throws IOException {
 		return AnsiColorNote.colorize(text);
 	}
