@@ -75,6 +75,13 @@ public class AnsiColorizerTest {
 				colorize(ConsoleNote.PREAMBLE_STR + "hello world" + ConsoleNote.POSTAMBLE_STR),
 				is(ConsoleNote.PREAMBLE_STR + "hello world" + ConsoleNote.POSTAMBLE_STR));
 	}
+	
+	@Test
+	public void testResetOnOpen() throws IOException {
+		assertThat(
+				colorize("[0;31;49mred[0m"),
+				is("<span style=\"color: red;\">red</span>"));
+	}
 
 	private String colorize(String text) throws IOException {
 		return AnsiColorNote.colorize(text);
