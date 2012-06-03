@@ -42,8 +42,8 @@ public final class AnsiColorizer extends LineTransformationOutputStream {
 	private static final long serialVersionUID = 1L;
 	private final AnsiHtmlOutputStream out;
 
-	public AnsiColorizer(OutputStream out, Charset charset) {
-		this.out = new AnsiHtmlOutputStream(out);
+	public AnsiColorizer(OutputStream out, Charset charset, AnsiColorMap colorMap) {
+		this.out = new AnsiHtmlOutputStream(out, colorMap);
 	}
 
 	@Override

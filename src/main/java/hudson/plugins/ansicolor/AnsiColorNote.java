@@ -42,9 +42,12 @@ public class AnsiColorNote extends ConsoleNote {
 	private static final Logger LOG = Logger.getLogger(AnsiColorNote.class.getName());
 	private String data;
 	
-	public AnsiColorNote(String data) {
-    	this.data = data;
-    }
+	private final AnsiColorMap colorMap;
+
+	public AnsiColorNote(String data, final AnsiColorMap colorMap) {
+		this.data = data;
+		this.colorMap = colorMap;
+	}
 
 	/**
 	 * Annotate output that contains ANSI codes and hide raw text.
@@ -52,7 +55,7 @@ public class AnsiColorNote extends ConsoleNote {
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
         try {
-        	String colorizedData = colorize(this.data);
+        	String colorizedData = colorize(this.data, this.colorMap);
         	if (! colorizedData.contentEquals(this.data)) {
 	        	text.addMarkup(charPos, colorizedData);
 	        	text.addMarkup(charPos, charPos + text.length(), "<span style=\"display: none;\">", "</span>");
@@ -69,17 +72,17 @@ public class AnsiColorNote extends ConsoleNote {
      * @return HTML string
      * @throws IOException
      */
-    public static String colorize(String data) throws IOException {
+    public static String colorize(String data, final AnsiColorMap colorMap) throws IOException {
     	ByteArrayOutputStream out = new ByteArrayOutputStream();
-		AnsiColorizer colorizer = new AnsiColorizer(out, Charset.defaultCharset());
+		AnsiColorizer colorizer = new AnsiColorizer(out, Charset.defaultCharset(), colorMap);
 		byte[] bytes = data.getBytes();
 		colorizer.eol(bytes, bytes.length);
 		return out.toString();
     }
 
-    public static String encodeTo(String html) {
+    public static String encodeTo(String html, final AnsiColorMap colorMap) {
         try {
-            return new AnsiColorNote(html).encode();
+            return new AnsiColorNote(html, colorMap).encode();
         } catch (IOException e) {
             LOG.log(Level.WARNING, "Failed to serialize "+ AnsiColorNote.class, e);
             return "";

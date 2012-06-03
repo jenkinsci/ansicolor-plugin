@@ -1,0 +1,52 @@
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+<f:section title="ANSI Color">
+	<f:advanced>
+	<f:entry title="Custom color maps">
+		<f:repeatable var="colorMap" items="${descriptor.colorMaps}" add="Add color map">
+			<table width="100%">
+				<f:entry title="Name" field="name">
+						<f:textbox value="${colorMap.name}"/>
+				</f:entry>
+				<f:entry title="Black">
+						<f:textbox title="fg" field="black" value="${colorMap.black}"/>
+						<f:textbox title="bg" field="blackB" value="${colorMap.blackB}"/>
+				</f:entry>
+				<f:entry title="Red">
+						<f:textbox field="red" value="${colorMap.red}"/>
+						<f:textbox field="redB" value="${colorMap.redB}"/>
+				</f:entry>
+				<f:entry title="Green">
+						<f:textbox field="green" value="${colorMap.green}"/>
+						<f:textbox field="greenB" value="${colorMap.greenB}"/>
+				</f:entry>
+				<f:entry title="Blue">
+						<f:textbox field="blue" value="${colorMap.blue}"/>
+						<f:textbox field="blueB" value="${colorMap.blueB}"/>
+				</f:entry>
+				<f:entry title="Yellow" field = "yellow">
+						<f:textbox field="yellow" value="${colorMap.yellow}"/>
+						<f:textbox field="yellowB" value="${colorMap.yellowB}"/>
+				</f:entry>
+				<f:entry title="Magenta" field = "magenta">
+					<f:textbox field="magenta" value="${colorMap.magenta}"/>
+					<f:textbox field="magentaB" value="${colorMap.magentaB}"/>
+				</f:entry>
+				<f:entry title="Cyan" field = "cyan">
+						<f:textbox field="cyan" value="${colorMap.cyan}"/>
+						<f:textbox field="cyanB" value="${colorMap.cyanB}"/>
+				</f:entry>
+				<f:entry title="White" field = "white">
+						<f:textbox field="white" value="${colorMap.white}"/>
+						<f:textbox field="whiteB" value="${colorMap.whiteB}"/>
+				</f:entry>
+				<f:entry title="">
+					<div align="right">
+						<f:repeatableDeleteButton value="Delete"/>
+					</div>
+				</f:entry>
+			</table>
+		</f:repeatable>
+	</f:entry>
+	</f:advanced>
+</f:section>
+</j:jelly>

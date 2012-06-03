@@ -31,11 +31,22 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
+import hudson.util.ListBoxModel;
+import hudson.util.FormValidation;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+
+import javax.servlet.ServletException;
+
+import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Build wrapper that decorates the build's logger to insert a
@@ -45,12 +56,18 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public final class AnsiColorBuildWrapper extends BuildWrapper {
 
+	private final String colorMapName;
+
 	/**
 	 * Create a new {@link AnsiColorBuildWrapper}.
 	 */
 	@DataBoundConstructor
-	public AnsiColorBuildWrapper() {
+	public AnsiColorBuildWrapper(String colorMapName) {
+		this.colorMapName = colorMapName;
+	}
 
+	public String getColorMapName() {
+		return colorMapName == null ? AnsiColorMap.DefaultName : colorMapName;
 	}
 
 	/**
@@ -70,8 +87,13 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 	@SuppressWarnings("unchecked")
 	@Override
 	public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) {
-		return new AnsiColorOutputStream(logger);
+		AnsiColorMap colorMap = getDescriptor().getColorMap(getColorMapName());
+		return new AnsiColorOutputStream(logger, colorMap);
 	}
+
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl) super.getDescriptor();
+    }
 
 	/**
 	 * Output stream that writes each line to the provided delegate output
@@ -85,14 +107,17 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 		 */
 		private final OutputStream delegate;
 
+		private final AnsiColorMap colorMap;
+
 		/**
 		 * Create a new {@link AnsiColorOutputStream}.
 		 * 
 		 * @param delegate
 		 *            the delegate output stream
 		 */
-		private AnsiColorOutputStream(OutputStream delegate) {
+		private AnsiColorOutputStream(OutputStream delegate, AnsiColorMap colorMap) {
 			this.delegate = delegate;
+			this.colorMap = colorMap;
 		}
 
 		/**
@@ -100,7 +125,7 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 		 */
 		@Override
 		protected void eol(byte[] b, int len) throws IOException {
-			new AnsiColorNote(new String(b, 0, len)).encodeTo(delegate);
+			new AnsiColorNote(new String(b, 0, len), colorMap).encodeTo(delegate);
 			delegate.write(b, 0, len);
 		}
 
@@ -119,6 +144,63 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 	 */
 	@Extension
 	public static final class DescriptorImpl extends BuildWrapperDescriptor {
+
+		private AnsiColorMap[] colorMaps = new AnsiColorMap[0];
+
+		public DescriptorImpl() {
+			super(AnsiColorBuildWrapper.class);
+			load();
+		}
+
+		private AnsiColorMap[] withDefaults(AnsiColorMap[] colorMaps) {
+			Map<String,AnsiColorMap> maps = new LinkedHashMap<String,AnsiColorMap>();
+			addAll(AnsiColorMap.defaultColorMaps(), maps);
+			addAll(colorMaps, maps);
+			return maps.values().toArray(new AnsiColorMap[0]);
+		}
+		private void addAll(AnsiColorMap[] maps, Map<String,AnsiColorMap> to) {
+			for(AnsiColorMap map : maps)
+				to.put(map.getName(), map);
+		}
+
+		@Override
+		public boolean configure(final StaplerRequest req, final JSONObject formData) throws FormException {
+			try {
+				setColorMaps(req.bindJSONToList(AnsiColorMap.class,
+					req.getSubmittedForm().get("colorMap")).toArray(new AnsiColorMap[0]));
+				return true;
+			} catch (ServletException e) {
+				throw new FormException(e, "");
+			}
+		}
+		public FormValidation doCheckName(@QueryParameter final String value) {
+			return (value.trim().length() == 0) ? FormValidation.error("Name cannot be empty.") : FormValidation.ok();
+		}
+
+		public AnsiColorMap[] getColorMaps() {
+			return withDefaults(colorMaps);
+		}
+		public void setColorMaps(AnsiColorMap[] maps) {
+			colorMaps = maps;
+			save();
+		}
+		public AnsiColorMap getColorMap(final String name) {
+			for (AnsiColorMap colorMap: getColorMaps()) {
+				if (colorMap.getName().equals(name)) {
+					return colorMap;
+				}
+			}
+			return AnsiColorMap.Default;
+		}
+		public ListBoxModel doFillColorMapNameItems() {
+			ListBoxModel m = new ListBoxModel();
+			for(AnsiColorMap colorMap : getColorMaps()) {
+				String name = colorMap.getName().trim();
+				if(name.length() > 0)
+					m.add(name);
+			}
+			return m;
+		}
 
 		/**
 		 * {@inheritDoc}
