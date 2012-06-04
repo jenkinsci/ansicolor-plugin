@@ -31,7 +31,6 @@ import java.util.List;
 import org.fusesource.jansi.AnsiOutputStream;
 
 public class AnsiHtmlOutputStream extends AnsiOutputStream {
-	
 	private boolean concealOn = false;
 
 	@Override
@@ -40,16 +39,16 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 		super.close();
 	}
 
-	private static final String ANSI_COLOR_MAP[] = { "black", "red",
-			"green", "yellow", "blue", "magenta", "cyan", "white", };
+	private final AnsiColorMap colorMap;
 
 	private static final byte[] BYTES_QUOT = "&quot;".getBytes();
 	private static final byte[] BYTES_AMP = "&amp;".getBytes();
 	private static final byte[] BYTES_LT = "&lt;".getBytes();
 	private static final byte[] BYTES_GT = "&gt;".getBytes();
 
-	public AnsiHtmlOutputStream(OutputStream os) {
+	public AnsiHtmlOutputStream(OutputStream os, final AnsiColorMap colorMap) {
 		super(os);
+		this.colorMap = colorMap;
 	}
 
 	private List<String> closingAttributes = new ArrayList<String>();
@@ -135,11 +134,11 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 
 	@Override
 	protected void processSetForegroundColor(int color) throws IOException {
-		writeAttribute("span style=\"color: " + ANSI_COLOR_MAP[color] + ";\"");
+		writeAttribute("span style=\"color: " + colorMap.getForeground(color) + ";\"");
 	}
 
 	@Override
 	protected void processSetBackgroundColor(int color) throws IOException {
-		writeAttribute("span style=\"background-color: " + ANSI_COLOR_MAP[color] + ";\"");
+		writeAttribute("span style=\"background-color: " + colorMap.getBackground(color) + ";\"");
 	}
 }
