@@ -21,6 +21,11 @@ Color!
 
 ![color](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/images/ansicolor.png "Color with AnsiColor")
 
+Customize
+======
+
+![color](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/images/ansicolor-config.png "Customize colors used by AnsiColor")
+
 License
 =======
 

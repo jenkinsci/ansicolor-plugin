@@ -63,10 +63,24 @@ public class AnsiColorizerTest {
 	}
 
 	@Test
+	public void testGreenXTerm() throws IOException {
+		assertThat(colorize("[32mhello world", AnsiColorMap.XTerm),
+				is("<span style=\"color: " + AnsiColorMap.XTerm.getGreen() + ";\">hello world</span>"));
+	}
+
+	@Test
 	public void testGreenOnWhite() throws IOException {
 		assertThat(
 				colorize("[47;32mhello world"),
 				is("<span style=\"background-color: white;\"><span style=\"color: green;\">hello world</span></span>"));
+	}
+
+	@Test
+	public void testGreenOnWhiteXTerm() throws IOException {
+		assertThat(
+				colorize("[47;32mhello world", AnsiColorMap.XTerm),
+				is("<span style=\"background-color: " + AnsiColorMap.XTerm.getWhiteB() + 
+					";\"><span style=\"color: " + AnsiColorMap.XTerm.getGreen() + ";\">hello world</span></span>"));
 	}
 	
 	@Test
@@ -90,6 +104,10 @@ public class AnsiColorizerTest {
 	}
 
 	private String colorize(String text) throws IOException {
-		return AnsiColorNote.colorize(text);
+		return colorize(text, AnsiColorMap.CSS);
+	}
+
+	private String colorize(String text, AnsiColorMap colorMap) throws IOException {
+		return AnsiColorNote.colorize(text, colorMap);
 	}
 }

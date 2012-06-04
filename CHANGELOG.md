@@ -2,6 +2,7 @@ Next
 ====
 
 * Fix: corrupt strings that contain non-ASCII characters - [@takai](https://github.com/takai).
+* Added support for configuring color mapping - [@harrah](https://github.com/harrah).
 
 0.2.1
 =====
