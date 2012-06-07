@@ -65,7 +65,7 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 	public AnsiColorBuildWrapper(String colorMapName) {
 		this.colorMapName = colorMapName;
 	}
-
+	
 	public String getColorMapName() {
 		return colorMapName == null ? AnsiColorMap.DefaultName : colorMapName;
 	}
@@ -158,6 +158,7 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 			addAll(colorMaps, maps);
 			return maps.values().toArray(new AnsiColorMap[0]);
 		}
+		
 		private void addAll(AnsiColorMap[] maps, Map<String,AnsiColorMap> to) {
 			for(AnsiColorMap map : maps)
 				to.put(map.getName(), map);
@@ -173,6 +174,7 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 				throw new FormException(e, "");
 			}
 		}
+		
 		public FormValidation doCheckName(@QueryParameter final String value) {
 			return (value.trim().length() == 0) ? FormValidation.error("Name cannot be empty.") : FormValidation.ok();
 		}
@@ -180,10 +182,12 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 		public AnsiColorMap[] getColorMaps() {
 			return withDefaults(colorMaps);
 		}
+		
 		public void setColorMaps(AnsiColorMap[] maps) {
 			colorMaps = maps;
 			save();
 		}
+		
 		public AnsiColorMap getColorMap(final String name) {
 			for (AnsiColorMap colorMap: getColorMaps()) {
 				if (colorMap.getName().equals(name)) {
@@ -192,6 +196,7 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 			}
 			return AnsiColorMap.Default;
 		}
+		
 		public ListBoxModel doFillColorMapNameItems() {
 			ListBoxModel m = new ListBoxModel();
 			for(AnsiColorMap colorMap : getColorMaps()) {

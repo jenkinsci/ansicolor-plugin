@@ -11,6 +11,7 @@ work
 .settings
 .metadata
 build
+bin
 
 # Vim junk files
 .*.swp

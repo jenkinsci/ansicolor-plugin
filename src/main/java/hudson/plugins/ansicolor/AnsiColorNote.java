@@ -43,19 +43,29 @@ public class AnsiColorNote extends ConsoleNote {
 	private String data;
 	
 	private final AnsiColorMap colorMap;
-
+	
 	public AnsiColorNote(String data, final AnsiColorMap colorMap) {
 		this.data = data;
 		this.colorMap = colorMap;
 	}
 
+	
+	/**
+	 * Return this color note's color map.
+	 * 
+	 * @return AnsiColorMap
+	 */
+	public AnsiColorMap getColorMap() {
+		return this.colorMap != null ? this.colorMap : AnsiColorMap.Default;
+	}
+	
 	/**
 	 * Annotate output that contains ANSI codes and hide raw text.
 	 */
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
         try {
-        	String colorizedData = colorize(this.data, this.colorMap);
+        	String colorizedData = colorize(this.data, this.getColorMap());
         	if (! colorizedData.contentEquals(this.data)) {
 	        	text.addMarkup(charPos, colorizedData);
 	        	text.addMarkup(charPos, charPos + text.length(), "<span style=\"display: none;\">", "</span>");
