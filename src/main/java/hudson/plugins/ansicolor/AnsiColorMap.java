@@ -5,7 +5,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 public final class AnsiColorMap implements Serializable
 {
-	public static final String XTermName = "xterm";
+  private static final long serialVersionUID = 1L;
+  
+  public static final String XTermName = "xterm";
 	private static final String[] XTermFg = { "#000000", "#CD0000", "#00CD00", "#CDCD00", "#1E90FF", "#CD00CD", "#00CDCD", "#E5E5E5" };
 	private static final String[] XTermBg = { "#4C4C4C", "#FF0000", "#00FF00", "#FFFF00", "#4682B4", "#FF00FF", "#00FFFF", "#FFFFFF" };
 
