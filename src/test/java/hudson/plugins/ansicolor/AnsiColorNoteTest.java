@@ -58,6 +58,18 @@ public class AnsiColorNoteTest {
 				"[1m\u3053\u3093\u306b\u3061\u306f");
 	}
 	
+	@Test
+	public void testBold() throws IOException {
+		assertThatAnnotateIs("[1mhello world", "<b>hello world</b>", 
+				"[1mhello world");
+	}
+
+	@Test
+	public void testGreen() throws IOException {
+		assertThatAnnotateIs("[32mhello world", "<span style=\"color: green;\">hello world</span>", 
+				"[32mhello world");
+	}
+	
 	private void assertThatAnnotateIs(String ansi, String html, String spanned) throws IOException {
 		assertThat(annotate(ansi), is(html + span(spanned)));
 	}
