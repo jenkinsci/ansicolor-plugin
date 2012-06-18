@@ -66,10 +66,10 @@ public class AnsiColorNote extends ConsoleNote {
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
         try {
-        	String colorizedData = colorize(this.data, this.getColorMap());
+        	String colorizedData = colorize(StringEscapeUtils.escapeHtml(this.data), this.getColorMap());
         	if (! colorizedData.contentEquals(this.data)) {
-	        	text.addMarkup(charPos, StringEscapeUtils.escapeHtml(colorizedData));
-	        	text.addMarkup(charPos, charPos + text.length(), "<span style=\"display: none;\">", "</span>");
+	        	text.addMarkup(charPos, colorizedData);
+	        	text.addMarkup(charPos, charPos + text.getText().length(), "<span style=\"display: none;\">", "</span>");
         	}
 		} catch (IOException e) {
             LOG.log(Level.WARNING, "Failed to add markup to \"" + text + "\"", e);

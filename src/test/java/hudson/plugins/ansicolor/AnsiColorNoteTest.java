@@ -29,6 +29,7 @@ import hudson.MarkupText;
 
 import java.io.IOException;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.Test;
 
 /**
@@ -48,6 +49,13 @@ public class AnsiColorNoteTest {
 		assertThatAnnotateIs("[0m&", "&amp;", "[0m&amp;");
 		assertThatAnnotateIs("[0m<", "&lt;", "[0m&lt;");
 		assertThatAnnotateIs("[0m>", "&gt;", "[0m>");
+	}
+	
+	@Test
+	public void testMultibyte() throws IOException {
+		assertThatAnnotateIs("[1m\u3053\u3093\u306b\u3061\u306f", 
+				"<b>" + StringEscapeUtils.escapeHtml("\u3053\u3093\u306b\u3061\u306f") + "</b>", 
+				"[1m\u3053\u3093\u306b\u3061\u306f");
 	}
 	
 	private void assertThatAnnotateIs(String ansi, String html, String spanned) throws IOException {
