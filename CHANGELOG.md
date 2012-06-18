@@ -1,5 +1,5 @@
-0.3.2
-=====
+0.3.2 (Next)
+============
 
 * Using `commons-lang` to HTML-encode color output - [@dblock](https://github.com/dblock).
 
