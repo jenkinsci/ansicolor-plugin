@@ -26,6 +26,20 @@ Customize
 
 ![color](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/images/ansicolor-config.png "Customize colors used by AnsiColor")
 
+Misc
+====
+
+Colorizing Ruby RSpec Output
+----------------------------
+
+RSpec formatters detect whether RSpec is running in a terminal or not, therefore suppressing color output under Jenkins. Specify `--colour` in your `.rspec` file or options, along with the following setup in `spec_helper.rb`.
+
+``` ruby
+RSpec.configure do |config|
+ config.tty = true
+end
+```
+
 License
 =======
 
