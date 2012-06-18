@@ -37,9 +37,6 @@ import org.junit.Test;
  */
 public class AnsiColorizerTest {
 
-	/**
-	 * @throws IOException
-	 */
 	@Test
 	public void testNoMarkup() throws IOException {
 		assertThat(colorize("line"), is("line"));
@@ -95,14 +92,6 @@ public class AnsiColorizerTest {
 		assertThat(
 				colorize("[0;31;49mred[0m"),
 				is("<span style=\"color: red;\">red</span>"));
-	}
-
-	@Test
-	public void testEscapeHtml() throws IOException {
-		assertThat(colorize("\""), is("&quot;"));
-		assertThat(colorize("&"), is("&amp;"));
-		assertThat(colorize("<"), is("&lt;"));
-		assertThat(colorize(">"), is("&gt;"));
 	}
 
 	@Test

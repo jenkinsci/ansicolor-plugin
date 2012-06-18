@@ -73,7 +73,6 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 	/**
 	 * {@inheritDoc}
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public Environment setUp(AbstractBuild build, Launcher launcher,
 			BuildListener listener) throws IOException, InterruptedException {
@@ -84,7 +83,6 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 	/**
 	 * {@inheritDoc}
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) {
 		AnsiColorMap colorMap = getDescriptor().getColorMap(getColorMapName());

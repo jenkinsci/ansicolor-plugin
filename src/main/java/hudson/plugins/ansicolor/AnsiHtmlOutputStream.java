@@ -41,11 +41,6 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 
 	private final AnsiColorMap colorMap;
 
-	private static final byte[] BYTES_QUOT = "&quot;".getBytes();
-	private static final byte[] BYTES_AMP = "&amp;".getBytes();
-	private static final byte[] BYTES_LT = "&lt;".getBytes();
-	private static final byte[] BYTES_GT = "&gt;".getBytes();
-
 	public AnsiHtmlOutputStream(OutputStream os, final AnsiColorMap colorMap) {
 		super(os);
 		this.colorMap = colorMap;
@@ -67,29 +62,6 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 			write("</" + attr + ">");
 		}
 		closingAttributes.clear();
-	}
-
-	public void write(int data) throws IOException {
-		switch(data) {
-		case 34: // "
-			out.write(BYTES_QUOT);
-			break;
-
-		case 38: // &
-			out.write(BYTES_AMP);
-			break;
-
-		case 60: // <
-			out.write(BYTES_LT);
-			break;
-
-		case 62: // >
-			out.write(BYTES_GT);
-			break;
-
-		default:
-			super.write(data);
-		}
 	}
 
 	public void writeLine(byte[] buf, int offset, int len) throws IOException {

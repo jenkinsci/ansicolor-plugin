@@ -35,7 +35,8 @@ import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@SuppressWarnings("unchecked")
+import org.apache.commons.lang.StringEscapeUtils;
+
 public class AnsiColorNote extends ConsoleNote {
     
 	private static final long serialVersionUID = 1L;
@@ -67,7 +68,7 @@ public class AnsiColorNote extends ConsoleNote {
         try {
         	String colorizedData = colorize(this.data, this.getColorMap());
         	if (! colorizedData.contentEquals(this.data)) {
-	        	text.addMarkup(charPos, colorizedData);
+	        	text.addMarkup(charPos, StringEscapeUtils.escapeHtml(colorizedData));
 	        	text.addMarkup(charPos, charPos + text.length(), "<span style=\"display: none;\">", "</span>");
         	}
 		} catch (IOException e) {
