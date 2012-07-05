@@ -41,7 +41,17 @@ public class AnsiColorizerTest {
 	public void testNoMarkup() throws IOException {
 		assertThat(colorize("line"), is("line"));
 	}
+	
+	@Test
+	public void testEmpty() throws IOException {
+		assertThat(colorize(""), is(""));
+	}
 
+	@Test
+	public void testClearBlank() throws IOException {
+		assertThat(colorize("[0m"), is(""));
+	}
+	
 	@Test
 	public void testClear() throws IOException {
 		assertThat(colorize("[0m[K"), is(""));

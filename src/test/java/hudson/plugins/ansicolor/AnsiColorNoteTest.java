@@ -38,8 +38,25 @@ import org.junit.Test;
 public class AnsiColorNoteTest {
 	
 	@Test
-	public void testAnnotate() throws IOException {
+	public void testNoMarkup() throws IOException {
 		assertThat(annotate("line"), is("line"));
+	}
+	
+	@Test
+	public void testPartial() throws IOException {
+		assertThatAnnotateIs("", "", "");
+		assertThatAnnotateIs("[", "", "[");
+		assertThatAnnotateIs("[0", "", "[0");
+	}
+
+	@Test
+	public void testClearBlank() throws IOException {
+		assertThatAnnotateIs("[0m", "", "[0m");
+	}
+	
+	@Test
+	public void testClear() throws IOException {
+		assertThatAnnotateIs("[0m[K", "", "[0m[K");
 	}
 
 	@Test
@@ -66,7 +83,7 @@ public class AnsiColorNoteTest {
 
 	@Test
 	public void testGreen() throws IOException {
-		assertThatAnnotateIs("[32mhello world", "<span style=\"color: green;\">hello world</span>", 
+		assertThatAnnotateIs("[32mhello world", "<span style=\"color: #00CD00;\">hello world</span>", 
 				"[32mhello world");
 	}
 	

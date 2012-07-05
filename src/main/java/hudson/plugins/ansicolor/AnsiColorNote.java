@@ -71,7 +71,7 @@ public class AnsiColorNote extends ConsoleNote {
 	        	text.addMarkup(charPos, colorizedData);
 	        	text.addMarkup(charPos, charPos + text.getText().length(), "<span style=\"display: none;\">", "</span>");
         	}
-		} catch (IOException e) {
+        } catch (Exception e) {
             LOG.log(Level.WARNING, "Failed to add markup to \"" + text + "\"", e);
 		}
         return null;

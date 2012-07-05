@@ -2,6 +2,7 @@
 ============
 
 * Using `commons-lang` to HTML-encode color output - [@dblock](https://github.com/dblock).
+* Failure to annotate console output will be logged as a warning - [@dblock](https://github.com/dblock).
 
 0.3.1
 =====
