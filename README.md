@@ -1,7 +1,7 @@
 Jenkins ANSI Color Plugin
 =========================
 
-This plugin adds support for ANSI escape sequences, including color, to Console Output.
+This plugin adds support for standard ANSI escape sequences, including color, to Console Output.
 
 This plugin is available [here](http://maven.jenkins-ci.org:8081/content/repositories/releases/org/jvnet/hudson/plugins/ansicolor/) 
 and has [a page](https://wiki.jenkins-ci.org/display/JENKINS/AnsiColor+Plugin) on the Jenkins Wiki.
@@ -28,6 +28,14 @@ Customize
 
 Misc
 ====
+
+Supported ANSI Color Codes
+--------------------------
+Only the standard [ANSI Color Codes](https://en.wikipedia.org/wiki/ANSI_colors) are supported for both foreground 
+and background colors. "High Intensity" colors in the 90-109 range are non-standard are not supported. The `colorize`
+ruby library, for example, emits high intensity codes when using the "light" color options. 
+
+See [issue #16](https://github.com/dblock/jenkins-ansicolor-plugin/issues/16) for a sample of non-standard output. 
 
 Colorizing Ruby RSpec Output
 ----------------------------
