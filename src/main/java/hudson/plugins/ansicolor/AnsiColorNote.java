@@ -65,6 +65,7 @@ public class AnsiColorNote extends ConsoleNote {
 	 */
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
+        if (this.data.contains(ConsoleNote.PREAMBLE_STR)) return null;
         try {
         	String colorizedData = colorize(StringEscapeUtils.escapeHtml(this.data), this.getColorMap());
         	if (! colorizedData.contentEquals(this.data)) {
