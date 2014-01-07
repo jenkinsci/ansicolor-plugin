@@ -3,6 +3,7 @@
 
 * Using `commons-lang` to HTML-encode color output - [@dblock](https://github.com/dblock).
 * Failure to annotate console output will be logged as a warning - [@dblock](https://github.com/dblock).
+* Remove garbage being added to log - [#15](https://github.com/dblock/jenkins-ansicolor-plugin/issues/15) [JENKINS-11752](https://issues.jenkins-ci.org/browse/JENKINS-11752).
 
 0.3.1
 =====
