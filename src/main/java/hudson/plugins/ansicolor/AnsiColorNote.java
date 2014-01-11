@@ -49,7 +49,6 @@ public class AnsiColorNote extends ConsoleNote {
 		this.data = data;
 		this.colorMap = colorMap;
 	}
-
 	
 	/**
 	 * Return this color note's color map.
@@ -65,7 +64,6 @@ public class AnsiColorNote extends ConsoleNote {
 	 */
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
-        if (this.data.contains(ConsoleNote.PREAMBLE_STR)) return null;
         try {
         	String colorizedData = colorize(StringEscapeUtils.escapeHtml(this.data), this.getColorMap());
         	if (! colorizedData.contentEquals(this.data)) {
@@ -94,7 +92,7 @@ public class AnsiColorNote extends ConsoleNote {
 
     public static String encodeTo(String html, final AnsiColorMap colorMap) {
         try {
-            return new AnsiColorNote(html, colorMap).encode();
+            return ConsoleNote.removeNotes(new AnsiColorNote(html, colorMap).encode());
         } catch (IOException e) {
             LOG.log(Level.WARNING, "Failed to serialize "+ AnsiColorNote.class, e);
             return "";

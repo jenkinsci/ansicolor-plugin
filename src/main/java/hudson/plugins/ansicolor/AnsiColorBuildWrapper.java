@@ -123,7 +123,6 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 		 */
 		@Override
 		protected void eol(byte[] b, int len) throws IOException {
-			new AnsiColorNote(new String(b, 0, len), colorMap).encodeTo(delegate);
 			delegate.write(b, 0, len);
 		}
 
