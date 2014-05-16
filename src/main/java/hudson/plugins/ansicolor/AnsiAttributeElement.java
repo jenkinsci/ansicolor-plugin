@@ -33,7 +33,7 @@ class AnsiAttributeElement {
     }
 
     public void emitOpen(Emitter emitter) {
-        final String openingTagHtml = "<" + name + (attributes.isEmpty() ? "" : " " + attributes) + ">";
+        final String openingTagHtml = "<" + name + (attributes.trim().equals("") ? "" : " " + attributes) + ">";
         emitter.emitHtml(openingTagHtml);
     }
 
