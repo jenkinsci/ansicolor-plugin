@@ -54,6 +54,40 @@ public class AnsiHtmlOutputStreamTest {
 	}
 
     @Test
+    public void testConceal() throws IOException {
+        assertThatAnnotateIs(
+            "there is concealed text here, \033[8mCONCEAL\033[0m, and it should vanish.",
+            "there is concealed text here, , and it should vanish."
+        );
+    }
+
+    @Test
+    public void testEmbeddedConsoleNote() throws IOException {
+        assertThatAnnotateIs(
+            "there is a ConsoleNote here, \033[8mha:CONSOLENOTE\033[0m, and it should be left untouched.",
+            "there is a ConsoleNote here, \033[8mha:CONSOLENOTE\033[0m, and it should be left untouched."
+        );
+    }
+
+    @Test
+    public void testConcealedConsoleNote() throws IOException {
+        assertThatAnnotateIs(
+            "there is a concealed note here, \033[8m\033[8mha:CONCEALEDCONSOLENOTE\033[0m\033[0m, " +
+                "and it should vanish.",
+            "there is a concealed note here, , and it should vanish."
+        );
+    }
+
+    @Test
+    public void testConcealedConsoleNoteDoesNotUnconceal() throws IOException {
+        assertThatAnnotateIs(
+            "there is a concealed note here, \033[8m\033[8mha:CONCEALEDCONSOLENOTE\033[0m, " +
+                "and it may not affect ongoing concealing.",
+            "there is a concealed note here, "
+        );
+    }
+
+    @Test
     public void testBold() throws IOException {
         assertThatAnnotateIs("\033[1mhello world", "<b>hello world</b>");
     }

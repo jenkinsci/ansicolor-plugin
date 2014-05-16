@@ -26,6 +26,7 @@ package hudson.plugins.ansicolor;
 import static hudson.plugins.ansicolor.AnsiAttributeElement.AnsiAttrType;
 
 import hudson.console.ConsoleNote;
+import hudson.util.NullStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -48,8 +49,6 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 	private final AnsiColorMap colorMap;
     private final AnsiAttributeElement.Emitter emitter;
 
-    private boolean conceal = false;
-
     private static enum State {
         DATA, PREAMBLE, NOTE, POSTAMBLE
     }
@@ -59,12 +58,28 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     // A Deque might be a better choice, but we are constrained by the Java 5 API.
     private ArrayList<AnsiAttributeElement> openTags = new ArrayList<AnsiAttributeElement>();
 
+    private OutputStream logOutput;
+
     public AnsiHtmlOutputStream(final OutputStream os, final AnsiColorMap colorMap,
         final AnsiAttributeElement.Emitter emitter) {
         super(os);
+        this.logOutput = os;
 		this.colorMap = colorMap;
         this.emitter = emitter;
-	}
+   	}
+
+    /* Concealing has to happen *after* ANSI interpretation.
+     * Instead of adding yet another filter, we switch the target stream to a null stream while concealing.
+     *
+     * Both the start- and stop-Method are idempotent and may be called regardless of current concealing state.
+     */
+    private void startConcealing() {
+        this.out = new NullStream();
+    }
+
+    private void stopConcealing() {
+        this.out = logOutput;
+    }
 
     private void openTag(AnsiAttributeElement tag) throws IOException {
         openTags.add(tag);
@@ -129,7 +144,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
                     state = State.PREAMBLE;
                     amblePos = 0;
                     collectAmbleCharacter(data, ConsoleNote.PREAMBLE);
-                } else if (!conceal) {
+                } else {
                     super.write(data);
                 }
                 break;
@@ -186,7 +201,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 	protected void processSetAttribute(int attribute) throws IOException {
 		switch (attribute) {
 		case ATTRIBUTE_CONCEAL_ON:
-			conceal = true;
+            startConcealing();
 			break;
 		case ATTRIBUTE_INTENSITY_BOLD:
             closeTagOfType(AnsiAttrType.BOLD);
@@ -214,7 +229,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 	
 	@Override
 	protected void processAttributeRest() throws IOException {
-        conceal = false;
+        stopConcealing();
         closeOpenTags();
 	}
 
