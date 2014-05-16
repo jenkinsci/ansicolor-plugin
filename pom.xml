@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
-  
+
   <parent>
-    <groupId>org.jvnet.hudson.plugins</groupId>
+    <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.374</version>
+    <version>1.424</version>
   </parent>
 
   <repositories>
@@ -36,7 +36,7 @@
   </distributionManagement>
 
   <build>
-    <plugins>  
+    <plugins>
       <!-- Enforce Java 5.0 compatibility. -->
       <plugin>
         <groupId>org.jvnet</groupId>
@@ -97,6 +97,6 @@
       <email>dblock@dblock.org</email>
     </developer>
   </developers>
- 
+
 </project>
 
