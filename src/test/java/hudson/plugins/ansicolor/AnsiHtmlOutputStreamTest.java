@@ -55,12 +55,12 @@ public class AnsiHtmlOutputStreamTest {
 
     @Test
     public void testBold() throws IOException {
-        assertThatAnnotateIs("\033[1mhello world", "<b >hello world</b>");
+        assertThatAnnotateIs("\033[1mhello world", "<b>hello world</b>");
     }
 
     @Test
     public void testUnderline() throws IOException {
-        assertThatAnnotateIs("\033[4mhello world", "<u >hello world</u>");
+        assertThatAnnotateIs("\033[4mhello world", "<u>hello world</u>");
     }
 
     @Test
@@ -138,14 +138,14 @@ public class AnsiHtmlOutputStreamTest {
             "plain" +
                 "<span style=\"color: #00CD00;\">" +                    // +green
                 "green" +
-                "<b >" +                                                // +bold (now green,bold)
+                "<b>" +                                                 // +bold (now green,bold)
                 "boldgreen" +
-                "<u >" +                                                // +underline (now green,bold,ul)
+                "<u>" +                                                 // +underline (now green,bold,ul)
                 "ulboldgreen" +
-                "</u></b></span><b ><u >" +                             // -green (now bold,ul)
+                "</u></b></span><b><u>" +                               // -green (now bold,ul)
                 "<span style=\"color: #CD0000;\">" +                    // +red (now bold,ul,red)
                 "ulboldred" +
-                "</span></u></b><u ><span style=\"color: #CD0000;\">" + // -bold (now ul,red)
+                "</span></u></b><u><span style=\"color: #CD0000;\">" +  // -bold (now ul,red)
                 "ulred" +
                 "</span></u><span style=\"color: #CD0000;\">" +         // -underline (now red)
                 "red" +

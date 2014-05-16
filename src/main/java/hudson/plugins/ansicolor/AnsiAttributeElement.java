@@ -35,7 +35,7 @@ class AnsiAttributeElement {
     }
 
     public void emitOpen(Emitter emitter) throws IOException {
-        final String openingTagHtml = "<" + name + " " + attributes + ">";
+        final String openingTagHtml = "<" + name + (attributes.isEmpty() ? "" : " " + attributes) + ">";
         emitter.emitHtml(openingTagHtml);
     }
 
