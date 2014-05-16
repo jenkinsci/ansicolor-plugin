@@ -1,6 +1,9 @@
-0.3.2 (Next)
-============
-
+0.4.0
+=====
+* Log text is not replaced with markup anymore, just supplemented [#26](https://github.com/dblock/jenkins-ansicolor-plugin/pull/26) [@ejelly](https://github.com/ejelly) [#17](https://github.com/dblock/jenkins-ansicolor-plugin/issues/17)
+* Actually remove escape sequences from log stream [#19](https://github.com/dblock/jenkins-ansicolor-plugin/issues/19)
+* Properly nest HTML elements.
+* Added support for ANSI underline double.
 * Using `commons-lang` to HTML-encode color output - [@dblock](https://github.com/dblock).
 * Failure to annotate console output will be logged as a warning - [@dblock](https://github.com/dblock).
 
