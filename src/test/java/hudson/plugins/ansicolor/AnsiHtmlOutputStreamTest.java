@@ -133,6 +133,11 @@ public class AnsiHtmlOutputStreamTest {
     }
 
     @Test
+    public void testJapanese() throws IOException {
+        assertThatAnnotateIs("\033[32mこんにちは", "<span style=\"color: #00CD00;\">こんにちは</span>");
+    }
+
+    @Test
     public void testOverlapping() throws IOException {
         assertThatAnnotateIs("plain\033[32mgreen\033[1mboldgreen\033[4mulboldgreen\033[31mulboldred" +
             "\033[22mulred\033[24mred",
