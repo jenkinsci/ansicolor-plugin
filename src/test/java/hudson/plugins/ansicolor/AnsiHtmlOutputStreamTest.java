@@ -123,7 +123,8 @@ public class AnsiHtmlOutputStreamTest {
             annotate("\033[0;31;49mred\033[0m"),
             is("" +
                 "<span style=\"color: #CD0000;\">red" +
-                "</span>"));
+                "</span>")
+        );
     }
 
     @Test
@@ -160,8 +161,12 @@ public class AnsiHtmlOutputStreamTest {
     private String annotate(String text, AnsiColorMap colorMap) throws IOException {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         AnsiHtmlOutputStream ansi = new AnsiHtmlOutputStream(bos, colorMap, new AnsiAttributeElement.Emitter() {
-            public void emitHtml(String html) throws IOException {
-                bos.write(html.getBytes());
+            public void emitHtml(String html) {
+                try {
+                    bos.write(html.getBytes());
+                } catch (IOException e) {
+                    throw new RuntimeException("error emitting HTML", e);
+                }
             }
         });
         ansi.write(text.getBytes());

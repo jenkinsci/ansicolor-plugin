@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -48,6 +50,8 @@ import org.kohsuke.stapler.StaplerRequest;
 public final class AnsiColorBuildWrapper extends BuildWrapper {
 
 	private final String colorMapName;
+
+    private static final Logger LOG = Logger.getLogger(AnsiColorBuildWrapper.class.getName());
 
 	/**
 	 * Create a new {@link AnsiColorBuildWrapper}.
@@ -80,8 +84,12 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 
         return new LineTransformationOutputStream() {
             AnsiHtmlOutputStream ansi = new AnsiHtmlOutputStream(logger, colorMap, new AnsiAttributeElement.Emitter() {
-                public void emitHtml(String html) throws IOException {
-                    new SimpleHtmlNote(html).encodeTo(logger);
+                public void emitHtml(String html) {
+                    try {
+                        new SimpleHtmlNote(html).encodeTo(logger);
+                    } catch (IOException e) {
+                        LOG.log(Level.WARNING, "Failed to add HTML markup '" + html + "'", e);
+                    }
                 }
             });
 

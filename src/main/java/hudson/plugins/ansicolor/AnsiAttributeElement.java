@@ -1,7 +1,5 @@
 package hudson.plugins.ansicolor;
 
-import java.io.IOException;
-
 /**
  * Represents an HTML elements which maps to an ANSI attribute.
  *
@@ -25,7 +23,7 @@ class AnsiAttributeElement {
     String attributes;
 
     public static interface Emitter {
-        public void emitHtml(String html) throws IOException;
+        public void emitHtml(String html);
     }
 
     public AnsiAttributeElement(AnsiAttrType ansiAttrType, String name, String attributes) {
@@ -34,12 +32,12 @@ class AnsiAttributeElement {
         this.attributes = attributes;
     }
 
-    public void emitOpen(Emitter emitter) throws IOException {
+    public void emitOpen(Emitter emitter) {
         final String openingTagHtml = "<" + name + (attributes.isEmpty() ? "" : " " + attributes) + ">";
         emitter.emitHtml(openingTagHtml);
     }
 
-    public void emitClose(Emitter emitter) throws IOException {
+    public void emitClose(Emitter emitter) {
         String closingTagHtml = "</" + name + ">";
         emitter.emitHtml(closingTagHtml);
     }
