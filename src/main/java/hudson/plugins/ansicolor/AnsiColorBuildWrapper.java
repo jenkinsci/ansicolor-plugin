@@ -31,6 +31,9 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
+import hudson.util.ListBoxModel;
+import hudson.util.FormValidation;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.LinkedHashMap;
@@ -40,6 +43,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -116,7 +120,7 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 	/**
 	 * Registers {@link AnsiColorBuildWrapper} as a {@link BuildWrapper}.
 	 */
-	@Extension
+    @Extension
 	public static final class DescriptorImpl extends BuildWrapperDescriptor {
 
 		private AnsiColorMap[] colorMaps = new AnsiColorMap[0];
@@ -148,7 +152,11 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 				throw new FormException(e, "");
 			}
 		}
-		
+
+        public FormValidation doCheckName(@QueryParameter final String value) {
+			return (value.trim().length() == 0) ? FormValidation.error("Name cannot be empty.") : FormValidation.ok();
+		}
+
 		public AnsiColorMap[] getColorMaps() {
 			return withDefaults(colorMaps);
 		}
@@ -165,6 +173,16 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 				}
 			}
 			return AnsiColorMap.Default;
+		}
+
+		public ListBoxModel doFillColorMapNameItems() {
+			ListBoxModel m = new ListBoxModel();
+			for(AnsiColorMap colorMap : getColorMaps()) {
+				String name = colorMap.getName().trim();
+				if(name.length() > 0)
+					m.add(name);
+			}
+			return m;
 		}
 
 		/**
