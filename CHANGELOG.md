@@ -1,3 +1,8 @@
+0.4.1 (Next)
+=====
+
+* Added support for default text and background color sequences (resetting color changes) - [@ejelly](https://github.com/ejelly).
+
 0.4.0
 =====
 
