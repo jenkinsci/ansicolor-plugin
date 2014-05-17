@@ -244,4 +244,14 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         closeTagOfType(AnsiAttrType.BG); // Strictly not needed, but makes for cleaner HTML.
 		openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + colorMap.getBackground(color) + ";\""));
 	}
+
+    @Override
+    protected void processDefaultTextColor() throws IOException {
+        closeTagOfType(AnsiAttrType.FG);
+    }
+
+    @Override
+    protected void processDefaultBackgroundColor() throws IOException {
+        closeTagOfType(AnsiAttrType.BG);
+    }
 }

@@ -145,6 +145,18 @@ public class AnsiHtmlOutputStreamTest {
     }
 
     @Test
+    public void testResetForegroundColor() throws IOException {
+        assertThatAnnotateIs("\033[32mtic\033[1mtac\033[39mtoe",
+                "<span style=\"color: #00CD00;\">tic<b>tac</b></span><b>toe</b>");
+    }
+
+    @Test
+    public void testResetBackgroundColor() throws IOException {
+        assertThatAnnotateIs("\033[42mtic\033[1mtac\033[49mtoe",
+                "<span style=\"background-color: #00FF00;\">tic<b>tac</b></span><b>toe</b>");
+    }
+
+    @Test
     public void testConsoleNote() throws IOException {
         assertThat(
             annotate(ConsoleNote.PREAMBLE_STR + "hello world" + ConsoleNote.POSTAMBLE_STR),
