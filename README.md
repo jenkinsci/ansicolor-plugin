@@ -11,25 +11,41 @@ and has [a page](https://wiki.jenkins-ci.org/display/JENKINS/AnsiColor+Plugin) o
 Install
 =======
 
-![install](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/images/ansicolor-install.png "Install AnsiColor")
+![install](images/ansicolor-install.png "Install AnsiColor")
 
 Enable
 ======
 
-![enable](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/images/ansicolor-enable.png "Enable AnsiColor")
+![enable](images/ansicolor-enable.png "Enable AnsiColor")
 
 Color!
 ======
 
-![color](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/images/ansicolor.png "Color with AnsiColor")
+![color](images/ansicolor.png "Color with AnsiColor")
 
 Customize
 ======
 
-![color](https://github.com/dblock/jenkins-ansicolor-plugin/raw/master/images/ansicolor-config.png "Customize colors used by AnsiColor")
+![color](images/ansicolor-config.png "Customize colors used by AnsiColor")
 
 Misc
 ====
+
+Does it Even Work?
+------------------
+
+Create a job in Jenkins that executes the following shell script.
+
+``` bash
+#!/bin/bash
+echo -e "\e[31mHello World\e[0m"
+echo -e "Normal \e[1mBold\e[0m"
+echo -e "Normal \e[4mUnderlined\e[0m"
+```
+
+![color](images/ansicolor-works.png "It works!")
+
+Check out [this guide](http://misc.flogisoft.com/bash/tip_colors_and_formatting) for more examples.
 
 Supported ANSI Color Codes
 --------------------------

@@ -16,3 +16,6 @@ bin
 # Vim junk files
 .*.swp
 *~
+
+.DS_Store
+
