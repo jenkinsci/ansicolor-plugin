@@ -34,7 +34,7 @@ Misc
 Does it Even Work?
 ------------------
 
-Create a job in Jenkins that executes the following shell script.
+Create a job in Jenkins that executes the following shell script. Don't forget to check the "Color the ANSI Console Output" option.
 
 ``` bash
 #!/bin/bash
