@@ -1,8 +1,8 @@
 0.4.1 (Next)
 =====
 
-* Added support for default text and background color sequences (resetting color changes) - [@ejelly](https://github.com/ejelly).
-* Added a new color map, gnome-terminal - [@javawizard](https://github.com/javawizard).
+* [#28](https://github.com/dblock/jenkins-ansicolor-plugin/pull/28): Added support for default text and background color sequences (resetting color changes) - [@ejelly](https://github.com/ejelly).
+* [#32](https://github.com/dblock/jenkins-ansicolor-plugin/pull/32): Added a new color map, gnome-terminal - [@javawizard](https://github.com/javawizard).
 
 0.4.0
 =====
