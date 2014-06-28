@@ -19,13 +19,18 @@ public final class AnsiColorMap implements Serializable
 	private static final String[] CSSFg = { "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white" };
 	private static final String[] CSSBg = CSSFg;
 
+	public static final String GnomeTerminalName = "gnome-terminal";
+	private static final String[] GnomeTerminalFg = { "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF" };
+	private static final String[] GnomeTerminalBg = GnomeTerminalFg;
+
 	public static final AnsiColorMap XTerm = new AnsiColorMap(XTermName, XTermFg, XTermBg);
 	public static final AnsiColorMap VGA = new AnsiColorMap(VGAName, VGAFg, VGABg);
 	public static final AnsiColorMap CSS = new AnsiColorMap(CSSName, CSSFg, CSSBg);
+	public static final AnsiColorMap GnomeTerminal = new AnsiColorMap(GnomeTerminalName, GnomeTerminalFg, GnomeTerminalBg);
 
 	public static final AnsiColorMap Default = XTerm;
 	public static final String DefaultName = Default.getName();
-	private static final AnsiColorMap[] DefaultColorMaps = { XTerm, VGA, CSS };
+	private static final AnsiColorMap[] DefaultColorMaps = { XTerm, VGA, CSS, GnomeTerminal };
 
 	public static AnsiColorMap[] defaultColorMaps() {
 		return (AnsiColorMap[])DefaultColorMaps.clone();
