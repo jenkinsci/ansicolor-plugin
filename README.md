@@ -4,7 +4,7 @@
 
 This plugin adds support for standard ANSI escape sequences, including color, to Console Output.
 
-This plugin is available [here](http://maven.jenkins-ci.org:8081/content/repositories/releases/org/jvnet/hudson/plugins/ansicolor/)
+This plugin is available [here](http://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/ansicolor/)
 and has [a page](https://wiki.jenkins-ci.org/display/JENKINS/AnsiColor+Plugin) on the Jenkins Wiki.
 
 # Install
