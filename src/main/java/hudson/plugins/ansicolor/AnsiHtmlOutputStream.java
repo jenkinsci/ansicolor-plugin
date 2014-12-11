@@ -64,7 +64,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         final AnsiAttributeElement.Emitter emitter) {
         super(os);
         this.logOutput = os;
-		this.colorMap = colorMap;
+        this.colorMap = colorMap;
         this.emitter = emitter;
    	}
 
