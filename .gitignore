@@ -19,3 +19,8 @@ bin
 
 .DS_Store
 
+# Maven Release
+pom.xml.releaseBackup
+release.properties
+
+

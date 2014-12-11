@@ -62,6 +62,7 @@
       <!-- Needed to build against Jenkins/Hudson 1.387 or earlier. -->
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
+        <version>2.5.1</version>
         <configuration>
           <goals>deploy</goals>
         </configuration>

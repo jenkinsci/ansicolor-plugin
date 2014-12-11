@@ -1,5 +1,5 @@
-0.4.1 (Next)
-=====
+0.4.1 (12/11/2014)
+==================
 
 * [#28](https://github.com/dblock/jenkins-ansicolor-plugin/pull/28): Added support for default text and background color sequences (resetting color changes) - [@ejelly](https://github.com/ejelly).
 * [#32](https://github.com/dblock/jenkins-ansicolor-plugin/pull/32): Added a new color map, gnome-terminal - [@javawizard](https://github.com/javawizard).
