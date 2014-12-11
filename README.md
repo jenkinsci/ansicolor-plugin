@@ -89,6 +89,4 @@ It uses [JANSI](https://github.com/fusesource/jansi/) (Apache 2.0 License).
 
 # Contributing
 
-* Fork the project on [Github](https://github.com/dblock/jenkins-ansicolor-plugin)
-* Make your feature addition or bug fix, write tests, commit.
-* Send me a pull request. Bonus points for topic branches.
+See [CONTRIBUTING](CONTRIBUTING.md).
