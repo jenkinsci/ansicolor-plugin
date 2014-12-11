@@ -3,6 +3,27 @@ Releasing AnsiColor
 
 There're no particular rules about when to release AnsiColor. Release bug fixes frequently, features not so frequently and breaking API changes rarely.
 
+### Access
+
+Make sure you have a [Jenkins-CI account](https://jenkins-ci.org/account) configured in `~/.m2/settings.xml`.
+
+```xml
+<settings>
+  <pluginGroups>
+    <pluginGroup>org.jenkins-ci.tools</pluginGroup>
+  </pluginGroups>
+  <servers>
+    <server>
+      <id>maven.jenkins-ci.org</id>
+      <username>...</username>
+      <password>...</password>
+    </server>
+  </servers>
+ </settings>
+```
+
+You must have r/w permissions to [github.com/dblock/jenkins-ansicolor-plugin](https://github.com/dblock/jenkins-ansicolor-plugin) under the same username.
+
 ### Release
 
 Run tests, check that all tests succeed locally.
@@ -54,6 +75,6 @@ Commit your changes.
 
 ```
 git add CHANGELOG.md README.md
-git commit -m "Preparing for next release."
+git commit -m "Preparing for next development iteration."
 git push origin master
 ```

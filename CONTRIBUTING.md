@@ -3,6 +3,10 @@ Contributing
 
 You're encouraged to submit [pull requests](https://github.com/dblock/jenkins-ansicolor-plugin/pulls), [propose features and discuss issues](https://github.com/dblock/jenkins-ansicolor-plugin/issues).
 
+#### Writing Jenkins Plugins
+
+Before you begin, check out the [Jenkins-CI Plugin Tutorial](https://wiki.jenkins-ci.org/display/JENKINS/Plugin+tutorial).
+
 #### Fork the Project
 
 Fork the [project on Github](https://github.com/dblock/jenkins-ansicolor-plugin) and check out your copy.
