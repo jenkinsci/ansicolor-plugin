@@ -51,6 +51,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * 
  * @author Daniel Doubrovkine
  */
+@SuppressWarnings("unused")
 public final class AnsiColorBuildWrapper extends BuildWrapper {
 
 	private final String colorMapName;
@@ -61,7 +62,7 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 	 * Create a new {@link AnsiColorBuildWrapper}.
 	 */
 	@DataBoundConstructor
-	public AnsiColorBuildWrapper(String colorMapName) {
+	public AnsiColorBuildWrapper(String colorMapName, Integer defaultFg, Integer defaultBg) {
 		this.colorMapName = colorMapName;
 	}
 	
@@ -85,6 +86,10 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 	@Override
 	public OutputStream decorateLogger(AbstractBuild build, final OutputStream logger) {
 		final AnsiColorMap colorMap = getDescriptor().getColorMap(getColorMapName());
+
+		if (logger == null) {
+			return null;
+		}
 
         return new LineTransformationOutputStream() {
             AnsiHtmlOutputStream ansi = new AnsiHtmlOutputStream(logger, colorMap, new AnsiAttributeElement.Emitter() {
@@ -153,6 +158,7 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 			}
 		}
 
+		@SuppressWarnings("unused")
         public FormValidation doCheckName(@QueryParameter final String value) {
 			return (value.trim().length() == 0) ? FormValidation.error("Name cannot be empty.") : FormValidation.ok();
 		}
@@ -175,6 +181,7 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 			return AnsiColorMap.Default;
 		}
 
+		@SuppressWarnings("unused")
 		public ListBoxModel doFillColorMapNameItems() {
 			ListBoxModel m = new ListBoxModel();
 			for(AnsiColorMap colorMap : getColorMaps()) {
@@ -183,6 +190,28 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
 					m.add(name);
 			}
 			return m;
+		}
+
+		@SuppressWarnings("unused")
+		public ListBoxModel doFillDefaultForegroundItems() {
+			ListBoxModel m = new ListBoxModel();
+
+			m.add("Jenkins Default", "");
+			m.add("black", "0");
+			m.add("red", "1");
+			m.add("green", "2");
+			m.add("yellow", "3");
+			m.add("blue", "4");
+			m.add("magenta", "5");
+			m.add("cyan", "6");
+			m.add("white", "7");
+
+			return m;
+		}
+
+		@SuppressWarnings("unused")
+		public ListBoxModel doFillDefaultBackgroundItems() {
+			return doFillDefaultForegroundItems();
 		}
 
 		/**

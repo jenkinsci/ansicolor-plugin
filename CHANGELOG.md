@@ -1,6 +1,8 @@
 0.4.2 (Next)
 ============
 
+* [#24](https://github.com/dblock/jenkins-ansicolor-plugin/issues/24): Configurable default fg/bg colors - [@ejelly](https://github.com/ejelly).
+
 * Your contribution here.
 
 0.4.1 (12/11/2014)

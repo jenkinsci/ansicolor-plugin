@@ -50,9 +50,9 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     private final AnsiAttributeElement.Emitter emitter;
 
     private static enum State {
-        DATA, PREAMBLE, NOTE, POSTAMBLE
+        INIT, DATA, PREAMBLE, NOTE, POSTAMBLE
     }
-    private State state = State.DATA;
+    private State state = State.INIT;
     private int amblePos = 0;
 
     // A Deque might be a better choice, but we are constrained by the Java 5 API.
@@ -86,9 +86,13 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         tag.emitOpen(emitter);
 	}
 
-	private void closeOpenTags() throws IOException {
+	private void closeOpenTags(AnsiAttrType until) throws IOException {
         while (!openTags.isEmpty()) {
-            openTags.remove(openTags.size() - 1).emitClose(emitter);
+            int index = openTags.size() - 1;
+            if (until != null && openTags.get(index).ansiAttrType == until)
+                break;
+
+            openTags.remove(index).emitClose(emitter);
 		}
 	}
 
@@ -138,6 +142,20 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     public void write(int data) throws IOException {
         // This little state machine only exists to handle embedded notes from other sources, whereas
         // the preamble is an ANSI escape sequence itself.
+
+        if (state == State.INIT) {
+            Integer defaultFg = colorMap.getDefaultForeground();
+            Integer defaultBg = colorMap.getDefaultBackground();
+
+            if (defaultFg != null || defaultBg != null) {
+                openTag(new AnsiAttributeElement(AnsiAttrType.DEFAULT, "div", "style=\"" +
+                        (defaultBg != null ? "background-color: " + colorMap.getBackground(defaultBg) + ";" : "") +
+                        (defaultFg != null ? "color: " + colorMap.getForeground(defaultFg) + ";" : "") + "\""));
+            }
+
+            state = State.DATA;
+        }
+
         switch (state) {
             case DATA:
                 if (data == ConsoleNote.PREAMBLE[0]) {
@@ -193,7 +211,8 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 
     @Override
     public void close() throws IOException {
-        processAttributeRest();
+        stopConcealing();
+        closeOpenTags(null);
         super.close();
     }
 
@@ -230,7 +249,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 	@Override
 	protected void processAttributeRest() throws IOException {
         stopConcealing();
-        closeOpenTags();
+        closeOpenTags(AnsiAttrType.DEFAULT);
 	}
 
 	@Override
