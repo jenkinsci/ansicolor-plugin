@@ -14,7 +14,7 @@ package hudson.plugins.ansicolor;
 
 class AnsiAttributeElement {
     public static enum AnsiAttrType {
-        BOLD, UNDERLINE, FG, BG
+        DEFAULT, BOLD, UNDERLINE, FG, BG
     }
 
     AnsiAttrType ansiAttrType;

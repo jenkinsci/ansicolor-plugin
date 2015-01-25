@@ -157,6 +157,16 @@ public class AnsiHtmlOutputStreamTest {
     }
 
     @Test
+    public void testDefaultColors() throws IOException {
+        assertThat(
+                annotate("\033[32mtic\033[1mtac\033[39mtoe", AnsiColorMap.VGA),
+                is("<div style=\"background-color: #555555;color: #AAAAAA;\">" +
+                        "<span style=\"color: #00AA00;\">tic<b>tac</b></span><b>toe</b>" +
+                        "</div>"));
+    }
+
+
+    @Test
     public void testConsoleNote() throws IOException {
         assertThat(
             annotate(ConsoleNote.PREAMBLE_STR + "hello world" + ConsoleNote.POSTAMBLE_STR),

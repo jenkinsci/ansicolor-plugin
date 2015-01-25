@@ -7,6 +7,12 @@
 				<f:entry title="Name" field="name">
 						<f:textbox value="${colorMap.name}"/>
 				</f:entry>
+				<f:entry title="Default Background" field="defaultBackground">
+					<f:select default="${colorMap.defaultBackground}"/>
+				</f:entry>
+				<f:entry title="Default Foreground" field="defaultForeground">
+					<f:select default="${colorMap.defaultForeground}"/>
+				</f:entry>
 				<f:entry title="Black">
 						<f:textbox title="fg" field="black" value="${colorMap.black}"/>
 						<f:textbox title="bg" field="blackB" value="${colorMap.blackB}"/>
