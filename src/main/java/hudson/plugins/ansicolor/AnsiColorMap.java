@@ -47,14 +47,14 @@ public final class AnsiColorMap implements Serializable
     @DataBoundConstructor
     public AnsiColorMap(
         String name,
-        String black, String red, String green, String blue, String yellow, String magenta, String cyan, String white,
-        String blackB, String redB, String greenB, String blueB, String yellowB, String magentaB, String cyanB, String whiteB,
+        String black, String red, String green, String yellow, String blue, String magenta, String cyan, String white,
+        String blackB, String redB, String greenB, String yellowB, String blueB, String magentaB, String cyanB, String whiteB,
         Integer defaultForeground, Integer defaultBackground) {
 
         this(
             name,
-            colorArray(black,red,green,blue,yellow,magenta,cyan,white),
-            colorArray(blackB,redB,greenB,blueB,yellowB,magentaB,cyanB,whiteB),
+            colorArray(black, red, green, yellow, blue, magenta, cyan, white),
+            colorArray(blackB, redB, greenB, yellowB, blueB, magentaB, cyanB, whiteB),
             defaultForeground, defaultBackground);
     }
 
@@ -76,8 +76,8 @@ public final class AnsiColorMap implements Serializable
     public String getBlack() { return normalMap[0]; }
     public String getRed() { return normalMap[1]; }
     public String getGreen() { return normalMap[2]; }
-    public String getBlue() { return normalMap[3]; }
-    public String getYellow() { return normalMap[4]; }
+    public String getYellow() { return normalMap[3]; }
+    public String getBlue() { return normalMap[4]; }
     public String getMagenta() { return normalMap[5]; }
     public String getCyan() { return normalMap[6]; }
     public String getWhite() { return normalMap[7]; }
@@ -85,8 +85,8 @@ public final class AnsiColorMap implements Serializable
     public String getBlackB() { return brightMap[0]; }
     public String getRedB() { return brightMap[1]; }
     public String getGreenB() { return brightMap[2]; }
-    public String getBlueB() { return brightMap[3]; }
-    public String getYellowB() { return brightMap[4]; }
+    public String getYellowB() { return brightMap[3]; }
+    public String getBlueB() { return brightMap[4]; }
     public String getMagentaB() { return brightMap[5]; }
     public String getCyanB() { return brightMap[6]; }
     public String getWhiteB() { return brightMap[7]; }
