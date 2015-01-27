@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2011 Daniel Doubrovkine
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -48,48 +48,48 @@ import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Build wrapper that decorates the build's logger to filter output with {@link AnsiHtmlOutputStream}.
- * 
+ *
  * @author Daniel Doubrovkine
  */
 @SuppressWarnings("unused")
 public final class AnsiColorBuildWrapper extends BuildWrapper {
 
-	private final String colorMapName;
+    private final String colorMapName;
 
     private static final Logger LOG = Logger.getLogger(AnsiColorBuildWrapper.class.getName());
 
-	/**
-	 * Create a new {@link AnsiColorBuildWrapper}.
-	 */
-	@DataBoundConstructor
-	public AnsiColorBuildWrapper(String colorMapName, Integer defaultFg, Integer defaultBg) {
-		this.colorMapName = colorMapName;
-	}
-	
-	public String getColorMapName() {
-		return colorMapName == null ? AnsiColorMap.DefaultName : colorMapName;
-	}
+    /**
+     * Create a new {@link AnsiColorBuildWrapper}.
+     */
+    @DataBoundConstructor
+    public AnsiColorBuildWrapper(String colorMapName, Integer defaultFg, Integer defaultBg) {
+        this.colorMapName = colorMapName;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Environment setUp(AbstractBuild build, Launcher launcher,
-			BuildListener listener) throws IOException, InterruptedException {
-		return new Environment() {
-		};
-	}
+    public String getColorMapName() {
+        return colorMapName == null ? AnsiColorMap.DefaultName : colorMapName;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public OutputStream decorateLogger(AbstractBuild build, final OutputStream logger) {
-		final AnsiColorMap colorMap = getDescriptor().getColorMap(getColorMapName());
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Environment setUp(AbstractBuild build, Launcher launcher,
+            BuildListener listener) throws IOException, InterruptedException {
+        return new Environment() {
+        };
+    }
 
-		if (logger == null) {
-			return null;
-		}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public OutputStream decorateLogger(AbstractBuild build, final OutputStream logger) {
+        final AnsiColorMap colorMap = getDescriptor().getColorMap(getColorMapName());
+
+        if (logger == null) {
+            return null;
+        }
 
         return new LineTransformationOutputStream() {
             AnsiHtmlOutputStream ansi = new AnsiHtmlOutputStream(logger, colorMap, new AnsiAttributeElement.Emitter() {
@@ -116,118 +116,118 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
                 super.close();
             }
         };
-	}
+    }
 
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl) super.getDescriptor();
     }
 
-	/**
-	 * Registers {@link AnsiColorBuildWrapper} as a {@link BuildWrapper}.
-	 */
+    /**
+     * Registers {@link AnsiColorBuildWrapper} as a {@link BuildWrapper}.
+     */
     @Extension
-	public static final class DescriptorImpl extends BuildWrapperDescriptor {
+    public static final class DescriptorImpl extends BuildWrapperDescriptor {
 
-		private AnsiColorMap[] colorMaps = new AnsiColorMap[0];
+        private AnsiColorMap[] colorMaps = new AnsiColorMap[0];
 
-		public DescriptorImpl() {
-			super(AnsiColorBuildWrapper.class);
-			load();
-		}
+        public DescriptorImpl() {
+            super(AnsiColorBuildWrapper.class);
+            load();
+        }
 
-		private AnsiColorMap[] withDefaults(AnsiColorMap[] colorMaps) {
-			Map<String,AnsiColorMap> maps = new LinkedHashMap<String,AnsiColorMap>();
-			addAll(AnsiColorMap.defaultColorMaps(), maps);
-			addAll(colorMaps, maps);
-			return maps.values().toArray(new AnsiColorMap[1]);
-		}
-		
-		private void addAll(AnsiColorMap[] maps, Map<String,AnsiColorMap> to) {
-			for(AnsiColorMap map : maps)
-				to.put(map.getName(), map);
-		}
+        private AnsiColorMap[] withDefaults(AnsiColorMap[] colorMaps) {
+            Map<String,AnsiColorMap> maps = new LinkedHashMap<String,AnsiColorMap>();
+            addAll(AnsiColorMap.defaultColorMaps(), maps);
+            addAll(colorMaps, maps);
+            return maps.values().toArray(new AnsiColorMap[1]);
+        }
 
-		@Override
-		public boolean configure(final StaplerRequest req, final JSONObject formData) throws FormException {
-			try {
-				setColorMaps(req.bindJSONToList(AnsiColorMap.class,
-					req.getSubmittedForm().get("colorMap")).toArray(new AnsiColorMap[1]));
-				return true;
-			} catch (ServletException e) {
-				throw new FormException(e, "");
-			}
-		}
+        private void addAll(AnsiColorMap[] maps, Map<String,AnsiColorMap> to) {
+            for(AnsiColorMap map : maps)
+                to.put(map.getName(), map);
+        }
 
-		@SuppressWarnings("unused")
+        @Override
+        public boolean configure(final StaplerRequest req, final JSONObject formData) throws FormException {
+            try {
+                setColorMaps(req.bindJSONToList(AnsiColorMap.class,
+                    req.getSubmittedForm().get("colorMap")).toArray(new AnsiColorMap[1]));
+                return true;
+            } catch (ServletException e) {
+                throw new FormException(e, "");
+            }
+        }
+
+        @SuppressWarnings("unused")
         public FormValidation doCheckName(@QueryParameter final String value) {
-			return (value.trim().length() == 0) ? FormValidation.error("Name cannot be empty.") : FormValidation.ok();
-		}
+            return (value.trim().length() == 0) ? FormValidation.error("Name cannot be empty.") : FormValidation.ok();
+        }
 
-		public AnsiColorMap[] getColorMaps() {
-			return withDefaults(colorMaps);
-		}
-		
-		public void setColorMaps(AnsiColorMap[] maps) {
-			colorMaps = maps;
-			save();
-		}
-		
-		public AnsiColorMap getColorMap(final String name) {
-			for (AnsiColorMap colorMap: getColorMaps()) {
-				if (colorMap.getName().equals(name)) {
-					return colorMap;
-				}
-			}
-			return AnsiColorMap.Default;
-		}
+        public AnsiColorMap[] getColorMaps() {
+            return withDefaults(colorMaps);
+        }
 
-		@SuppressWarnings("unused")
-		public ListBoxModel doFillColorMapNameItems() {
-			ListBoxModel m = new ListBoxModel();
-			for(AnsiColorMap colorMap : getColorMaps()) {
-				String name = colorMap.getName().trim();
-				if(name.length() > 0)
-					m.add(name);
-			}
-			return m;
-		}
+        public void setColorMaps(AnsiColorMap[] maps) {
+            colorMaps = maps;
+            save();
+        }
 
-		@SuppressWarnings("unused")
-		public ListBoxModel doFillDefaultForegroundItems() {
-			ListBoxModel m = new ListBoxModel();
+        public AnsiColorMap getColorMap(final String name) {
+            for (AnsiColorMap colorMap: getColorMaps()) {
+                if (colorMap.getName().equals(name)) {
+                    return colorMap;
+                }
+            }
+            return AnsiColorMap.Default;
+        }
 
-			m.add("Jenkins Default", "");
-			m.add("black", "0");
-			m.add("red", "1");
-			m.add("green", "2");
-			m.add("yellow", "3");
-			m.add("blue", "4");
-			m.add("magenta", "5");
-			m.add("cyan", "6");
-			m.add("white", "7");
+        @SuppressWarnings("unused")
+        public ListBoxModel doFillColorMapNameItems() {
+            ListBoxModel m = new ListBoxModel();
+            for(AnsiColorMap colorMap : getColorMaps()) {
+                String name = colorMap.getName().trim();
+                if(name.length() > 0)
+                    m.add(name);
+            }
+            return m;
+        }
 
-			return m;
-		}
+        @SuppressWarnings("unused")
+        public ListBoxModel doFillDefaultForegroundItems() {
+            ListBoxModel m = new ListBoxModel();
 
-		@SuppressWarnings("unused")
-		public ListBoxModel doFillDefaultBackgroundItems() {
-			return doFillDefaultForegroundItems();
-		}
+            m.add("Jenkins Default", "");
+            m.add("black", "0");
+            m.add("red", "1");
+            m.add("green", "2");
+            m.add("yellow", "3");
+            m.add("blue", "4");
+            m.add("magenta", "5");
+            m.add("cyan", "6");
+            m.add("white", "7");
 
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public String getDisplayName() {
-			return Messages.DisplayName();
-		}
+            return m;
+        }
 
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public boolean isApplicable(AbstractProject<?, ?> item) {
-			return true;
-		}
-	}
+        @SuppressWarnings("unused")
+        public ListBoxModel doFillDefaultBackgroundItems() {
+            return doFillDefaultForegroundItems();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getDisplayName() {
+            return Messages.DisplayName();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isApplicable(AbstractProject<?, ?> item) {
+            return true;
+        }
+    }
 }

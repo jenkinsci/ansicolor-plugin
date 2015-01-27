@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2011 Daniel Doubrovkine
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -46,7 +46,7 @@ import org.fusesource.jansi.AnsiOutputStream;
  * handling via state machine. Simply remove this if you plan to use this class somewhere else.
  */
 public class AnsiHtmlOutputStream extends AnsiOutputStream {
-	private final AnsiColorMap colorMap;
+    private final AnsiColorMap colorMap;
     private final AnsiAttributeElement.Emitter emitter;
 
     private static enum State {
@@ -66,7 +66,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         this.logOutput = os;
         this.colorMap = colorMap;
         this.emitter = emitter;
-   	}
+    }
 
     /* Concealing has to happen *after* ANSI interpretation.
      * Instead of adding yet another filter, we switch the target stream to a null stream while concealing.
@@ -84,17 +84,17 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     private void openTag(AnsiAttributeElement tag) throws IOException {
         openTags.add(tag);
         tag.emitOpen(emitter);
-	}
+    }
 
-	private void closeOpenTags(AnsiAttrType until) throws IOException {
+    private void closeOpenTags(AnsiAttrType until) throws IOException {
         while (!openTags.isEmpty()) {
             int index = openTags.size() - 1;
             if (until != null && openTags.get(index).ansiAttrType == until)
                 break;
 
             openTags.remove(index).emitClose(emitter);
-		}
-	}
+        }
+    }
 
     /* ANSI Attributes, unlike HTML elements, can overlap.
      * This method implements the unwinding of elements up until the element of the requested type.
@@ -217,22 +217,22 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     }
 
     @Override
-	protected void processSetAttribute(int attribute) throws IOException {
-		switch (attribute) {
-		case ATTRIBUTE_CONCEAL_ON:
+    protected void processSetAttribute(int attribute) throws IOException {
+        switch (attribute) {
+        case ATTRIBUTE_CONCEAL_ON:
             startConcealing();
-			break;
-		case ATTRIBUTE_INTENSITY_BOLD:
+            break;
+        case ATTRIBUTE_INTENSITY_BOLD:
             closeTagOfType(AnsiAttrType.BOLD);
-			openTag(new AnsiAttributeElement(AnsiAttrType.BOLD, "b", ""));
-			break;
-		case ATTRIBUTE_INTENSITY_NORMAL:
+            openTag(new AnsiAttributeElement(AnsiAttrType.BOLD, "b", ""));
+            break;
+        case ATTRIBUTE_INTENSITY_NORMAL:
             closeTagOfType(AnsiAttrType.BOLD);
-			break;
-		case ATTRIBUTE_UNDERLINE:
+            break;
+        case ATTRIBUTE_UNDERLINE:
             closeTagOfType(AnsiAttrType.UNDERLINE);
-			openTag(new AnsiAttributeElement(AnsiAttrType.UNDERLINE, "u", ""));
-			break;
+            openTag(new AnsiAttributeElement(AnsiAttrType.UNDERLINE, "u", ""));
+            break;
         case ATTRIBUTE_UNDERLINE_DOUBLE:
             // Double underlining is handled entirely different from single underlining, by using a CSS border
             // instead of a u-element, but it's still of the same attribute type and previously opened elements of
@@ -240,29 +240,29 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
             closeTagOfType(AnsiAttrType.UNDERLINE);
             openTag(new AnsiAttributeElement(AnsiAttrType.UNDERLINE, "span", "style=\"border-bottom: 3px double;\""));
             break;
-		case ATTRIBUTE_UNDERLINE_OFF:
+        case ATTRIBUTE_UNDERLINE_OFF:
             closeTagOfType(AnsiAttrType.UNDERLINE);
-			break;
-		}
-	}
-	
-	@Override
-	protected void processAttributeRest() throws IOException {
+            break;
+        }
+    }
+
+    @Override
+    protected void processAttributeRest() throws IOException {
         stopConcealing();
         closeOpenTags(AnsiAttrType.DEFAULT);
-	}
+    }
 
-	@Override
-	protected void processSetForegroundColor(int color) throws IOException {
+    @Override
+    protected void processSetForegroundColor(int color) throws IOException {
         closeTagOfType(AnsiAttrType.FG); // Strictly not needed, but makes for cleaner HTML.
-		openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getForeground(color) + ";\""));
-	}
+        openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getForeground(color) + ";\""));
+    }
 
-	@Override
-	protected void processSetBackgroundColor(int color) throws IOException {
+    @Override
+    protected void processSetBackgroundColor(int color) throws IOException {
         closeTagOfType(AnsiAttrType.BG); // Strictly not needed, but makes for cleaner HTML.
-		openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + colorMap.getBackground(color) + ";\""));
-	}
+        openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + colorMap.getBackground(color) + ";\""));
+    }
 
     @Override
     protected void processDefaultTextColor() throws IOException {
