@@ -1,32 +1,65 @@
 package hudson.plugins.ansicolor;
 
 import java.io.Serializable;
+import java.util.EnumMap;
+import java.util.Map;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public final class AnsiColorMap implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
-    public static final String XTermName = "xterm";
-    private static final String[] XTermNormal = { "#000000", "#CD0000", "#00CD00", "#CDCD00", "#1E90FF", "#CD00CD", "#00CDCD", "#E5E5E5" };
-    private static final String[] XTermBright = { "#4C4C4C", "#FF0000", "#00FF00", "#FFFF00", "#4682B4", "#FF00FF", "#00FFFF", "#FFFFFF" };
+    public enum Color {
+        BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE;
 
-    public static final String VGAName = "vga";
-    private static final String[] VGANormal = { "#000000", "#AA0000", "#00AA00", "#AA5500", "#0000AA", "#AA00AA", "#00AAAA", "#AAAAAA" };
-    private static final String[] VGABright = { "#555555", "#FF5555", "#55FF55", "#FFFF55", "#5555FF", "#FF55FF", "#55FFFF", "#FFFFFF" };
+        @Override
+        public String toString() {
+            // Capitalize the color name.
+            return name().substring(0, 1) + name().substring(1).toLowerCase();
+        }
+    }
 
-    public static final String CSSName = "css";
-    private static final String[] CSSNormal = { "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white" };
-    private static final String[] CSSBright = CSSNormal;
+    private String name;
 
-    public static final String GnomeTerminalName = "gnome-terminal";
-    private static final String[] GnomeTerminalNormal = { "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF" };
-    private static final String[] GnomeTerminalBright = GnomeTerminalNormal;
+    private Map<Color, String> normalMap = new EnumMap<Color, String>(Color.class);
+    private Map<Color, String> brightMap = new EnumMap<Color, String>(Color.class);
 
-    public static final AnsiColorMap XTerm = new AnsiColorMap(XTermName, XTermNormal, XTermBright, null, null);
-    public static final AnsiColorMap VGA = new AnsiColorMap(VGAName, VGANormal, VGABright, 7, 0);
-    public static final AnsiColorMap CSS = new AnsiColorMap(CSSName, CSSNormal, CSSBright, null, null);
-    public static final AnsiColorMap GnomeTerminal = new AnsiColorMap(GnomeTerminalName, GnomeTerminalNormal, GnomeTerminalBright, 7, 0);
+    // Those are nullable to not impose any default color on the output.
+    private final Integer defaultForeground;
+    private final Integer defaultBackground;
+
+    public static final AnsiColorMap XTerm = new AnsiColorMap(
+        "xterm",
+        "#000000", "#CD0000", "#00CD00", "#CDCD00", "#1E90FF", "#CD00CD", "#00CDCD", "#E5E5E5",
+        "#4C4C4C", "#FF0000", "#00FF00", "#FFFF00", "#4682B4", "#FF00FF", "#00FFFF", "#FFFFFF",
+        null,
+        null
+    );
+
+    public static final AnsiColorMap VGA = new AnsiColorMap(
+        "vga",
+        "#000000", "#AA0000", "#00AA00", "#AA5500", "#0000AA", "#AA00AA", "#00AAAA", "#AAAAAA",
+        "#555555", "#FF5555", "#55FF55", "#FFFF55", "#5555FF", "#FF55FF", "#55FFFF", "#FFFFFF",
+        Color.WHITE.ordinal(),
+        Color.BLACK.ordinal()
+    );
+
+    public static final AnsiColorMap CSS = new AnsiColorMap(
+        "css",
+        "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white",
+        "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white",
+        null,
+        null
+    );
+
+    public static final AnsiColorMap GnomeTerminal = new AnsiColorMap(
+        "gnome-terminal",
+        "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+        "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+        Color.WHITE.ordinal(),
+        Color.BLACK.ordinal()
+    );
 
     public static final AnsiColorMap Default = XTerm;
     public static final String DefaultName = Default.getName();
@@ -36,63 +69,60 @@ public final class AnsiColorMap implements Serializable
         return (AnsiColorMap[])DefaultColorMaps.clone();
     }
 
-    private String name;
-    private final String[] normalMap;
-    private final String[] brightMap;
-
     // Those are nullable to not impose any default color on the output.
-    private final Integer defaultForeground;
-    private final Integer defaultBackground;
-
     @DataBoundConstructor
     public AnsiColorMap(
         String name,
         String black, String red, String green, String yellow, String blue, String magenta, String cyan, String white,
         String blackB, String redB, String greenB, String yellowB, String blueB, String magentaB, String cyanB, String whiteB,
-        Integer defaultForeground, Integer defaultBackground) {
-
-        this(
-            name,
-            colorArray(black, red, green, yellow, blue, magenta, cyan, white),
-            colorArray(blackB, redB, greenB, yellowB, blueB, magentaB, cyanB, whiteB),
-            defaultForeground, defaultBackground);
-    }
-
-    private static String[] colorArray(String a, String b, String c, String d, String e, String f, String g, String h) {
-        String[] arr = {a,b,c,d,e,f,g,h};
-        return arr;
-    }
-
-    public AnsiColorMap(String name, String[] normalMap, String[] brightMap, Integer defaultForeground, Integer defaultBackground) {
+        Integer defaultForeground, Integer defaultBackground)
+    {
         this.name = name;
-        this.normalMap = (String[])normalMap.clone();
-        this.brightMap = (String[])brightMap.clone();
+
+        this.normalMap.put(Color.BLACK, black);
+        this.normalMap.put(Color.RED, red);
+        this.normalMap.put(Color.GREEN, green);
+        this.normalMap.put(Color.YELLOW, yellow);
+        this.normalMap.put(Color.BLUE, blue);
+        this.normalMap.put(Color.MAGENTA, magenta);
+        this.normalMap.put(Color.CYAN, cyan);
+        this.normalMap.put(Color.WHITE, white);
+
+        this.brightMap.put(Color.BLACK, blackB);
+        this.brightMap.put(Color.RED, redB);
+        this.brightMap.put(Color.GREEN, greenB);
+        this.brightMap.put(Color.YELLOW, yellowB);
+        this.brightMap.put(Color.BLUE, blueB);
+        this.brightMap.put(Color.MAGENTA, magentaB);
+        this.brightMap.put(Color.CYAN, cyanB);
+        this.brightMap.put(Color.WHITE, whiteB);
+
         this.defaultForeground = defaultForeground;
         this.defaultBackground = defaultBackground;
     }
 
     public String getName() { return name; }
 
-    public String getBlack() { return normalMap[0]; }
-    public String getRed() { return normalMap[1]; }
-    public String getGreen() { return normalMap[2]; }
-    public String getYellow() { return normalMap[3]; }
-    public String getBlue() { return normalMap[4]; }
-    public String getMagenta() { return normalMap[5]; }
-    public String getCyan() { return normalMap[6]; }
-    public String getWhite() { return normalMap[7]; }
+    public String getBlack() { return normalMap.get(Color.BLACK); }
+    public String getRed() { return normalMap.get(Color.RED); }
+    public String getGreen() { return normalMap.get(Color.GREEN); }
+    public String getYellow() { return normalMap.get(Color.YELLOW); }
+    public String getBlue() { return normalMap.get(Color.BLUE); }
+    public String getMagenta() { return normalMap.get(Color.MAGENTA); }
+    public String getCyan() { return normalMap.get(Color.CYAN); }
+    public String getWhite() { return normalMap.get(Color.WHITE); }
 
-    public String getBlackB() { return brightMap[0]; }
-    public String getRedB() { return brightMap[1]; }
-    public String getGreenB() { return brightMap[2]; }
-    public String getYellowB() { return brightMap[3]; }
-    public String getBlueB() { return brightMap[4]; }
-    public String getMagentaB() { return brightMap[5]; }
-    public String getCyanB() { return brightMap[6]; }
-    public String getWhiteB() { return brightMap[7]; }
+    public String getBlackB() { return brightMap.get(Color.BLACK); }
+    public String getRedB() { return brightMap.get(Color.RED); }
+    public String getGreenB() { return brightMap.get(Color.GREEN); }
+    public String getYellowB() { return brightMap.get(Color.YELLOW); }
+    public String getBlueB() { return brightMap.get(Color.BLUE); }
+    public String getMagentaB() { return brightMap.get(Color.MAGENTA); }
+    public String getCyanB() { return brightMap.get(Color.CYAN); }
+    public String getWhiteB() { return brightMap.get(Color.WHITE); }
 
-    public String getNormal(int index) { return normalMap[index]; }
-    public String getBright(int index) { return brightMap[index]; }
+    public String getNormal(int index) { return normalMap.get(Color.values()[index]); }
+    public String getBright(int index) { return brightMap.get(Color.values()[index]); }
 
     public Integer getDefaultForeground() { return defaultForeground; }
     public Integer getDefaultBackground() { return defaultBackground; }
