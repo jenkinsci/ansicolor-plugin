@@ -14,8 +14,8 @@
 					<f:select default="${colorMap.defaultForeground}"/>
 				</f:entry>
 				<f:entry title="Black">
-						<f:textbox title="fg" field="black" value="${colorMap.black}"/>
-						<f:textbox title="bg" field="blackB" value="${colorMap.blackB}"/>
+						<f:textbox field="black" value="${colorMap.black}"/>
+						<f:textbox field="blackB" value="${colorMap.blackB}"/>
 				</f:entry>
 				<f:entry title="Red">
 						<f:textbox field="red" value="${colorMap.red}"/>
