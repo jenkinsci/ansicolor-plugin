@@ -149,8 +149,8 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 
             if (defaultFg != null || defaultBg != null) {
                 openTag(new AnsiAttributeElement(AnsiAttrType.DEFAULT, "div", "style=\"" +
-                        (defaultBg != null ? "background-color: " + colorMap.getBackground(defaultBg) + ";" : "") +
-                        (defaultFg != null ? "color: " + colorMap.getForeground(defaultFg) + ";" : "") + "\""));
+                        (defaultBg != null ? "background-color: " + colorMap.getBright(defaultBg) + ";" : "") +
+                        (defaultFg != null ? "color: " + colorMap.getNormal(defaultFg) + ";" : "") + "\""));
             }
 
             state = State.DATA;
@@ -255,13 +255,13 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     @Override
     protected void processSetForegroundColor(int color) throws IOException {
         closeTagOfType(AnsiAttrType.FG); // Strictly not needed, but makes for cleaner HTML.
-        openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getForeground(color) + ";\""));
+        openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getNormal(color) + ";\""));
     }
 
     @Override
     protected void processSetBackgroundColor(int color) throws IOException {
         closeTagOfType(AnsiAttrType.BG); // Strictly not needed, but makes for cleaner HTML.
-        openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + colorMap.getBackground(color) + ";\""));
+        openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + colorMap.getBright(color) + ";\""));
     }
 
     @Override
