@@ -20,4 +20,3 @@ public class SimpleHtmlNote extends ConsoleNote<Object> {
         return null;
     }
 }
-
