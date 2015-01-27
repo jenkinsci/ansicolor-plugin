@@ -73,9 +73,6 @@ public final class AnsiColorMap implements Serializable
 
     public String getName() { return name; }
 
-    public String[] getBackgroundMap() { return (String[])bgMap.clone(); }
-    public String[] getForegroundMap() { return (String[])fgMap.clone(); }
-
     public String getBlack() { return fgMap[0]; }
     public String getRed() { return fgMap[1]; }
     public String getGreen() { return fgMap[2]; }
