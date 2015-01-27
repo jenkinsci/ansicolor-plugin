@@ -125,7 +125,7 @@ public class AnsiHtmlOutputStreamTest {
     public void testGreenOnWhite() throws IOException {
         assertThat(
             annotate("\033[47;32mhello world"),
-            is("<span style=\"background-color: #FFFFFF;\"><span style=\"color: #00CD00;\">hello world</span></span>"));
+            is("<span style=\"background-color: #E5E5E5;\"><span style=\"color: #00CD00;\">hello world</span></span>"));
     }
 
     @Test
@@ -140,7 +140,7 @@ public class AnsiHtmlOutputStreamTest {
         assertThat(
             annotate("\033[47;32mhello world", AnsiColorMap.XTerm),
             is("<span style=\"background-color: "
-                + AnsiColorMap.XTerm.getWhiteB() + ";\"><span style=\"color: "
+                + AnsiColorMap.XTerm.getWhite() + ";\"><span style=\"color: "
                 + AnsiColorMap.XTerm.getGreen() + ";\">hello world</span></span>"));
     }
 
@@ -153,14 +153,14 @@ public class AnsiHtmlOutputStreamTest {
     @Test
     public void testResetBackgroundColor() throws IOException {
         assertThatAnnotateIs("\033[42mtic\033[1mtac\033[49mtoe",
-                "<span style=\"background-color: #00FF00;\">tic<b>tac</b></span><b>toe</b>");
+                "<span style=\"background-color: #00CD00;\">tic<b>tac</b></span><b>toe</b>");
     }
 
     @Test
     public void testDefaultColors() throws IOException {
         assertThat(
                 annotate("\033[32mtic\033[1mtac\033[39mtoe", AnsiColorMap.VGA),
-                is("<div style=\"background-color: #555555;color: #AAAAAA;\">" +
+                is("<div style=\"background-color: #000000;color: #AAAAAA;\">" +
                         "<span style=\"color: #00AA00;\">tic<b>tac</b></span><b>toe</b>" +
                         "</div>"));
     }
