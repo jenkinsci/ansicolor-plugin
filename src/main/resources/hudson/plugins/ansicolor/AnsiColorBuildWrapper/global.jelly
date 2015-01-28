@@ -14,8 +14,8 @@
 					<f:select default="${colorMap.defaultForeground}"/>
 				</f:entry>
 				<f:entry title="Black">
-						<f:textbox title="fg" field="black" value="${colorMap.black}"/>
-						<f:textbox title="bg" field="blackB" value="${colorMap.blackB}"/>
+						<f:textbox field="black" value="${colorMap.black}"/>
+						<f:textbox field="blackB" value="${colorMap.blackB}"/>
 				</f:entry>
 				<f:entry title="Red">
 						<f:textbox field="red" value="${colorMap.red}"/>
@@ -25,13 +25,13 @@
 						<f:textbox field="green" value="${colorMap.green}"/>
 						<f:textbox field="greenB" value="${colorMap.greenB}"/>
 				</f:entry>
-				<f:entry title="Blue">
-						<f:textbox field="blue" value="${colorMap.blue}"/>
-						<f:textbox field="blueB" value="${colorMap.blueB}"/>
-				</f:entry>
 				<f:entry title="Yellow" field = "yellow">
 						<f:textbox field="yellow" value="${colorMap.yellow}"/>
 						<f:textbox field="yellowB" value="${colorMap.yellowB}"/>
+				</f:entry>
+				<f:entry title="Blue">
+						<f:textbox field="blue" value="${colorMap.blue}"/>
+						<f:textbox field="blueB" value="${colorMap.blueB}"/>
 				</f:entry>
 				<f:entry title="Magenta" field = "magenta">
 					<f:textbox field="magenta" value="${colorMap.magenta}"/>
