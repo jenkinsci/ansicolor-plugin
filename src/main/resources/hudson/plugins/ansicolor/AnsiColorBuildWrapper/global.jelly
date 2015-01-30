@@ -5,7 +5,7 @@
 		<f:repeatable var="colorMap" items="${descriptor.colorMaps}" add="Add color map">
 			<table width="100%">
 				<f:entry title="Name" field="name">
-						<f:textbox value="${colorMap.name}"/>
+					<f:textbox value="${colorMap.name}"/>
 				</f:entry>
 				<f:entry title="Default Background" field="defaultBackground">
 					<f:select default="${colorMap.defaultBackground}"/>
@@ -14,36 +14,36 @@
 					<f:select default="${colorMap.defaultForeground}"/>
 				</f:entry>
 				<f:entry title="Black">
-						<f:textbox field="black" value="${colorMap.black}"/>
-						<f:textbox field="blackB" value="${colorMap.blackB}"/>
+					<f:textbox field="black" value="${colorMap.black}"/>
+					<f:textbox field="blackB" value="${colorMap.blackB}"/>
 				</f:entry>
 				<f:entry title="Red">
-						<f:textbox field="red" value="${colorMap.red}"/>
-						<f:textbox field="redB" value="${colorMap.redB}"/>
+					<f:textbox field="red" value="${colorMap.red}"/>
+					<f:textbox field="redB" value="${colorMap.redB}"/>
 				</f:entry>
 				<f:entry title="Green">
-						<f:textbox field="green" value="${colorMap.green}"/>
-						<f:textbox field="greenB" value="${colorMap.greenB}"/>
+					<f:textbox field="green" value="${colorMap.green}"/>
+					<f:textbox field="greenB" value="${colorMap.greenB}"/>
 				</f:entry>
 				<f:entry title="Yellow" field = "yellow">
-						<f:textbox field="yellow" value="${colorMap.yellow}"/>
-						<f:textbox field="yellowB" value="${colorMap.yellowB}"/>
+					<f:textbox field="yellow" value="${colorMap.yellow}"/>
+					<f:textbox field="yellowB" value="${colorMap.yellowB}"/>
 				</f:entry>
 				<f:entry title="Blue">
-						<f:textbox field="blue" value="${colorMap.blue}"/>
-						<f:textbox field="blueB" value="${colorMap.blueB}"/>
+					<f:textbox field="blue" value="${colorMap.blue}"/>
+					<f:textbox field="blueB" value="${colorMap.blueB}"/>
 				</f:entry>
 				<f:entry title="Magenta" field = "magenta">
 					<f:textbox field="magenta" value="${colorMap.magenta}"/>
 					<f:textbox field="magentaB" value="${colorMap.magentaB}"/>
 				</f:entry>
 				<f:entry title="Cyan" field = "cyan">
-						<f:textbox field="cyan" value="${colorMap.cyan}"/>
-						<f:textbox field="cyanB" value="${colorMap.cyanB}"/>
+					<f:textbox field="cyan" value="${colorMap.cyan}"/>
+					<f:textbox field="cyanB" value="${colorMap.cyanB}"/>
 				</f:entry>
 				<f:entry title="White" field = "white">
-						<f:textbox field="white" value="${colorMap.white}"/>
-						<f:textbox field="whiteB" value="${colorMap.whiteB}"/>
+					<f:textbox field="white" value="${colorMap.white}"/>
+					<f:textbox field="whiteB" value="${colorMap.whiteB}"/>
 				</f:entry>
 				<f:entry title="">
 					<div align="right">
