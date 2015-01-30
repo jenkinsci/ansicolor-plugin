@@ -25,7 +25,7 @@
 					<f:textbox field="green" value="${colorMap.green}"/>
 					<f:textbox field="greenB" value="${colorMap.greenB}"/>
 				</f:entry>
-				<f:entry title="Yellow" field = "yellow">
+				<f:entry title="Yellow">
 					<f:textbox field="yellow" value="${colorMap.yellow}"/>
 					<f:textbox field="yellowB" value="${colorMap.yellowB}"/>
 				</f:entry>
@@ -33,15 +33,15 @@
 					<f:textbox field="blue" value="${colorMap.blue}"/>
 					<f:textbox field="blueB" value="${colorMap.blueB}"/>
 				</f:entry>
-				<f:entry title="Magenta" field = "magenta">
+				<f:entry title="Magenta">
 					<f:textbox field="magenta" value="${colorMap.magenta}"/>
 					<f:textbox field="magentaB" value="${colorMap.magentaB}"/>
 				</f:entry>
-				<f:entry title="Cyan" field = "cyan">
+				<f:entry title="Cyan">
 					<f:textbox field="cyan" value="${colorMap.cyan}"/>
 					<f:textbox field="cyanB" value="${colorMap.cyanB}"/>
 				</f:entry>
-				<f:entry title="White" field = "white">
+				<f:entry title="White">
 					<f:textbox field="white" value="${colorMap.white}"/>
 					<f:textbox field="whiteB" value="${colorMap.whiteB}"/>
 				</f:entry>
