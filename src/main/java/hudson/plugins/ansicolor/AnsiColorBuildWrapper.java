@@ -197,14 +197,9 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
             ListBoxModel m = new ListBoxModel();
 
             m.add("Jenkins Default", "");
-            m.add("black", "0");
-            m.add("red", "1");
-            m.add("green", "2");
-            m.add("yellow", "3");
-            m.add("blue", "4");
-            m.add("magenta", "5");
-            m.add("cyan", "6");
-            m.add("white", "7");
+            for (AnsiColorMap.Color color : AnsiColorMap.Color.values()) {
+                m.add(color.toString(), String.valueOf(color.ordinal()));
+            }
 
             return m;
         }
