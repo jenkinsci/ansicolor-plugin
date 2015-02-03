@@ -30,6 +30,7 @@ import hudson.util.NullStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.ListIterator;
 import java.util.Stack;
 import org.fusesource.jansi.AnsiOutputStream;
 
@@ -66,6 +67,28 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         this.logOutput = os;
         this.colorMap = colorMap;
         this.emitter = emitter;
+    }
+
+    // suspendTags emits close tags for all open tags and resumeTags reopens them.
+    // Both methods don't actually modify the state, they only emit the open/close tags themselves.
+    // This is primarily needed because while showing the output of a running job,
+    // Jenkins wraps each chunk of output in individual pre elements as a workaround
+    // for some old IE problem.
+
+    // We hope to remove this once Jenkins chooses to drop support for ancient IE versions.
+    public void suspendTags() {
+        ListIterator<AnsiAttributeElement> it = openTags.listIterator(openTags.size());
+
+        while(it.hasPrevious()) {
+            AnsiAttributeElement tag = it.previous();
+            tag.emitClose(emitter);
+        }
+    }
+
+    public void resumeTags() {
+        for (AnsiAttributeElement tag : openTags) {
+            tag.emitOpen(emitter);
+        }
     }
 
     /* Concealing has to happen *after* ANSI interpretation.
@@ -148,7 +171,8 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
             Integer defaultBg = colorMap.getDefaultBackground();
 
             if (defaultFg != null || defaultBg != null) {
-                openTag(new AnsiAttributeElement(AnsiAttrType.DEFAULT, "div", "style=\"" +
+                openTag(new AnsiAttributeElement(AnsiAttrType.DEFAULT, "span", "style=\"" +
+                        "display: block;" +
                         (defaultBg != null ? "background-color: " + colorMap.getNormal(defaultBg) + ";" : "") +
                         (defaultFg != null ? "color: " + colorMap.getNormal(defaultFg) + ";" : "") + "\""));
             }

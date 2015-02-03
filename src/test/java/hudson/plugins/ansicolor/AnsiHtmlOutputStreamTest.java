@@ -160,9 +160,9 @@ public class AnsiHtmlOutputStreamTest {
     public void testDefaultColors() throws IOException {
         assertThat(
                 annotate("\033[32mtic\033[1mtac\033[39mtoe", AnsiColorMap.VGA),
-                is("<div style=\"background-color: #000000;color: #AAAAAA;\">" +
+                is("<span style=\"display: block;background-color: #000000;color: #AAAAAA;\">" +
                         "<span style=\"color: #00AA00;\">tic<b>tac</b></span><b>toe</b>" +
-                        "</div>"));
+                        "</span>"));
     }
 
 

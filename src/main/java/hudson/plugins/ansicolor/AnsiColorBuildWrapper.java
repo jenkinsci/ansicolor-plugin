@@ -110,6 +110,14 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
             }
 
             @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                // See the comments to those methods on why this is needed.
+                ansi.resumeTags();
+                super.write(b, off, len);
+                ansi.suspendTags();
+            }
+
+            @Override
             public void close() throws IOException {
                 ansi.close();
                 logger.close();
