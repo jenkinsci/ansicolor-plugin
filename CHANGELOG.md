@@ -2,6 +2,7 @@
 ============
 
 * [#24](https://github.com/dblock/jenkins-ansicolor-plugin/issues/24): Configurable default fg/bg colors - [@ejelly](https://github.com/ejelly).
+* [#50](https://github.com/dblock/jenkins-ansicolor-plugin/issues/50): SimpleBuildWrapper implementation for use in workflows - [@qvicksilver](https://github.com/qvicksilver).
 
 * Your contribution here.
 
