@@ -19,11 +19,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.tasks.SimpleBuildWrapper;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class AnsiColorSimpleBuildWrapper extends SimpleBuildWrapper implements Serializable {
     
-    private static final long serialVersionUID = 1;
+    private static final long serialVersionUID = 1L;
 
     private final String colorMapName;
 
@@ -42,10 +43,30 @@ public class AnsiColorSimpleBuildWrapper extends SimpleBuildWrapper implements S
     public ConsoleLogFilter createLoggerDecorator(Run<?, ?> build) {     
         return new ConsoleLogFilterImpl(colorMapName);
     }
+    
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(19, 81).append(colorMapName).toHashCode();
+    }
 
-    private class ConsoleLogFilterImpl extends ConsoleLogFilter implements Serializable {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final AnsiColorSimpleBuildWrapper other = (AnsiColorSimpleBuildWrapper) obj;
+        if ((this.colorMapName == null) ? (other.colorMapName != null) : !this.colorMapName.equals(other.colorMapName)) {
+            return false;
+        }
+        return true;
+    }
 
-        private static final long serialVersionUID = 1;
+    protected static final class ConsoleLogFilterImpl extends ConsoleLogFilter implements Serializable {
+
+        private static final long serialVersionUID = 1L;
 
         private final String colorMapName;
 
