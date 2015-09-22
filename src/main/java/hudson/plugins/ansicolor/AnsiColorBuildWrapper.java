@@ -23,12 +23,16 @@
  */
 package hudson.plugins.ansicolor;
 
+import hudson.EnvVars;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
+import hudson.console.ConsoleLogFilter;
 import hudson.console.LineTransformationOutputStream;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.ListBoxModel;
@@ -36,23 +40,26 @@ import hudson.util.FormValidation;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import jenkins.tasks.SimpleBuildWrapper;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
- * Build wrapper that decorates the build's logger to filter output with {@link AnsiHtmlOutputStream}.
+ * Build wrapper that decorates the build's logger to filter output with
+ * {@link AnsiHtmlOutputStream}.
  *
  * @author Daniel Doubrovkine
  */
 @SuppressWarnings("unused")
-public final class AnsiColorBuildWrapper extends BuildWrapper {
+public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements Serializable {
 
     private final String colorMapName;
 
@@ -70,56 +77,12 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
         return colorMapName == null ? AnsiColorMap.DefaultName : colorMapName;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Environment setUp(AbstractBuild build, Launcher launcher,
-            BuildListener listener) throws IOException, InterruptedException {
-        return new Environment() {
-        };
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OutputStream decorateLogger(AbstractBuild build, final OutputStream logger) {
-        final AnsiColorMap colorMap = getDescriptor().getColorMap(getColorMapName());
-
-        if (logger == null) {
-            return null;
-        }
-
-        return new LineTransformationOutputStream() {
-            AnsiHtmlOutputStream ansi = new AnsiHtmlOutputStream(logger, colorMap, new AnsiAttributeElement.Emitter() {
-                public void emitHtml(String html) {
-                    try {
-                        new SimpleHtmlNote(html).encodeTo(logger);
-                    } catch (IOException e) {
-                        LOG.log(Level.WARNING, "Failed to add HTML markup '" + html + "'", e);
-                    }
-                }
-            });
-
-            @Override
-            protected void eol(byte[] b, int len) throws IOException {
-                ansi.write(b, 0, len);
-                ansi.flush();
-                logger.flush();
-            }
-
-            @Override
-            public void close() throws IOException {
-                ansi.close();
-                logger.close();
-                super.close();
-            }
-        };
-    }
-
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl) super.getDescriptor();
+    }
+
+    @Override
+    public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
     }
 
     /**
@@ -136,22 +99,23 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
         }
 
         private AnsiColorMap[] withDefaults(AnsiColorMap[] colorMaps) {
-            Map<String,AnsiColorMap> maps = new LinkedHashMap<String,AnsiColorMap>();
+            Map<String, AnsiColorMap> maps = new LinkedHashMap<String, AnsiColorMap>();
             addAll(AnsiColorMap.defaultColorMaps(), maps);
             addAll(colorMaps, maps);
             return maps.values().toArray(new AnsiColorMap[1]);
         }
 
-        private void addAll(AnsiColorMap[] maps, Map<String,AnsiColorMap> to) {
-            for(AnsiColorMap map : maps)
+        private void addAll(AnsiColorMap[] maps, Map<String, AnsiColorMap> to) {
+            for (AnsiColorMap map : maps) {
                 to.put(map.getName(), map);
+            }
         }
 
         @Override
         public boolean configure(final StaplerRequest req, final JSONObject formData) throws FormException {
             try {
                 setColorMaps(req.bindJSONToList(AnsiColorMap.class,
-                    req.getSubmittedForm().get("colorMap")).toArray(new AnsiColorMap[1]));
+                        req.getSubmittedForm().get("colorMap")).toArray(new AnsiColorMap[1]));
                 return true;
             } catch (ServletException e) {
                 throw new FormException(e, "");
@@ -173,7 +137,7 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
         }
 
         public AnsiColorMap getColorMap(final String name) {
-            for (AnsiColorMap colorMap: getColorMaps()) {
+            for (AnsiColorMap colorMap : getColorMaps()) {
                 if (colorMap.getName().equals(name)) {
                     return colorMap;
                 }
@@ -184,10 +148,11 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
         @SuppressWarnings("unused")
         public ListBoxModel doFillColorMapNameItems() {
             ListBoxModel m = new ListBoxModel();
-            for(AnsiColorMap colorMap : getColorMaps()) {
+            for (AnsiColorMap colorMap : getColorMaps()) {
                 String name = colorMap.getName().trim();
-                if(name.length() > 0)
+                if (name.length() > 0) {
                     m.add(name);
+                }
             }
             return m;
         }
@@ -224,5 +189,49 @@ public final class AnsiColorBuildWrapper extends BuildWrapper {
         public boolean isApplicable(AbstractProject<?, ?> item) {
             return true;
         }
+    }
+
+    @Override
+    public ConsoleLogFilter createLoggerDecorator(Run<?, ?> build) {
+        return new ConsoleLogFilterImpl();
+    }
+    
+    protected final class ConsoleLogFilterImpl extends ConsoleLogFilter implements Serializable {
+
+        @Override
+        public OutputStream decorateLogger(AbstractBuild build, final OutputStream logger) throws IOException, InterruptedException {
+            final AnsiColorMap colorMap = AnsiColorBuildWrapper.this.getDescriptor().getColorMap(colorMapName);
+
+            if (logger == null) {
+                return null;
+            }
+
+            return new LineTransformationOutputStream() {
+                AnsiHtmlOutputStream ansi = new AnsiHtmlOutputStream(logger, colorMap, new AnsiAttributeElement.Emitter() {
+                    public void emitHtml(String html) {
+                        try {
+                            new SimpleHtmlNote(html).encodeTo(logger);
+                        } catch (IOException e) {
+                            LOG.log(Level.WARNING, "Failed to add HTML markup '" + html + "'", e);
+                        }
+                    }
+                });
+
+                @Override
+                protected void eol(byte[] b, int len) throws IOException {
+                    ansi.write(b, 0, len);
+                    ansi.flush();
+                    logger.flush();
+                }
+
+                @Override
+                public void close() throws IOException {
+                    ansi.close();
+                    logger.close();
+                    super.close();
+                }
+            };
+        }
+
     }
 }
