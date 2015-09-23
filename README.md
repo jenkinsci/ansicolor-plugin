@@ -81,12 +81,12 @@ RSpec.configure do |config|
 end
 ```
 
-## Using the SimpleBuildWrapper in workflows
+## Using in workflows
 
-There is a build wrapper that can be used to colorize the output of steps in a workflow. The example below shows how to use it.
+The build wrapper can be used to colorize the output of steps in a workflow. The example below shows how to use it.
 
 ```groovy
-wrap([$class: 'AnsiColorSimpleBuildWrapper', colorMapName: "xterm"]) {
+wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 1, 'defaultBg': 2]) {
 sh 'something that outputs ansi colored stuff'
 }
 ```
