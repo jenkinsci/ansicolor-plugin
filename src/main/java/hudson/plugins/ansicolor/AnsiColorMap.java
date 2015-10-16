@@ -8,7 +8,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 public final class AnsiColorMap implements Serializable
 {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2950700158497010341L;
 
     public enum Color {
         BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE;
