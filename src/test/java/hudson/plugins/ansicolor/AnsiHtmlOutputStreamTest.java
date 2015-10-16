@@ -224,16 +224,16 @@ public class AnsiHtmlOutputStreamTest {
         AnsiHtmlOutputStream ansi = new AnsiHtmlOutputStream(bos, colorMap, new AnsiAttributeElement.Emitter() {
             public void emitHtml(String html) {
                 try {
-                    bos.write(html.getBytes());
+                    bos.write(html.getBytes("UTF-8"));
                 } catch (IOException e) {
                     throw new RuntimeException("error emitting HTML", e);
                 }
             }
         });
-        ansi.write(text.getBytes());
+        ansi.write(text.getBytes("UTF-8"));
         ansi.close();
-        return bos.toString();
-	}
+        return bos.toString("UTF-8");
+    }
 
     private String annotate(String text) throws IOException {
         return annotate(text, AnsiColorMap.Default);
