@@ -63,7 +63,8 @@ public class AnsiColorBuildWrapperTest {
                 story.j.assertBuildStatusSuccess(p.scheduleBuild2(0));
                 StringWriter writer = new StringWriter();
                 p.getLastBuild().getLogText().writeHtmlTo(0L, writer);
-                assertTrue(writer.toString().matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"));                        
+                String html = writer.toString();
+                assertTrue("Failed to match color attribute in following HTML log output:\n" + html, html.matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"));
             }
         });
     }
