@@ -1,2 +1,7 @@
 language: java
 
+matrix:
+  include:
+    - os: linux
+    - os: osx
+      env: JAVA_HOME=$(/usr/libexec/java_home)
