@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.plugins.ansicolor.AnsiColorMap>
+    <name>xterm</name>
+    <fgMap>
+        <string>#000000</string>
+        <string>#CD0000</string>
+        <string>#00CD00</string>
+        <string>#CDCD00</string>
+        <string>#1E90FF</string>
+        <string>#CD00CD</string>
+        <string>#00CDCD</string>
+        <string>#E5E5E5</string>
+    </fgMap>
+    <bgMap>
+        <string>#4C4C4C</string>
+        <string>#FF0000</string>
+        <string>#00FF00</string>
+        <string>#FFFF00</string>
+        <string>#4682B4</string>
+        <string>#FF00FF</string>
+        <string>#00FFFF</string>
+        <string>#FFFFFF</string>
+    </bgMap>
+</hudson.plugins.ansicolor.AnsiColorMap>
