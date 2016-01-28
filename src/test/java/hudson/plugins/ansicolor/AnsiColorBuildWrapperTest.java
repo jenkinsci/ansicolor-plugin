@@ -22,19 +22,19 @@ public class AnsiColorBuildWrapperTest {
 
     @Test
     public void testGetColorMapNameNull() {
-        AnsiColorBuildWrapper instance = new AnsiColorBuildWrapper(null, 1, 2);
+        AnsiColorBuildWrapper instance = new AnsiColorBuildWrapper(null);
         assertEquals("xterm", instance.getColorMapName());
     }
 
     @Test
     public void testGetColorMapNameVga() {
-        AnsiColorBuildWrapper instance = new AnsiColorBuildWrapper("vga", 1, 2);
+        AnsiColorBuildWrapper instance = new AnsiColorBuildWrapper("vga");
         assertEquals("vga", instance.getColorMapName());
     }
 
     @Test
     public void testDecorateLogger() {
-        AnsiColorBuildWrapper ansiColorBuildWrapper = new AnsiColorBuildWrapper(null, 1, 2);
+        AnsiColorBuildWrapper ansiColorBuildWrapper = new AnsiColorBuildWrapper(null);
         assertThat(ansiColorBuildWrapper, instanceOf(AnsiColorBuildWrapper.class));
     }
 
