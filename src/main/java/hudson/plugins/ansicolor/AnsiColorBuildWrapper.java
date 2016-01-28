@@ -69,7 +69,7 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
      * Create a new {@link AnsiColorBuildWrapper}.
      */
     @DataBoundConstructor
-    public AnsiColorBuildWrapper(String colorMapName, Integer defaultFg, Integer defaultBg) {
+    public AnsiColorBuildWrapper(String colorMapName) {
         this.colorMapName = colorMapName;
     }
 
