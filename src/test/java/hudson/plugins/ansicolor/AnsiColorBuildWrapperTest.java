@@ -55,7 +55,7 @@ public class AnsiColorBuildWrapperTest {
                         "node {\n"
                         + "  wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 1, 'defaultBg': 2]) {\n"
                         + "    sh(\"\"\"#!/bin/bash\n"
-                        + "      echo -e '\\\\e[31mred\\\\e[0m'\"\"\"\n"
+                        + "      printf 'The following word is supposed to be \\\\e[31mred\\\\e[0m\\\\n'\"\"\"\n"
                         + "    )\n"
                         + "  }\n"
                         + "}"
