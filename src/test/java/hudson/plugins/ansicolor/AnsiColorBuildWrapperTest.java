@@ -55,7 +55,7 @@ public class AnsiColorBuildWrapperTest {
                         "node {\n"
                         + "  wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 1, 'defaultBg': 2]) {\n"
                         + "    sh(\"\"\"#!/bin/bash\n"
-                        + "      echo -e '\\\\e[31mred\\\\e[0m'\"\"\"\n"
+                        + "      printf 'The following word is supposed to be \\\\e[31mred\\\\e[0m\\\\n'\"\"\"\n"
                         + "    )\n"
                         + "  }\n"
                         + "}"
@@ -63,7 +63,8 @@ public class AnsiColorBuildWrapperTest {
                 story.j.assertBuildStatusSuccess(p.scheduleBuild2(0));
                 StringWriter writer = new StringWriter();
                 p.getLastBuild().getLogText().writeHtmlTo(0L, writer);
-                assertTrue(writer.toString().matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"));                        
+                String html = writer.toString();
+                assertTrue("Failed to match color attribute in following HTML log output:\n" + html, html.matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"));
             }
         });
     }
