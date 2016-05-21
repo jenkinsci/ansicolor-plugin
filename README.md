@@ -80,7 +80,7 @@ RSpec formatters detect whether RSpec is running in a terminal or not, therefore
 The build wrapper can be used to colorize the output of steps in a workflow. The example below shows how to use it.
 
 ```groovy
-wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 1, 'defaultBg': 2]) {
+wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {
 sh 'something that outputs ansi colored stuff'
 }
 ```
