@@ -39,27 +39,26 @@
   <build>
     <plugins>
       <!-- Enforce Java 5.0 compatibility. -->
-      <plugin>
-        <groupId>org.jvnet</groupId>
-        <artifactId>animal-sniffer</artifactId>
-        <version>1.2</version>
-        <executions>
-          <execution>
-            <id>animal-sniffer</id>
-            <phase>compile</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <signature>
-                <groupId>org.jvnet.animal-sniffer</groupId>
-                <artifactId>java1.5</artifactId>
-                <version>1.0</version>
-              </signature>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+       <plugin>
+	    <groupId>org.codehaus.mojo</groupId>
+	    <artifactId>animal-sniffer-maven-plugin</artifactId>
+	    <configuration>
+	        <signature>
+	            <groupId>org.codehaus.mojo.signature</groupId>
+	            <artifactId>java15</artifactId>
+	            <version>1.0</version>
+	        </signature>
+	    </configuration>
+	    <executions>
+	        <execution>
+	            <id>animal-sniffer</id>
+	            <phase>verify</phase>
+	            <goals>
+	                <goal>check</goal>
+	            </goals>
+	        </execution>
+	    </executions>
+	</plugin>
       <!-- Needed to build against Jenkins/Hudson 1.387 or earlier. -->
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
@@ -89,7 +88,7 @@
     <dependency>
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>
-      <version>1.9</version>
+      <version>1.12</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
