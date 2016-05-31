@@ -258,6 +258,15 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getNormal(color) + ";\""));
     }
 
+    /**
+     * Function for setting the foreground color to non standard ANSI colors (90 - 97).
+     */
+    @Override
+    protected void processSetForegroundColor(int color, boolean bright) throws IOException {
+         closeTagOfType(AnsiAttrType.BG); // Strictly not needed, but makes for cleaner HTML.
+         openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"color: " + colorMap.getBright(color) + ";\"")); 	    
+    }
+
     @Override
     protected void processSetBackgroundColor(int color) throws IOException {
         closeTagOfType(AnsiAttrType.BG); // Strictly not needed, but makes for cleaner HTML.

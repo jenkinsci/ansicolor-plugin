@@ -2,6 +2,7 @@ Next Release
 ============
 
 * Your contribution here.
+* [#72](https://github.com/dblock/jenkins-ansicolor-plugin/pull/72): Support high intensity ANSI colors - [@marlene01](https://github.com/marlene01).
 * [#66](https://github.com/dblock/jenkins-ansicolor-plugin/pull/66): Improved snippet generation - [@qvicksilver](https://github.com/qvicksilver).
 
 0.4.2 (10/29/2015)

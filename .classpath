@@ -10,9 +10,9 @@
   <classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4.jar" sourcepath="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4-sources.jar"/>
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
   <classpathentry kind="var" path="M2_REPO/junit/junit/4.8.1/junit-4.8.1.jar" sourcepath="M2_REPO/junit/junit/4.8.1/junit-4.8.1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/fusesource/jansi/jansi/1.9/jansi-1.9.jar" sourcepath="M2_REPO/org/fusesource/jansi/jansi/1.9/jansi-1.9-sources.jar">
+  <classpathentry kind="var" path="M2_REPO/org/fusesource/jansi/jansi/1.12/jansi-1.12.jar" sourcepath="M2_REPO/org/fusesource/jansi/jansi/1.12/jansi-1.12-sources.jar">
     <attributes>
-      <attribute value="jar:file:/home/dblock/.m2/repository/org/fusesource/jansi/jansi/1.9/jansi-1.9-javadoc.jar!/" name="javadoc_location"/>
+      <attribute value="jar:file:/home/dblock/.m2/repository/org/fusesource/jansi/jansi/1.12/jansi-1.12-javadoc.jar!/" name="javadoc_location"/>
     </attributes>
   </classpathentry>
   <classpathentry kind="var" path="M2_REPO/org/jvnet/hudson/main/hudson-core/1.374/hudson-core-1.374.jar" sourcepath="M2_REPO/org/jvnet/hudson/main/hudson-core/1.374/hudson-core-1.374-sources.jar">
