@@ -157,6 +157,24 @@ public class AnsiHtmlOutputStreamTest {
     }
 
     @Test
+    public void testSetForegroundColorToHighIntensity() throws IOException {
+        assertThatAnnotateIs("\033[91mLight red\033[0m",
+                "<span style=\"color: #FF0000;\">Light red</span>");
+        assertThatAnnotateIs("\033[92mLight green\033[0m",
+                "<span style=\"color: #00FF00;\">Light green</span>");
+        assertThatAnnotateIs("\033[93mLight yellow\033[0m",
+                "<span style=\"color: #FFFF00;\">Light yellow</span>");
+        assertThatAnnotateIs("\033[94mLight blue\033[0m",
+                "<span style=\"color: #4682B4;\">Light blue</span>");
+        assertThatAnnotateIs("\033[95mLight magenta\033[0m",
+                "<span style=\"color: #FF00FF;\">Light magenta</span>");
+        assertThatAnnotateIs("\033[96mLight cyan\033[0m",
+                "<span style=\"color: #00FFFF;\">Light cyan</span>");
+        assertThatAnnotateIs("\033[97mWhite\033[0m",
+                "<span style=\"color: #FFFFFF;\">White</span>");
+    }
+
+    @Test
     public void testDefaultColors() throws IOException {
         assertThat(
                 annotate("\033[32mtic\033[1mtac\033[39mtoe", AnsiColorMap.VGA),
