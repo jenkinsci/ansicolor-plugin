@@ -24,15 +24,13 @@
 package hudson.plugins.ansicolor;
 
 import static hudson.plugins.ansicolor.AnsiAttributeElement.AnsiAttrType;
-import hudson.console.ConsoleNote;
-import hudson.plugins.ansicolor.AnsiAttributeElement.AnsiAttrType;
-import hudson.util.NullStream;
 
+import hudson.console.ConsoleNote;
+import hudson.util.NullStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Stack;
-
 import org.fusesource.jansi.AnsiOutputStream;
 
 /**
@@ -259,7 +257,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         closeTagOfType(AnsiAttrType.FG); // Strictly not needed, but makes for cleaner HTML.
         openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getNormal(color) + ";\""));
     }
-    
+
     /**
      * Function for setting the foreground color to non standard ANSI colors (90 - 97).
      */

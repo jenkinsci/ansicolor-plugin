@@ -151,12 +151,6 @@ public class AnsiHtmlOutputStreamTest {
     }
 
     @Test
-    public void testResetBackgroundColor() throws IOException {
-        assertThatAnnotateIs("\033[42mtic\033[1mtac\033[49mtoe",
-                "<span style=\"background-color: #00CD00;\">tic<b>tac</b></span><b>toe</b>");
-    }
-
-    @Test
     public void testSetForegroundColorToHighIntensity() throws IOException {
         assertThatAnnotateIs("\033[91mLight red\033[0m",
                 "<span style=\"color: #FF0000;\">Light red</span>");
@@ -172,6 +166,12 @@ public class AnsiHtmlOutputStreamTest {
                 "<span style=\"color: #00FFFF;\">Light cyan</span>");
         assertThatAnnotateIs("\033[97mWhite\033[0m",
                 "<span style=\"color: #FFFFFF;\">White</span>");
+    }
+
+    @Test
+    public void testResetBackgroundColor() throws IOException {
+        assertThatAnnotateIs("\033[42mtic\033[1mtac\033[49mtoe",
+                "<span style=\"background-color: #00CD00;\">tic<b>tac</b></span><b>toe</b>");
     }
 
     @Test
