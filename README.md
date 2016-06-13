@@ -15,6 +15,17 @@ and has [a page](https://wiki.jenkins-ci.org/display/JENKINS/AnsiColor+Plugin) o
 
 ![enable](images/ansicolor-enable.png "Enable AnsiColor")
 
+## Using in pipeline workflows
+
+The build wrapper can be used to colorize the output of steps in a pipeline build (plugin formally known as workflows).
+The example below shows how to use it.
+
+```groovy
+wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {
+  sh 'something that outputs ansi colored stuff'
+}
+```
+
 # Color!
 
 ![color](images/ansicolor.png "Color with AnsiColor")
@@ -74,16 +85,6 @@ See [issue #16](https://github.com/dblock/jenkins-ansicolor-plugin/issues/16) fo
 ## Colorizing Ruby RSpec Output
 
 RSpec formatters detect whether RSpec is running in a terminal or not, therefore suppressing color output under Jenkins. Specify `--colour --tty` when calling rspec or add it to your `.rspec` file.
-
-## Using in workflows
-
-The build wrapper can be used to colorize the output of steps in a workflow. The example below shows how to use it.
-
-```groovy
-wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {
-sh 'something that outputs ansi colored stuff'
-}
-```
 
 # License
 
