@@ -2,13 +2,11 @@ package hudson.plugins.ansicolor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import hudson.Functions;
 
 import java.io.StringWriter;
 
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
-import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,13 +42,10 @@ public class AnsiColorStepTest {
 
             @Override
             public void evaluate() throws Throwable {
-                Assume.assumeTrue(!Functions.isWindows());
                 WorkflowJob p = story.j.jenkins.createProject(WorkflowJob.class, "p");
                 p.setDefinition(new CpsFlowDefinition(
                         "ansiColor('xterm') {\n"
-                                + "    sh(\"\"\"#!/bin/bash\n"
-                                + "      printf 'The following word is supposed to be \\\\e[31mred\\\\e[0m\\\\n'\"\"\"\n"
-                                + "    )\n"
+                                + "  echo 'The following word is supposed to be \\u001B[31mred\\u001B[0m'\n"
                                 + "}"
                         ));
                 story.j.assertBuildStatusSuccess(p.scheduleBuild2(0));
