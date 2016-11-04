@@ -1,18 +1,18 @@
 /*
  * The MIT License
- *
+ * 
  * Copyright (c) 2011 Daniel Doubrovkine
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,33 +28,30 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.console.ConsoleLogFilter;
-import hudson.console.LineTransformationOutputStream;
-import hudson.model.AbstractBuild;
+import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
-import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
-import hudson.util.ListBoxModel;
 import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import javax.servlet.ServletException;
+
 import jenkins.tasks.SimpleBuildWrapper;
 import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
- * Build wrapper that decorates the build's logger to filter output with
- * {@link AnsiHtmlOutputStream}.
+ * Build wrapper that decorates the build's logger to filter output with {@link AnsiHtmlOutputStream}.
  *
  * @author Daniel Doubrovkine
  */
@@ -62,8 +59,6 @@ import org.kohsuke.stapler.StaplerRequest;
 public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements Serializable {
 
     private final String colorMapName;
-
-    private static final Logger LOG = Logger.getLogger(AnsiColorBuildWrapper.class.getName());
 
     /**
      * Create a new {@link AnsiColorBuildWrapper}.
@@ -77,12 +72,14 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
         return colorMapName == null ? AnsiColorMap.DefaultName : colorMapName;
     }
 
+    @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl) super.getDescriptor();
     }
 
     @Override
-    public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+    public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener,
+            EnvVars initialEnvironment) throws IOException, InterruptedException {
     }
 
     /**
@@ -193,45 +190,6 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
 
     @Override
     public ConsoleLogFilter createLoggerDecorator(Run<?, ?> build) {
-        return new ConsoleLogFilterImpl();
-    }
-    
-    protected final class ConsoleLogFilterImpl extends ConsoleLogFilter implements Serializable {
-
-        @Override
-        public OutputStream decorateLogger(AbstractBuild build, final OutputStream logger) throws IOException, InterruptedException {
-            final AnsiColorMap colorMap = AnsiColorBuildWrapper.this.getDescriptor().getColorMap(colorMapName);
-
-            if (logger == null) {
-                return null;
-            }
-
-            return new LineTransformationOutputStream() {
-                AnsiHtmlOutputStream ansi = new AnsiHtmlOutputStream(logger, colorMap, new AnsiAttributeElement.Emitter() {
-                    public void emitHtml(String html) {
-                        try {
-                            new SimpleHtmlNote(html).encodeTo(logger);
-                        } catch (IOException e) {
-                            LOG.log(Level.WARNING, "Failed to add HTML markup '" + html + "'", e);
-                        }
-                    }
-                });
-
-                @Override
-                protected void eol(byte[] b, int len) throws IOException {
-                    ansi.write(b, 0, len);
-                    ansi.flush();
-                    logger.flush();
-                }
-
-                @Override
-                public void close() throws IOException {
-                    ansi.close();
-                    logger.close();
-                    super.close();
-                }
-            };
-        }
-
+        return new AnsiColorConsoleLogFilter(getDescriptor().getColorMap(colorMapName));
     }
 }
