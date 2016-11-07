@@ -26,6 +26,14 @@ wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {
 }
 ```
 
+Also the following pipeline syntax can be used without allocating a node and a separate build wrapper.
+
+```groovy
+ansiColor('xterm') {
+  echo 'something that outputs ansi colored stuff'
+}
+```
+
 # Color!
 
 ![color](images/ansicolor.png "Color with AnsiColor")
