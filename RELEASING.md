@@ -5,7 +5,7 @@ There're no particular rules about when to release AnsiColor. Release bug fixes 
 
 ### Access
 
-Make sure you have a [Jenkins-CI account](https://jenkins-ci.org/account) configured in `~/.m2/settings.xml`.
+Make sure you have a [Jenkins-CI account](https://jenkins-ci.org/account) configured in `~/.m2/settings.xml`. You can get the encrypted password from [here](https://repo.jenkins-ci.org/webapp/#/profile) - enter your password and click `Unlock`.
 
 ```xml
 <settings>
@@ -14,7 +14,7 @@ Make sure you have a [Jenkins-CI account](https://jenkins-ci.org/account) config
   </pluginGroups>
   <servers>
     <server>
-      <id>maven.jenkins-ci.org</id>
+      <id>repo.jenkins-ci.org</id>
       <username>...</username>
       <password>...</password>
     </server>
