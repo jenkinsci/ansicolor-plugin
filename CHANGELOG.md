@@ -1,7 +1,6 @@
-Next Release
-============
+0.4.3 (11/20/2016)
+==================
 
-* Your contribution here.
 * [#83](https://github.com/dblock/jenkins-ansicolor-plugin/pull/83): Added custom pipeline step - [@cpoenisch](https://github.com/cpoenisch).
 * [#73](https://github.com/dblock/jenkins-ansicolor-plugin/pull/73): Promote pipeline configuration in README - [@abrom](https://github.com/abrom).
 * [#72](https://github.com/dblock/jenkins-ansicolor-plugin/pull/72): Support high intensity ANSI colors - [@marlene01](https://github.com/marlene01).

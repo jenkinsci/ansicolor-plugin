@@ -54,6 +54,14 @@ Change "Next Release" in [CHANGELOG.md](CHANGELOG.md) to the new version.
 
 Remove the line with "Your contribution here.", since there will be no more contributions to this release.
 
+Commit your changes.
+
+```
+git add CHANGELOG.md
+git commit -m "Preparing for release, 0.4.1."
+git push origin master
+```
+
 Make a release.
 
 ```
@@ -74,7 +82,7 @@ Next Release
 Commit your changes.
 
 ```
-git add CHANGELOG.md README.md
+git add CHANGELOG.md
 git commit -m "Preparing for next development iteration."
 git push origin master
 ```

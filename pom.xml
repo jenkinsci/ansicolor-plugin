@@ -31,8 +31,8 @@
 
   <distributionManagement>
     <repository>
-      <id>maven.jenkins-ci.org</id>
-      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/releases/</url>
     </repository>
   </distributionManagement>
 
