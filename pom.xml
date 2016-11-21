@@ -26,7 +26,7 @@
     <connection>scm:git:git://github.com/dblock/jenkins-ansicolor-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:dblock/jenkins-ansicolor-plugin.git</developerConnection>
     <url>http://github.com/dblock/jenkins-ansicolor-plugin</url>
-    <tag>HEAD</tag>
+    <tag>ansicolor-0.4.3</tag>
   </scm>
 
   <distributionManagement>
@@ -72,7 +72,7 @@
 
   <artifactId>ansicolor</artifactId>
   <packaging>hpi</packaging>
-  <version>0.4.3-SNAPSHOT</version>
+  <version>0.4.3</version>
   <name>AnsiColor</name>
   <description>Adds ANSI coloring to the Console Output</description>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/AnsiColor+Plugin</url>
