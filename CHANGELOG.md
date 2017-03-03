@@ -1,6 +1,8 @@
 0.4.4 (Next)
 ============
 
+* Added missing handling for ATTRIBUTE_CONCEAL_OFF - [@Joe-Merten](https://github.com/Joe-Merten).
+* Added support for italic, strikeout, framed and overline attributes - [@Joe-Merten](https://github.com/Joe-Merten).
 * Your contribution here.
 
 0.4.3 (11/20/2016)

@@ -216,6 +216,17 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         super.close();
     }
 
+    // add attribute constants which are currently missing in jansi
+    // see also https://en.wikipedia.org/wiki/ANSI_escape_code
+    protected static final int ATTRIBUTE_STRIKEOUT       =  9;
+    protected static final int ATTRIBUTE_ITALIC_OFF      = 23;
+    protected static final int ATTRIBUTE_STRIKEOUT_OFF   = 29;
+    protected static final int ATTRIBUTE_FRAMED          = 51;
+    protected static final int ATTRIBUTE_ENCIRCLED       = 52;  // not implemented yet
+    protected static final int ATTRIBUTE_OVERLINE        = 53;
+    protected static final int ATTRIBUTE_FRAMED_OFF      = 54;  // framed and encircled off
+    protected static final int ATTRIBUTE_OVERLINE_OFF    = 55;
+
     @Override
     protected void processSetAttribute(int attribute) throws IOException {
         switch (attribute) {
@@ -232,6 +243,13 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         case ATTRIBUTE_INTENSITY_NORMAL:
             closeTagOfType(AnsiAttrType.BOLD);
             break;
+        case ATTRIBUTE_ITALIC:
+            closeTagOfType(AnsiAttrType.ITALIC);
+            openTag(new AnsiAttributeElement(AnsiAttrType.ITALIC, "i", ""));
+            break;
+        case ATTRIBUTE_ITALIC_OFF:
+            closeTagOfType(AnsiAttrType.ITALIC);
+            break;
         case ATTRIBUTE_UNDERLINE:
             closeTagOfType(AnsiAttrType.UNDERLINE);
             openTag(new AnsiAttributeElement(AnsiAttrType.UNDERLINE, "u", ""));
@@ -245,6 +263,32 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
             break;
         case ATTRIBUTE_UNDERLINE_OFF:
             closeTagOfType(AnsiAttrType.UNDERLINE);
+            break;
+        case ATTRIBUTE_STRIKEOUT:
+            // <strike> is deprecated in HTML 4 and obsoleted in HTML5 (but still worked in my firefox 51.0.1)
+            // alternatives are <del> <s> (both tested and successfully rendered in firefox 51.0.1)
+            // but I finally decide for "text-decoration: line-through"
+            closeTagOfType(AnsiAttrType.STRIKEOUT);
+            openTag(new AnsiAttributeElement(AnsiAttrType.STRIKEOUT, "span", "style=\"text-decoration: line-through;\""));
+            // openTag(new AnsiAttributeElement(AnsiAttrType.STRIKEOUT, "s", "")); // alternate approach
+            break;
+        case ATTRIBUTE_STRIKEOUT_OFF:
+            closeTagOfType(AnsiAttrType.STRIKEOUT);
+            break;
+        case ATTRIBUTE_FRAMED:
+            closeTagOfType(AnsiAttrType.FRAMED);
+            openTag(new AnsiAttributeElement(AnsiAttrType.FRAMED, "span", "style=\"border: 1px solid;\""));
+            break;
+        case ATTRIBUTE_FRAMED_OFF:
+            closeTagOfType(AnsiAttrType.FRAMED);
+            break;
+        case ATTRIBUTE_OVERLINE:
+            closeTagOfType(AnsiAttrType.OVERLINE);
+            openTag(new AnsiAttributeElement(AnsiAttrType.OVERLINE, "span", "style=\"text-decoration: overline;\""));
+            //openTag(new AnsiAttributeElement(AnsiAttrType.OVERLINE, "span", "style=\"border-top: 1px solid;\"")); // alternate approach
+            break;
+        case ATTRIBUTE_OVERLINE_OFF:
+            closeTagOfType(AnsiAttrType.OVERLINE);
             break;
         }
     }

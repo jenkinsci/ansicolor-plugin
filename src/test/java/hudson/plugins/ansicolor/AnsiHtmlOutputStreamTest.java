@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2011 Daniel Doubrovkine
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -100,6 +100,26 @@ public class AnsiHtmlOutputStreamTest {
     @Test
     public void testUnderlineDouble() throws IOException {
         assertThatAnnotateIs("\033[21mhello world", "<span style=\"border-bottom: 3px double;\">hello world</span>");
+    }
+
+    @Test
+    public void testItalic() throws IOException {
+        assertThatAnnotateIs("\033[3mhello world\033[23mnormal", "<i>hello world</i>normal");
+    }
+
+    @Test
+    public void testStrikeout() throws IOException {
+        assertThatAnnotateIs("\033[9mhello world\033[29mnormal", "<span style=\"text-decoration: line-through;\">hello world</span>normal");
+    }
+
+    @Test
+    public void testFramed() throws IOException {
+        assertThatAnnotateIs("\033[51mhello world\033[54mnormal", "<span style=\"border: 1px solid;\">hello world</span>normal");
+    }
+
+    @Test
+    public void testOverlined() throws IOException {
+        assertThatAnnotateIs("\033[53mhello world\033[55mnormal", "<span style=\"text-decoration: overline;\">hello world</span>normal");
     }
 
     @Test
