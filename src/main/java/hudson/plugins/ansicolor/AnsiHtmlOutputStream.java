@@ -222,6 +222,9 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         case ATTRIBUTE_CONCEAL_ON:
             startConcealing();
             break;
+        case ATTRIBUTE_CONCEAL_OFF:
+            stopConcealing();
+            break;
         case ATTRIBUTE_INTENSITY_BOLD:
             closeTagOfType(AnsiAttrType.BOLD);
             openTag(new AnsiAttributeElement(AnsiAttrType.BOLD, "b", ""));
@@ -264,7 +267,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     @Override
     protected void processSetForegroundColor(int color, boolean bright) throws IOException {
          closeTagOfType(AnsiAttrType.BG); // Strictly not needed, but makes for cleaner HTML.
-         openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"color: " + colorMap.getBright(color) + ";\"")); 	    
+         openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"color: " + colorMap.getBright(color) + ";\""));
     }
 
     @Override
