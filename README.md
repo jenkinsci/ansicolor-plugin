@@ -84,11 +84,10 @@ Will all print Hello in red on any system / shell that has `printf` (ie. anythin
 
 ## Supported ANSI Color Codes
 
-Only the standard [ANSI Color Codes](https://en.wikipedia.org/wiki/ANSI_colors) are supported for both foreground
-and background colors. "High Intensity" colors in the 90-109 range are non-standard are not supported. The `colorize`
-ruby library, for example, emits high intensity codes when using the "light" color options.
-
-See [issue #16](https://github.com/dblock/jenkins-ansicolor-plugin/issues/16) for a sample of non-standard output.
+Only the standard [ANSI Color Codes](https://en.wikipedia.org/wiki/ANSI_colors) and "High Intensity" (aixterm)
+colors in the 90-97 / 100-107 range are supported for both foreground and background colors.
+The `colorize` ruby library, for example, emits high intensity codes when using the "light" color options.
+Extended colors (38 and 48) for 256 and 24 bit color mode are currently not supported.
 
 ## Colorizing Ruby RSpec Output
 
