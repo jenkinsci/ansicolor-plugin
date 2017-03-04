@@ -229,7 +229,15 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 
     @Override
     protected void processSetAttribute(int attribute) throws IOException {
-        switch (attribute) {
+        // For some (unknown) reason, AnsiOutputStream.processEscapeCommand() sometimes(?) won't call our processSetFore/BackgroundColor().
+        // see also: https://github.com/dblock/jenkins-ansicolor-plugin/issues/91
+        if (attribute >= 90 && attribute <= 97) {
+            processSetForegroundColor(attribute - 90, true);
+        }
+        else if (attribute >= 100 && attribute <= 107) {
+            processSetBackgroundColor(attribute - 100, true);
+        }
+        else switch (attribute) {
         case ATTRIBUTE_CONCEAL_ON:
             startConcealing();
             break;
@@ -305,19 +313,24 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getNormal(color) + ";\""));
     }
 
-    /**
-     * Function for setting the foreground color to non standard ANSI colors (90 - 97).
-     */
+    // set foreground color to non standard ANSI colors (90 - 97)
     @Override
     protected void processSetForegroundColor(int color, boolean bright) throws IOException {
-         closeTagOfType(AnsiAttrType.BG); // Strictly not needed, but makes for cleaner HTML.
-         openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"color: " + colorMap.getBright(color) + ";\""));
+         closeTagOfType(AnsiAttrType.FG); // Strictly not needed, but makes for cleaner HTML.
+         openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getBright(color) + ";\""));
     }
 
     @Override
     protected void processSetBackgroundColor(int color) throws IOException {
         closeTagOfType(AnsiAttrType.BG); // Strictly not needed, but makes for cleaner HTML.
         openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + colorMap.getNormal(color) + ";\""));
+    }
+
+    // set background color to non standard ANSI colors (100 - 107)
+    @Override
+    protected void processSetBackgroundColor(int color, boolean bright) throws IOException {
+         closeTagOfType(AnsiAttrType.BG); // Strictly not needed, but makes for cleaner HTML.
+         openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + colorMap.getBright(color) + ";\""));
     }
 
     @Override
