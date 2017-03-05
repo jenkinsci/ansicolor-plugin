@@ -82,12 +82,26 @@ For example:
 
 Will all print Hello in red on any system / shell that has `printf` (ie. anything POSIX compliant)
 
-## Supported ANSI Color Codes
+## Supported ANSI Color Codes and Attributes
 
-Only the standard [ANSI Color Codes](https://en.wikipedia.org/wiki/ANSI_colors) and "High Intensity" (aixterm)
-colors in the 90-97 / 100-107 range are supported for both foreground and background colors.
+Most of the attributes and color modes described at [wikipedia/ANSI escape code](https://en.wikipedia.org/wiki/ANSI_escape_code)
+were supported, including:
+
+- attributes bold / italic / underline / conceal / crossed-out / framed / overlined
+- standard text colors 30-37 and background colors 40-47
+- high intensity text colors 90-97 and background colors 100-107 (aixterm)
+- xterm 256 colors and ISO-8613-3 24 bit colors (38 and 48)
+
+Not supported attributes:
+
+- faint
+- blink
+- negative
+- font switching
+- encircled
+- ideogram attributes 60-65
+
 The `colorize` ruby library, for example, emits high intensity codes when using the "light" color options.
-Extended colors (38 and 48) for 256 and 24 bit color mode are currently not supported.
 
 ## Colorizing Ruby RSpec Output
 
