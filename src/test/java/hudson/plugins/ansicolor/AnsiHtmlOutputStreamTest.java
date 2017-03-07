@@ -121,13 +121,13 @@ public class AnsiHtmlOutputStreamTest {
         assertThatAnnotateIs(
                 "\033[33;7mon\033[27moff",
                 "<span style=\"color: #CDCD00;\"></span>" +                                                            // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: #CDCD00;\"><span style=\"color: #FFFFFF;\">on</span></span>" +
+                "<span style=\"background-color: #CDCD00; color: #FFFFFF;\">on</span>" +
                 "<span style=\"color: #CDCD00;\">off</span>");
 
         assertThatAnnotateIs(
                 "\033[7;33mon\033[27moff",
                 "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\"></span></span>" +     // unnecessary <span> tag, could be removed …
-                "<span style=\"color: #FFFFFF;\"><span style=\"background-color: #CDCD00;\">on</span></span>" +
+                "<span style=\"color: #FFFFFF;\"><span style=\"background-color: #CDCD00;\">on</span></span>" +        // could be optimized to be a single <span> tag
                 "<span style=\"color: #CDCD00;\">off</span>");
 
         assertThatAnnotateIs(
@@ -147,28 +147,28 @@ public class AnsiHtmlOutputStreamTest {
         assertThatAnnotateIs(
                 "\033[33;41;7mon\033[27moff",
                 "<span style=\"color: #CDCD00;\"><span style=\"background-color: #CD0000;\"></span></span>" +          // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">on</span></span>" +
-                "<span style=\"background-color: #CD0000;\"><span style=\"color: #CDCD00;\">off</span></span>");
+                "<span style=\"background-color: #CDCD00; color: #CD0000;\">on</span>" +
+                "<span style=\"background-color: #CD0000; color: #CDCD00;\">off</span>");
 
         assertThatAnnotateIs(
                 "\033[7;33;41mon\033[27moff",
                 "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\"></span></span>" +     // unnecessary <span> tag, could be removed …
                 "<span style=\"color: #FFFFFF;\"><span style=\"background-color: #CDCD00;\"></span></span>" +          // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">on</span></span>" +
-                "<span style=\"background-color: #CD0000;\"><span style=\"color: #CDCD00;\">off</span></span>");
+                "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">on</span></span>" +        // could be optimized to be a single <span> tag
+                "<span style=\"background-color: #CD0000; color: #CDCD00;\">off</span>");
 
 
         // reset foreground / background to default while [7m is active
         assertThatAnnotateIs(
                 "\033[33;7mon\033[39mdefault",
                 "<span style=\"color: #CDCD00;\"></span>" +                                                            // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: #CDCD00;\"><span style=\"color: #FFFFFF;\">on</span></span>" +
+                "<span style=\"background-color: #CDCD00; color: #FFFFFF;\">on</span>" +
                 "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\">default</span></span>");
 
         assertThatAnnotateIs(
                 "\033[7;33mon\033[39mdefault",
                 "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\"></span></span>" +     // unnecessary <span> tag, could be removed …
-                "<span style=\"color: #FFFFFF;\"><span style=\"background-color: #CDCD00;\">on</span></span>" +
+                "<span style=\"color: #FFFFFF;\"><span style=\"background-color: #CDCD00;\">on</span></span>" +        // could be optimized to be a single <span> tag
                 "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\">default</span></span>");
 
         assertThatAnnotateIs(
@@ -190,7 +190,7 @@ public class AnsiHtmlOutputStreamTest {
         assertThatAnnotateIs(
                 "\033[33;41;7mon\033[39mdefault",
                 "<span style=\"color: #CDCD00;\"><span style=\"background-color: #CD0000;\"></span></span>" +          // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">on</span></span>" +
+                "<span style=\"background-color: #CDCD00; color: #CD0000;\">on</span>" +
                 "<span style=\"background-color: currentColor;\"><span style=\"color: #CD0000;\">default</span></span>");
 
         assertThatAnnotateIs(
@@ -203,8 +203,10 @@ public class AnsiHtmlOutputStreamTest {
         assertThatAnnotateIs(
                 "\033[33;41;7mon\033[49mdefault",
                 "<span style=\"color: #CDCD00;\"><span style=\"background-color: #CD0000;\"></span></span>" +          // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">on</span>" +
-                "<span style=\"color: #FFFFFF;\">default</span></span>");
+                "<span style=\"background-color: #CDCD00; color: #CD0000;\">" +
+                  "on" +
+                  "<span style=\"color: #FFFFFF;\">default</span>" +
+                "</span>");
 
         assertThatAnnotateIs(
                 "\033[7;33;41mon\033[49mdefault",
@@ -220,28 +222,29 @@ public class AnsiHtmlOutputStreamTest {
         assertThatAnnotateIs(AnsiColorMap.VGA,
                 "\033[7mon\033[moff",
                 "<div style=\"background-color: #000000;color: #AAAAAA;\">" +
-                  "<span style=\"background-color: #AAAAAA;\"><span style=\"color: #000000;\">on</span></span>off" +
+                  "<span style=\"background-color: #AAAAAA; color: #000000;\">on</span>off" +
                 "</div>");
 
         assertThatAnnotateIs(AnsiColorMap.VGA,
                 "\033[7mon\033[27moff",
                 "<div style=\"background-color: #000000;color: #AAAAAA;\">" +
-                  "<span style=\"background-color: #AAAAAA;\"><span style=\"color: #000000;\">on</span></span>off" +
+                  "<span style=\"background-color: #AAAAAA; color: #000000;\">on</span>off" +
                 "</div>");
 
         assertThatAnnotateIs(AnsiColorMap.VGA,
                 "\033[33;7mon\033[27moff",
                 "<div style=\"background-color: #000000;color: #AAAAAA;\">" +
                   "<span style=\"color: #AA5500;\"></span>" +                                                          // unnecessary <span> tag, could be removed …
-                  "<span style=\"background-color: #AA5500;\"><span style=\"color: #000000;\">on</span></span>" +
+                  "<span style=\"background-color: #AA5500; color: #000000;\">on</span>" +
                   "<span style=\"color: #AA5500;\">off</span>" +
                 "</div>");
 
         assertThatAnnotateIs(AnsiColorMap.VGA,
                 "\033[7;33mon\033[27moff",
                 "<div style=\"background-color: #000000;color: #AAAAAA;\">" +
-                  "<span style=\"background-color: #AAAAAA;\"><span style=\"color: #000000;\"></span></span>" +        // unnecessary <span> tag, could be removed …
-                  "<span style=\"color: #000000;\"><span style=\"background-color: #AA5500;\">on</span></span>" +
+                  "<span style=\"background-color: #AAAAAA; color: #000000;\">" +                                      // unnecessary <span> tag, could be removed / merged with the following <span>
+                    "<span style=\"background-color: #AA5500;\">on</span>" +
+                  "</span>" +
                   "<span style=\"color: #AA5500;\">off</span>" +
                 "</div>");
 
@@ -249,19 +252,19 @@ public class AnsiHtmlOutputStreamTest {
                 "\033[41;7mon\033[27moff",
                 "<div style=\"background-color: #000000;color: #AAAAAA;\">" +
                   "<span style=\"background-color: #AA0000;\"></span>" +                                               // unnecessary <span> tag, could be removed …
-                  "<span style=\"background-color: #AAAAAA;\"><span style=\"color: #AA0000;\">on</span></span>" +
+                  "<span style=\"background-color: #AAAAAA; color: #AA0000;\">on</span>" +
                   "<span style=\"background-color: #AA0000;\">off</span>" +
                 "</div>");
 
         assertThatAnnotateIs(AnsiColorMap.VGA,
                 "\033[7;41mon\033[27moff",
                 "<div style=\"background-color: #000000;color: #AAAAAA;\">" +
-                  "<span style=\"background-color: #AAAAAA;\">" +
-                    "<span style=\"color: #000000;\"></span>" +                                                        // unnecessary <span> tag, could be removed …
+                  "<span style=\"background-color: #AAAAAA; color: #000000;\">" +                                      // unnecessary <span> tag, could be removed / merged with the following <span>
                     "<span style=\"color: #AA0000;\">on</span>" +
                   "</span>" +
                   "<span style=\"background-color: #AA0000;\">off</span>" +
                 "</div>");
+
 
         // a bit more stress
         assertThatAnnotateIs(
@@ -269,9 +272,9 @@ public class AnsiHtmlOutputStreamTest {
                 "\033[7m"     + "now inverse, " +
                 "\033[7m"     + "one more [7m should change nothing, " +
                 "\033[27m"    + "turned back to non inverse",
-                "<span style=\"color: #CDCD00;\">" + "<span style=\"background-color: #CD0000;\">yellow on red, </span></span>" +
-                "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">now inverse, one more [7m should change nothing, </span></span>" +
-                "<span style=\"background-color: #CD0000;\"><span style=\"color: #CDCD00;\">turned back to non inverse</span></span>");
+                "<span style=\"color: #CDCD00;\"><span style=\"background-color: #CD0000;\">yellow on red, </span></span>" +     // could be optimized to be a single <span> tag
+                "<span style=\"background-color: #CDCD00; color: #CD0000;\">now inverse, one more [7m should change nothing, </span>" +
+                "<span style=\"background-color: #CD0000; color: #CDCD00;\">turned back to non inverse</span>");
 
         assertThatAnnotateIs(
                 "\033[33;41m" + "yellow on red, " +
@@ -279,11 +282,17 @@ public class AnsiHtmlOutputStreamTest {
                 "\033[30m"    + "[30m → red on black, " +
                 "\033[103m"   + "[103m  → yellow on black, " +
                 "\033[27m"    + "[27m → black on yellow",
-                "<span style=\"color: #CDCD00;\"><span style=\"background-color: #CD0000;\">yellow on red, </span></span>" +
-                "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">now inverse, </span></span>" +
-                "<span style=\"color: #CD0000;\"><span style=\"background-color: #000000;\">[30m → red on black, </span></span>" +
-                "<span style=\"background-color: #000000;\"><span style=\"color: #FFFF00;\">[103m  → yellow on black, </span></span>" +
-                "<span style=\"background-color: #FFFF00;\"><span style=\"color: #000000;\">[27m → black on yellow</span></span>");
+                "<span style=\"color: #CDCD00;\"><span style=\"background-color: #CD0000;\">yellow on red, </span></span>" +     // could be optimized to be a single <span> tag
+                "<span style=\"background-color: #CDCD00; color: #CD0000;\">" +
+                  "now inverse, " +
+                  "<span style=\"background-color: #000000;\">" +
+                    "[30m → red on black, " +
+                    "<span style=\"color: #FFFF00;\">" +
+                      "[103m  → yellow on black, " +
+                    "</span>" +
+                  "</span>" +
+                "</span>" +
+                "<span style=\"background-color: #FFFF00; color: #000000;\">[27m → black on yellow</span>");
     }
 
     @Test

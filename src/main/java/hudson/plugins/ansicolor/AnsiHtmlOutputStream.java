@@ -336,6 +336,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         if (color != null)
             openTag(new AnsiAttributeElement(attrType, "span", "style=\"" + attrName + ": " + color + ";\""));
         if (restorebg) {
+            // Because of the "currentColor" trick, we always need to use two seperate <span> tags for this case.
             String bg = currentBackgroundColor;
             if (bg == null) bg = getDefaultBackgroundColor();
             openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + bg + ";\""));
@@ -426,11 +427,10 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
                 bg = tmp;
             }
             closeTagOfType(AnsiAttrType.FGBG);
-            if (fg != null && bg != null) {
-                openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + bg + ";\""));
-                openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + fg + ";\""));
-                //closeTagOfType(AnsiAttrType.FGBG);
-                //openTag(new AnsiAttributeElement(AnsiAttrType.FGBG, "span", "style=\"color: " + fg + "; background-color: " + bg + ";\""));
+            if (fg != null && bg != null && !bg.equals("currentColor")) {
+                // In case of "currentColor" trick, we need to use two seperate <span> tags.
+                // But if not, then we can use one single <span> tag to set both background and foreground color.
+                openTag(new AnsiAttributeElement(AnsiAttrType.FGBG, "span", "style=\"background-color: " + bg + "; color: " + fg + ";\""));
             } else {
                 if (bg != null) openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + bg + ";\""));
                 if (fg != null) openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + fg + ";\""));
