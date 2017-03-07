@@ -55,6 +55,10 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     private State state = State.INIT;
     private int amblePos = 0;
 
+    private String currentForegroundColor = null;
+    private String currentBackgroundColor = null;
+    private boolean swapColors = false;  // true if negative / inverse mode is active (esc[7m)
+
     // A Deque might be a better choice, but we are constrained by the Java 5 API.
     private ArrayList<AnsiAttributeElement> openTags = new ArrayList<AnsiAttributeElement>();
 
@@ -66,6 +70,15 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         this.logOutput = os;
         this.colorMap = colorMap;
         this.emitter = emitter;
+    }
+
+    // Debug output for plugin developers. Puts the debug message into the html page
+    @SuppressWarnings("unused")
+    private void logdebug(String format, Object... args) throws IOException {
+        String msg = String.format(format, args);
+        emitter.emitHtml("<span style=\"border: 1px solid; color: #009000; background-color: #003000; font-size: 70%; font-weight: normal; font-style: normal\">");
+        out.write(msg.getBytes());
+        emitter.emitHtml("</span>");
     }
 
     /* Concealing has to happen *after* ANSI interpretation.
@@ -101,8 +114,15 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
      * That last element is just closed, while the others before it have to be reopened.
      *
      * Nothing happens when trying to close an element which has never been opened (i.e. "bold off" when there
-     * was no "bold" before). */
+     * was no "bold" before).
+     *
+     * Special handling is applied for AnsiAttrType.FGBG, as there will be closed all FG, BG and FGBG elements.
+     */
     private void closeTagOfType(AnsiAttrType ansiAttrType) throws IOException {
+        if (ansiAttrType == AnsiAttrType.FGBG) {
+            closeTagsOfTypeFGBG();
+            return;
+        }
         int sameTypePos;
 
         // Search for an element with matching type.
@@ -131,6 +151,41 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         offendingTag.emitClose(emitter);
 
         // ... reopen.
+        while (!reopen.isEmpty()) {
+            AnsiAttributeElement tag = reopen.pop();
+            tag.emitOpen(emitter);
+            openTags.add(tag);
+        }
+    }
+
+    // Like closeTagOfType(), but closes all FG, BG and FGBG elements.
+    private void closeTagsOfTypeFGBG() throws IOException {
+        int firstMatch;
+
+        // Search for first element with matching type.
+        for (firstMatch = 0 ; firstMatch < openTags.size(); firstMatch++) {
+            AnsiAttrType attrtype = openTags.get(firstMatch).ansiAttrType;
+            if (attrtype == AnsiAttrType.FG || attrtype == AnsiAttrType.BG || attrtype == AnsiAttrType.FGBG)
+                break;
+        }
+
+        if (firstMatch >= openTags.size())
+            // No need to unwind anything if none of the attributes has not been touched yet.
+            return;
+
+        Stack<AnsiAttributeElement> reopen = new Stack<AnsiAttributeElement>();
+
+        // Unwind, close all elements until firstMatch (including all FG, BG, FGBG)
+        for (int unwindAt = openTags.size(); unwindAt > firstMatch;) {
+            unwindAt--;
+            AnsiAttributeElement tag = openTags.remove(unwindAt);
+            tag.emitClose(emitter);
+            AnsiAttrType attrtype = tag.ansiAttrType;
+            if (!(attrtype == AnsiAttrType.FG || attrtype == AnsiAttrType.BG || attrtype == AnsiAttrType.FGBG))
+                reopen.push(tag);
+        }
+
+        // reopen stacked tags
         while (!reopen.isEmpty()) {
             AnsiAttributeElement tag = reopen.pop();
             tag.emitOpen(emitter);
@@ -216,6 +271,90 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         super.close();
     }
 
+    private String getDefaultForegroundColor() {
+        String color = null;
+        Integer defaultFgIndex = colorMap.getDefaultForeground();
+        if (defaultFgIndex != null) color = colorMap.getNormal(defaultFgIndex);
+        if (color == null) {
+            // with no default foreground set, we need to guess about (currently happened in xterm and css themes)
+            // possible approaches are:
+            // • hardcoded black "#000000"
+            // • colorMap.getNormal(0)
+            // • "currentColor" → see also: http://stackoverflow.com/a/42586457/2880699
+            //   but note, that this approach only works, if all <span style="color: …"> are currently closed
+
+            // Note that in my default szenario with, the default text color is #333333. Tested with:
+            // • Jenkins 1.6.5.3, AnsiColor plugin 0.4.3, xterm scheme
+            // • Firefox 51.0.1, Kubuntu 16.04
+            // • Chromium 56.0.2924.76, Kubuntu 16.04
+            // • Firefox 51.0.1, Windows XP
+
+            // So I finally decide for the "currentColor" approach, because:
+            // • It gives the best results for negative / inverse text (what is the major reason for implementing this function).
+            // • It looks also the best alternative, if e.g. someone customizes Jenkins colors.
+            // • Finally, the clause "only works, if all <span style="color: …"> are currently closed" is fulfilled for the negative / inverse case
+
+            // color = "#000000";              // hardcoded black
+            // color = colorMap.getNormal(0);  // hardcoded index 0
+            color = "currentColor";            // see http://stackoverflow.com/a/42586457/2880699
+        }
+        return color;
+    }
+
+    private String getDefaultBackgroundColor() {
+        String color = null;
+        Integer defaultBgIndex = colorMap.getDefaultBackground();
+        if (defaultBgIndex != null) color = colorMap.getNormal(defaultBgIndex);
+        if (color == null) {
+            // with no default foreground set, we need to guess about (currently happened in xterm and css themes)
+            // possible approaches are:
+            // • hardcoded white "#FFFFFF"
+            // • colorMap.getNormal(7)
+            // • colorMap.getBright(7)
+            // I finally decide for colorMap.getBright(7).
+
+            //color "#FFFFFF";                 // hardcoded white
+            //color = colorMap.getNormal(7);   // hardcoded normal index 7
+            color = colorMap.getBright(7);     // hardcoded bright index 7
+        }
+        return color;
+    }
+
+    // @in  color  Html color value like e.g. "#AABBCC" or null for default color
+    private void setForegroundColor(String color) throws IOException {
+        AnsiAttrType attrType = !swapColors ? AnsiAttrType.FG : AnsiAttrType.BG;
+        String attrName = !swapColors ? "color" : "background-color";
+        if (color == null && swapColors) color = getDefaultForegroundColor();
+        boolean restorebg = false;
+        if (swapColors && color.equals("currentColor")) {
+            // need also to temporarily unwind textcolor, to having correct access to the "currentColor" value
+            closeTagOfType(AnsiAttrType.FGBG);
+            restorebg = true;
+        } else {
+            closeTagOfType(attrType);
+        }
+        if (color != null)
+            openTag(new AnsiAttributeElement(attrType, "span", "style=\"" + attrName + ": " + color + ";\""));
+        if (restorebg) {
+            // Because of the "currentColor" trick, we always need to use two seperate <span> tags for this case.
+            String bg = currentBackgroundColor;
+            if (bg == null) bg = getDefaultBackgroundColor();
+            openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + bg + ";\""));
+        }
+        currentForegroundColor = color;
+    }
+
+    // @in  color  Html color value like e.g. "#AABBCC" or null for default color
+    public void setBackgroundColor(String color) throws IOException {
+        AnsiAttrType attrType = !swapColors ? AnsiAttrType.BG : AnsiAttrType.FG;
+        String attrName = !swapColors ? "background-color" : "color";
+        if (color == null && swapColors) color = getDefaultBackgroundColor();
+        closeTagOfType(attrType);
+        if (color != null)
+            openTag(new AnsiAttributeElement(attrType, "span", "style=\"" + attrName + ": " + color + ";\""));
+        currentBackgroundColor = color;
+    }
+
     // add attribute constants which are currently missing in jansi
     // see also https://en.wikipedia.org/wiki/ANSI_escape_code
     protected static final int ATTRIBUTE_STRIKEOUT       =  9;
@@ -272,6 +411,31 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         case ATTRIBUTE_UNDERLINE_OFF:
             closeTagOfType(AnsiAttrType.UNDERLINE);
             break;
+        case ATTRIBUTE_NEGATIVE_ON:
+        case ATTRIBUTE_NEGATIVE_Off:
+            // swap foreground / background colors
+            boolean swapNow = attribute == ATTRIBUTE_NEGATIVE_ON;
+            if (swapNow == swapColors) break; // nothing to do
+            swapColors = swapNow;
+            String bg = currentBackgroundColor;
+            String fg = currentForegroundColor;
+            if (swapColors) {
+                if (bg == null) bg = getDefaultBackgroundColor();
+                if (fg == null) fg = getDefaultForegroundColor();
+                String tmp = fg;
+                fg = bg;
+                bg = tmp;
+            }
+            closeTagOfType(AnsiAttrType.FGBG);
+            if (fg != null && bg != null && !bg.equals("currentColor")) {
+                // In case of "currentColor" trick, we need to use two seperate <span> tags.
+                // But if not, then we can use one single <span> tag to set both background and foreground color.
+                openTag(new AnsiAttributeElement(AnsiAttrType.FGBG, "span", "style=\"background-color: " + bg + "; color: " + fg + ";\""));
+            } else {
+                if (bg != null) openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + bg + ";\""));
+                if (fg != null) openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + fg + ";\""));
+            }
+            break;
         case ATTRIBUTE_STRIKEOUT:
             // <strike> is deprecated in HTML 4 and obsoleted in HTML5 (but still worked in my firefox 51.0.1)
             // alternatives are <del> <s> (both tested and successfully rendered in firefox 51.0.1)
@@ -303,43 +467,42 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 
     @Override
     protected void processAttributeRest() throws IOException {
+        currentForegroundColor = null;
+        currentBackgroundColor = null;
+        swapColors = false;
         stopConcealing();
         closeOpenTags(AnsiAttrType.DEFAULT);
     }
 
     @Override
     protected void processSetForegroundColor(int color) throws IOException {
-        closeTagOfType(AnsiAttrType.FG); // Strictly not needed, but makes for cleaner HTML.
-        openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getNormal(color) + ";\""));
+        setForegroundColor(colorMap.getNormal(color));
     }
 
     // set foreground color to non standard ANSI colors (90 - 97)
     @Override
     protected void processSetForegroundColor(int color, boolean bright) throws IOException {
-         closeTagOfType(AnsiAttrType.FG); // Strictly not needed, but makes for cleaner HTML.
-         openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getBright(color) + ";\""));
+        setForegroundColor(colorMap.getBright(color));
     }
 
     @Override
     protected void processSetBackgroundColor(int color) throws IOException {
-        closeTagOfType(AnsiAttrType.BG); // Strictly not needed, but makes for cleaner HTML.
-        openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + colorMap.getNormal(color) + ";\""));
+        setBackgroundColor(colorMap.getNormal(color));
     }
 
     // set background color to non standard ANSI colors (100 - 107)
     @Override
     protected void processSetBackgroundColor(int color, boolean bright) throws IOException {
-         closeTagOfType(AnsiAttrType.BG); // Strictly not needed, but makes for cleaner HTML.
-         openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + colorMap.getBright(color) + ";\""));
+        setBackgroundColor(colorMap.getBright(color));
     }
 
     @Override
     protected void processDefaultTextColor() throws IOException {
-        closeTagOfType(AnsiAttrType.FG);
+        setForegroundColor(null);
     }
 
     @Override
     protected void processDefaultBackgroundColor() throws IOException {
-        closeTagOfType(AnsiAttrType.BG);
+        setBackgroundColor(null);
     }
 }
