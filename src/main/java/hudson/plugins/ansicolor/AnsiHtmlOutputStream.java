@@ -114,8 +114,15 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
      * That last element is just closed, while the others before it have to be reopened.
      *
      * Nothing happens when trying to close an element which has never been opened (i.e. "bold off" when there
-     * was no "bold" before). */
+     * was no "bold" before).
+     *
+     * Special handling is applied for AnsiAttrType.FGBG, as there will be closed all FG, BG and FGBG elements.
+     */
     private void closeTagOfType(AnsiAttrType ansiAttrType) throws IOException {
+        if (ansiAttrType == AnsiAttrType.FGBG) {
+            closeTagsOfTypeFGBG();
+            return;
+        }
         int sameTypePos;
 
         // Search for an element with matching type.
@@ -144,6 +151,41 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         offendingTag.emitClose(emitter);
 
         // ... reopen.
+        while (!reopen.isEmpty()) {
+            AnsiAttributeElement tag = reopen.pop();
+            tag.emitOpen(emitter);
+            openTags.add(tag);
+        }
+    }
+
+    // Like closeTagOfType(), but closes all FG, BG and FGBG elements.
+    private void closeTagsOfTypeFGBG() throws IOException {
+        int firstMatch;
+
+        // Search for first element with matching type.
+        for (firstMatch = 0 ; firstMatch < openTags.size(); firstMatch++) {
+            AnsiAttrType attrtype = openTags.get(firstMatch).ansiAttrType;
+            if (attrtype == AnsiAttrType.FG || attrtype == AnsiAttrType.BG || attrtype == AnsiAttrType.FGBG)
+                break;
+        }
+
+        if (firstMatch >= openTags.size())
+            // No need to unwind anything if none of the attributes has not been touched yet.
+            return;
+
+        Stack<AnsiAttributeElement> reopen = new Stack<AnsiAttributeElement>();
+
+        // Unwind, close all elements until firstMatch (including all FG, BG, FGBG)
+        for (int unwindAt = openTags.size(); unwindAt > firstMatch;) {
+            unwindAt--;
+            AnsiAttributeElement tag = openTags.remove(unwindAt);
+            tag.emitClose(emitter);
+            AnsiAttrType attrtype = tag.ansiAttrType;
+            if (!(attrtype == AnsiAttrType.FG || attrtype == AnsiAttrType.BG || attrtype == AnsiAttrType.FGBG))
+                reopen.push(tag);
+        }
+
+        // reopen stacked tags
         while (!reopen.isEmpty()) {
             AnsiAttributeElement tag = reopen.pop();
             tag.emitOpen(emitter);
@@ -286,10 +328,11 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         boolean restorebg = false;
         if (swapColors && color.equals("currentColor")) {
             // need also to temporarily unwind textcolor, to having correct access to the "currentColor" value
-            closeTagOfType(AnsiAttrType.FG);
+            closeTagOfType(AnsiAttrType.FGBG);
             restorebg = true;
+        } else {
+            closeTagOfType(attrType);
         }
-        closeTagOfType(attrType);
         if (color != null)
             openTag(new AnsiAttributeElement(attrType, "span", "style=\"" + attrName + ": " + color + ";\""));
         if (restorebg) {
@@ -382,8 +425,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
                 fg = bg;
                 bg = tmp;
             }
-            closeTagOfType(AnsiAttrType.FG);
-            closeTagOfType(AnsiAttrType.BG);
+            closeTagOfType(AnsiAttrType.FGBG);
             if (fg != null && bg != null) {
                 openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + bg + ";\""));
                 openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + fg + ";\""));

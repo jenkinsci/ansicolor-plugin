@@ -128,7 +128,6 @@ public class AnsiHtmlOutputStreamTest {
                 "\033[7;33mon\033[27moff",
                 "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\"></span></span>" +     // unnecessary <span> tag, could be removed …
                 "<span style=\"color: #FFFFFF;\"><span style=\"background-color: #CDCD00;\">on</span></span>" +
-                "<span style=\"background-color: #CDCD00;\"></span>" +                                                 // unnecessary <span> tag, could be removed …
                 "<span style=\"color: #CDCD00;\">off</span>");
 
         assertThatAnnotateIs(
@@ -148,7 +147,6 @@ public class AnsiHtmlOutputStreamTest {
         assertThatAnnotateIs(
                 "\033[33;41;7mon\033[27moff",
                 "<span style=\"color: #CDCD00;\"><span style=\"background-color: #CD0000;\"></span></span>" +          // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: #CD0000;\"></span>" +                                                 // unnecessary <span> tag, could be removed …
                 "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">on</span></span>" +
                 "<span style=\"background-color: #CD0000;\"><span style=\"color: #CDCD00;\">off</span></span>");
 
@@ -171,7 +169,6 @@ public class AnsiHtmlOutputStreamTest {
                 "\033[7;33mon\033[39mdefault",
                 "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\"></span></span>" +     // unnecessary <span> tag, could be removed …
                 "<span style=\"color: #FFFFFF;\"><span style=\"background-color: #CDCD00;\">on</span></span>" +
-                "<span style=\"background-color: #CDCD00;\"></span>" +                                                 // unnecessary <span> tag, could be removed …
                 "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\">default</span></span>");
 
         assertThatAnnotateIs(
@@ -193,7 +190,6 @@ public class AnsiHtmlOutputStreamTest {
         assertThatAnnotateIs(
                 "\033[33;41;7mon\033[39mdefault",
                 "<span style=\"color: #CDCD00;\"><span style=\"background-color: #CD0000;\"></span></span>" +          // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: #CD0000;\"></span>" +                                                 // unnecessary <span> tag, could be removed …
                 "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">on</span></span>" +
                 "<span style=\"background-color: currentColor;\"><span style=\"color: #CD0000;\">default</span></span>");
 
@@ -207,7 +203,6 @@ public class AnsiHtmlOutputStreamTest {
         assertThatAnnotateIs(
                 "\033[33;41;7mon\033[49mdefault",
                 "<span style=\"color: #CDCD00;\"><span style=\"background-color: #CD0000;\"></span></span>" +          // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: #CD0000;\"></span>" +                                                 // unnecessary <span> tag, could be removed …
                 "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">on</span>" +
                 "<span style=\"color: #FFFFFF;\">default</span></span>");
 
@@ -247,7 +242,6 @@ public class AnsiHtmlOutputStreamTest {
                 "<div style=\"background-color: #000000;color: #AAAAAA;\">" +
                   "<span style=\"background-color: #AAAAAA;\"><span style=\"color: #000000;\"></span></span>" +        // unnecessary <span> tag, could be removed …
                   "<span style=\"color: #000000;\"><span style=\"background-color: #AA5500;\">on</span></span>" +
-                  "<span style=\"background-color: #AA5500;\"></span>" +                                               // unnecessary <span> tag, could be removed …
                   "<span style=\"color: #AA5500;\">off</span>" +
                 "</div>");
 
@@ -276,7 +270,6 @@ public class AnsiHtmlOutputStreamTest {
                 "\033[7m"     + "one more [7m should change nothing, " +
                 "\033[27m"    + "turned back to non inverse",
                 "<span style=\"color: #CDCD00;\">" + "<span style=\"background-color: #CD0000;\">yellow on red, </span></span>" +
-                "<span style=\"background-color: #CD0000;\"></span>" +                                                 // unnecessary <span> tag, could be removed …
                 "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">now inverse, one more [7m should change nothing, </span></span>" +
                 "<span style=\"background-color: #CD0000;\"><span style=\"color: #CDCD00;\">turned back to non inverse</span></span>");
 
@@ -287,7 +280,6 @@ public class AnsiHtmlOutputStreamTest {
                 "\033[103m"   + "[103m  → yellow on black, " +
                 "\033[27m"    + "[27m → black on yellow",
                 "<span style=\"color: #CDCD00;\"><span style=\"background-color: #CD0000;\">yellow on red, </span></span>" +
-                "<span style=\"background-color: #CD0000;\"></span>" +
                 "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">now inverse, </span></span>" +
                 "<span style=\"color: #CD0000;\"><span style=\"background-color: #000000;\">[30m → red on black, </span></span>" +
                 "<span style=\"background-color: #000000;\"><span style=\"color: #FFFF00;\">[103m  → yellow on black, </span></span>" +
