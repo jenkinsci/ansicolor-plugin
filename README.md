@@ -87,7 +87,7 @@ Will all print Hello in red on any system / shell that has `printf` (ie. anythin
 Most of the attributes and color modes described at [wikipedia/ANSI escape code](https://en.wikipedia.org/wiki/ANSI_escape_code)
 were supported, including:
 
-- attributes bold / italic / underline / conceal / crossed-out / framed / overlined
+- attributes bold / italic / underline / negative / conceal / crossed-out / framed / overlined
 - standard text colors 30-37 and background colors 40-47
 - high intensity text colors 90-97 and background colors 100-107 (aixterm)
 - xterm 256 colors and ISO-8613-3 24 bit colors (38 and 48)
@@ -96,7 +96,6 @@ Not supported attributes:
 
 - faint
 - blink
-- negative
 - font switching
 - encircled
 - ideogram attributes 60-65

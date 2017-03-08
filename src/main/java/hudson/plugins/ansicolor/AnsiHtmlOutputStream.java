@@ -556,14 +556,12 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 
     @Override
     protected void processSetForegroundColorExt(int paletteIndex) throws IOException {
-        closeTagOfType(AnsiAttrType.FG);
-        openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + getPaletteColor(paletteIndex) + ";\""));
+        setForegroundColor(getPaletteColor(paletteIndex));
     }
 
     @Override
     protected void processSetForegroundColorExt(int r, int g, int b) throws IOException {
-        closeTagOfType(AnsiAttrType.FG);
-        openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + getRgbColor(r, g, b) + ";\""));
+        setForegroundColor(getRgbColor(r, g, b));
     }
 
     @Override
@@ -579,15 +577,13 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 
     @Override
     protected void processSetBackgroundColorExt(int paletteIndex) throws IOException {
-        closeTagOfType(AnsiAttrType.BG);
-        openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + getPaletteColor(paletteIndex) + ";\""));
+        setBackgroundColor(getPaletteColor(paletteIndex));
     }
 
     @Override
     protected void processSetBackgroundColorExt(int r, int g, int b) throws IOException {
-        closeTagOfType(AnsiAttrType.BG);
-        openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + getRgbColor(r, g, b) + ";\""));
-}
+        setBackgroundColor(getRgbColor(r, g, b));
+    }
 
     @Override
     protected void processDefaultTextColor() throws IOException {
