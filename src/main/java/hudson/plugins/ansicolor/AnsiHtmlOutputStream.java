@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Stack;
-import org.fusesource.jansi.AnsiOutputStream;
+import hudson.plugins.ansicolor.AnsiOutputStream;
 
 /**
  * Filters an outputstream of ANSI escape sequences and emits appropriate HTML elements instead.
