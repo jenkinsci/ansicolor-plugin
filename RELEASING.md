@@ -34,22 +34,22 @@ mvn test
 
 Check that the last build succeeded in [Travis CI](https://travis-ci.org/dblock/jenkins-ansicolor-plugin).
 
-Ensure that the version in [pom.xml](pom.xml) is correct and ends with `-SNAPSHOT`.
+In [pom.xml](pom.xml), remove the `-SNAPSHOT` postfix from the version string.
 
 ``` xml
 <artifactId>ansicolor</artifactId>
 <packaging>hpi</packaging>
-<version>0.4.1-SNAPSHOT</version>
+<version>0.4.1</version>
 ```
 
-*  Increment the third number if the release has bug fixes and/or very minor features, only (eg. change `0.4.1` to `0.4.2`).
+*  Leave the version as it is (just removing `-SNAPSHOT`) if the release has bug fixes and/or very minor features, only.
 *  Increment the second number if the release contains major features or breaking API changes (eg. change `0.4.1` to `0.5.0`).
 
 Change "Next Release" in [CHANGELOG.md](CHANGELOG.md) to the new version.
 
 ```
 0.4.1 (12/11/2014)
-=================
+==================
 ```
 
 Remove the line with "Your contribution here.", since there will be no more contributions to this release.
@@ -70,10 +70,19 @@ $ mvn release:prepare release:perform
 
 ### Prepare for the Next Version
 
+In [pom.xml](pom.xml), increment the third number of the version string and add the `-SNAPSHOT` postfix (eg. change `0.4.1` to `0.4.2-SNAPSHOT`).
+
+``` xml
+<artifactId>ansicolor</artifactId>
+<packaging>hpi</packaging>
+<version>0.4.2-SNAPSHOT</version>
+```
+
+
 Add the next release to [CHANGELOG.md](CHANGELOG.md).
 
 ```
-Next Release
+0.4.2 (Next)
 ============
 
 * Your contribution here.
