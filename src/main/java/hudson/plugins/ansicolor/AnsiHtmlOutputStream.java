@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Stack;
-import org.fusesource.jansi.AnsiOutputStream;
+import hudson.plugins.ansicolor.AnsiOutputStream;
 
 /**
  * Filters an outputstream of ANSI escape sequences and emits appropriate HTML elements instead.
@@ -368,8 +368,10 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 
     @Override
     protected void processSetAttribute(int attribute) throws IOException {
-        // For some (unknown) reason, AnsiOutputStream.processEscapeCommand() sometimes(?) won't call our processSetFore/BackgroundColor().
-        // see also: https://github.com/dblock/jenkins-ansicolor-plugin/issues/91
+        //System.out.println("processSetAttribute(" + attribute + ")");
+        // For some reason, AnsiOutputStream.processEscapeCommand() sometimes won't call our processSetFore/BackgroundColor().
+        // Seems that this could be happen, if there was an old version of jansi in jenkins home directory, e.g. `/home/jenkins/.jenkins/war/WEB-INF/lib/jansi-1.9.jar`.
+        // See also: https://github.com/dblock/jenkins-ansicolor-plugin/issues/91
         if (attribute >= 90 && attribute <= 97) {
             processSetForegroundColor(attribute - 90, true);
         }
@@ -465,6 +467,73 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         }
     }
 
+    private String getRgbColor(int r, int g, int b) throws IOException {
+        if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255)
+            throw new IllegalArgumentException();
+        return "#" + String.format("%02X", r) + String.format("%02X", g) + String.format("%02X", b);
+    }
+
+    private String getPaletteColor(int paletteIndex) throws IOException {
+        // for xterm 256 colors see also https://upload.wikimedia.org/wikipedia/commons/1/15/Xterm_256color_chart.svg
+        if (paletteIndex < 0 || paletteIndex > 255)
+            throw new IllegalArgumentException();
+
+        if (paletteIndex < 16) {
+            // xterm 256 colors seen at https://upload.wikimedia.org/wikipedia/commons/1/15/Xterm_256color_chart.svg but this source might be wrong.
+            // switch (paletteIndex) {
+            // case  0: return "#000000";
+            // case  1: return "#800000";
+            // case  2: return "#008000";
+            // case  3: return "#808000";
+            // case  4: return "#000080";
+            // case  5: return "#800080";
+            // case  6: return "#008080";
+            // case  7: return "#C0C0C0";
+            // case  8: return "#808080";
+            // case  9: return "#FF0000";
+            // case 10: return "#00FF00";
+            // case 11: return "#FFFF00";
+            // case 12: return "#0000FF";
+            // case 13: return "#FF00FF";
+            // case 14: return "#00FFFF";
+            // case 15: return "#FFFFFF";
+            // }
+            // Tested with xterm on Kubuntu 16.04 (xterm version: 322-1ubuntu1), I find out, that
+            // xterm itself uses the same 16 colors here for [30m…[37m & [90m…[97m
+            // So I decide to do it the same way.
+            if (paletteIndex < 8)
+                return colorMap.getNormal(paletteIndex);
+            else
+                return colorMap.getBright(paletteIndex - 8);
+        }
+
+        if (paletteIndex < 232) { // 216 (6*6*6) color cube
+            int c = paletteIndex - 16; // c = 0…215
+            int b = c % 6;
+            c /= 6;
+            int g = c % 6;
+            c /= 6;
+            int r = c % 6;
+            // rgb now each 0…5 - note that the translation from each 0…5 → 0…255 is not proportional, but:
+            //   0   1    2    3    4    5
+            //   0  95  135  175  215  255
+            if (r != 0) r = 55 + r * 40;
+            if (g != 0) g = 55 + g * 40;
+            if (b != 0) b = 55 + b * 40;
+            return getRgbColor(r, g, b);
+        }
+
+        if (paletteIndex < 256) { // 24 gray shades from nealy black #080808 to nearly white #EEEEEE
+            // 08, 12, 1C, 26, 30, 3A, 44, 4E, 58, 62, 6C, 76, 80, 8A, 94, 9E, A8, B2, BC, C6, D0, DA, E4, EE
+            int g = paletteIndex - 232; // c = 0…23
+            g *= 10;        // c = 0…230
+            g += 8;         // c = 8…238
+            return getRgbColor(g, g, g);
+        }
+
+        throw new IllegalArgumentException();
+    }
+
     @Override
     protected void processAttributeRest() throws IOException {
         currentForegroundColor = null;
@@ -486,6 +555,16 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     }
 
     @Override
+    protected void processSetForegroundColorExt(int paletteIndex) throws IOException {
+        setForegroundColor(getPaletteColor(paletteIndex));
+    }
+
+    @Override
+    protected void processSetForegroundColorExt(int r, int g, int b) throws IOException {
+        setForegroundColor(getRgbColor(r, g, b));
+    }
+
+    @Override
     protected void processSetBackgroundColor(int color) throws IOException {
         setBackgroundColor(colorMap.getNormal(color));
     }
@@ -494,6 +573,16 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     @Override
     protected void processSetBackgroundColor(int color, boolean bright) throws IOException {
         setBackgroundColor(colorMap.getBright(color));
+    }
+
+    @Override
+    protected void processSetBackgroundColorExt(int paletteIndex) throws IOException {
+        setBackgroundColor(getPaletteColor(paletteIndex));
+    }
+
+    @Override
+    protected void processSetBackgroundColorExt(int r, int g, int b) throws IOException {
+        setBackgroundColor(getRgbColor(r, g, b));
     }
 
     @Override

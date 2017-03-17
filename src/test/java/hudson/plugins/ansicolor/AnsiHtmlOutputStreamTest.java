@@ -359,8 +359,8 @@ public class AnsiHtmlOutputStreamTest {
     }
 
     @Test
-    public void testSetForegroundColorToHighIntensity() throws IOException {
-        assertThatAnnotateIs("\033[90mDark gray\033[0m"     , "<span style=\"color: #4C4C4C;\">Dark gray</span>");
+    public void testForegroundColorHighIntensity() throws IOException {
+        assertThatAnnotateIs("\033[90mDark gray\033[0m"    , "<span style=\"color: #4C4C4C;\">Dark gray</span>");
         assertThatAnnotateIs("\033[91mLight red\033[0m"    , "<span style=\"color: #FF0000;\">Light red</span>");
         assertThatAnnotateIs("\033[92mLight green\033[0m"  , "<span style=\"color: #00FF00;\">Light green</span>");
         assertThatAnnotateIs("\033[93mLight yellow\033[0m" , "<span style=\"color: #FFFF00;\">Light yellow</span>");
@@ -371,13 +371,84 @@ public class AnsiHtmlOutputStreamTest {
     }
 
     @Test
+    public void testForegroundColor256() throws IOException {
+        // standard colors 0-15
+        assertThatAnnotateIs("\033[38;5;0mBlack\033[0m"         , "<span style=\"color: #000000;\">Black</span>");
+        assertThatAnnotateIs("\033[38;5;1mRed\033[0m"           , "<span style=\"color: #CD0000;\">Red</span>");
+        assertThatAnnotateIs("\033[38;5;2mGreen\033[0m"         , "<span style=\"color: #00CD00;\">Green</span>");
+        assertThatAnnotateIs("\033[38;5;3mYellow\033[0m"        , "<span style=\"color: #CDCD00;\">Yellow</span>");
+        assertThatAnnotateIs("\033[38;5;4mBlue\033[0m"          , "<span style=\"color: #1E90FF;\">Blue</span>");
+        assertThatAnnotateIs("\033[38;5;5mMagenta\033[0m"       , "<span style=\"color: #CD00CD;\">Magenta</span>");
+        assertThatAnnotateIs("\033[38;5;6mCyan\033[0m"          , "<span style=\"color: #00CDCD;\">Cyan</span>");
+        assertThatAnnotateIs("\033[38;5;7mGray\033[0m"          , "<span style=\"color: #E5E5E5;\">Gray</span>");
+        assertThatAnnotateIs("\033[38;5;8mDark gray\033[0m"     , "<span style=\"color: #4C4C4C;\">Dark gray</span>");
+        assertThatAnnotateIs("\033[38;5;9mLight red\033[0m"     , "<span style=\"color: #FF0000;\">Light red</span>");
+        assertThatAnnotateIs("\033[38;5;10mLight green\033[0m"  , "<span style=\"color: #00FF00;\">Light green</span>");
+        assertThatAnnotateIs("\033[38;5;11mLight yellow\033[0m" , "<span style=\"color: #FFFF00;\">Light yellow</span>");
+        assertThatAnnotateIs("\033[38;5;12mLight blue\033[0m"   , "<span style=\"color: #4682B4;\">Light blue</span>");
+        assertThatAnnotateIs("\033[38;5;13mLight magenta\033[0m", "<span style=\"color: #FF00FF;\">Light magenta</span>");
+        assertThatAnnotateIs("\033[38;5;14mLight cyan\033[0m"   , "<span style=\"color: #00FFFF;\">Light cyan</span>");
+        assertThatAnnotateIs("\033[38;5;15mWhite\033[0m"        , "<span style=\"color: #FFFFFF;\">White</span>");
+
+        // some of the 6x6x6=216 color cube
+        assertThatAnnotateIs("\033[38;5;16mABC\033[0m"          , "<span style=\"color: #000000;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;21mABC\033[0m"          , "<span style=\"color: #0000FF;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;196mABC\033[0m"         , "<span style=\"color: #FF0000;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;201mABC\033[0m"         , "<span style=\"color: #FF00FF;\">ABC</span>");
+
+        assertThatAnnotateIs("\033[38;5;22mABC\033[0m"          , "<span style=\"color: #005F00;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;27mABC\033[0m"          , "<span style=\"color: #005FFF;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;202mABC\033[0m"         , "<span style=\"color: #FF5F00;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;207mABC\033[0m"         , "<span style=\"color: #FF5FFF;\">ABC</span>");
+
+        assertThatAnnotateIs("\033[38;5;28mABC\033[0m"          , "<span style=\"color: #008700;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;33mABC\033[0m"          , "<span style=\"color: #0087FF;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;208mABC\033[0m"         , "<span style=\"color: #FF8700;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;213mABC\033[0m"         , "<span style=\"color: #FF87FF;\">ABC</span>");
+
+        assertThatAnnotateIs("\033[38;5;34mABC\033[0m"          , "<span style=\"color: #00AF00;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;39mABC\033[0m"          , "<span style=\"color: #00AFFF;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;214mABC\033[0m"         , "<span style=\"color: #FFAF00;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;219mABC\033[0m"         , "<span style=\"color: #FFAFFF;\">ABC</span>");
+
+        assertThatAnnotateIs("\033[38;5;40mABC\033[0m"          , "<span style=\"color: #00D700;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;45mABC\033[0m"          , "<span style=\"color: #00D7FF;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;220mABC\033[0m"         , "<span style=\"color: #FFD700;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;225mABC\033[0m"         , "<span style=\"color: #FFD7FF;\">ABC</span>");
+
+        assertThatAnnotateIs("\033[38;5;46mABC\033[0m"          , "<span style=\"color: #00FF00;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;51mABC\033[0m"          , "<span style=\"color: #00FFFF;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;226mABC\033[0m"         , "<span style=\"color: #FFFF00;\">ABC</span>");
+        assertThatAnnotateIs("\033[38;5;231mABC\033[0m"         , "<span style=\"color: #FFFFFF;\">ABC</span>");
+
+        // some of the 24 gray shades
+        assertThatAnnotateIs("\033[38;5;232mGray\033[0m"        , "<span style=\"color: #080808;\">Gray</span>");
+        assertThatAnnotateIs("\033[38;5;240mGray\033[0m"        , "<span style=\"color: #585858;\">Gray</span>");
+        assertThatAnnotateIs("\033[38;5;248mGray\033[0m"        , "<span style=\"color: #A8A8A8;\">Gray</span>");
+        assertThatAnnotateIs("\033[38;5;255mGray\033[0m"        , "<span style=\"color: #EEEEEE;\">Gray</span>");
+    }
+
+    @Test
+    public void testForegroundColorRgb() throws IOException {
+        assertThatAnnotateIs("\033[38;2;0;0;0mBlack\033[0m"      , "<span style=\"color: #000000;\">Black</span>");
+        assertThatAnnotateIs("\033[38;2;255;0;0mRed\033[0m"      , "<span style=\"color: #FF0000;\">Red</span>");
+        assertThatAnnotateIs("\033[38;2;0;255;0mGreen\033[0m"    , "<span style=\"color: #00FF00;\">Green</span>");
+        assertThatAnnotateIs("\033[38;2;255;255;0mYellow\033[0m" , "<span style=\"color: #FFFF00;\">Yellow</span>");
+        assertThatAnnotateIs("\033[38;2;0;0;255mBlue\033[0m"     , "<span style=\"color: #0000FF;\">Blue</span>");
+        assertThatAnnotateIs("\033[38;2;255;0;255mMagenta\033[0m", "<span style=\"color: #FF00FF;\">Magenta</span>");
+        assertThatAnnotateIs("\033[38;2;0;255;255mCyan\033[0m"   , "<span style=\"color: #00FFFF;\">Cyan</span>");
+        assertThatAnnotateIs("\033[38;2;255;255;255mWhite\033[0m", "<span style=\"color: #FFFFFF;\">White</span>");
+        assertThatAnnotateIs("\033[38;2;128;128;128mGray\033[0m" , "<span style=\"color: #808080;\">Gray</span>");
+    }
+
+    @Test
     public void testResetBackgroundColor() throws IOException {
         assertThatAnnotateIs("\033[42mtic\033[1mtac\033[49mtoe",
                 "<span style=\"background-color: #00CD00;\">tic<b>tac</b></span><b>toe</b>");
     }
 
     @Test
-    public void testSetBackgroundColorToHighIntensity() throws IOException {
+    public void testBackgroundColorHighIntensity() throws IOException {
         assertThatAnnotateIs("\033[100mDark gray\033[0m"    , "<span style=\"background-color: #4C4C4C;\">Dark gray</span>");
         assertThatAnnotateIs("\033[101mLight red\033[0m"    , "<span style=\"background-color: #FF0000;\">Light red</span>");
         assertThatAnnotateIs("\033[102mLight green\033[0m"  , "<span style=\"background-color: #00FF00;\">Light green</span>");
@@ -386,6 +457,79 @@ public class AnsiHtmlOutputStreamTest {
         assertThatAnnotateIs("\033[105mLight magenta\033[0m", "<span style=\"background-color: #FF00FF;\">Light magenta</span>");
         assertThatAnnotateIs("\033[106mLight cyan\033[0m"   , "<span style=\"background-color: #00FFFF;\">Light cyan</span>");
         assertThatAnnotateIs("\033[107mWhite\033[0m"        , "<span style=\"background-color: #FFFFFF;\">White</span>");
+    }
+
+    @Test
+    public void testBackgroundColor256() throws IOException {
+        // mainly copied code from testForegroundColor256()
+        // standard colors 0-15
+        assertThatAnnotateIs("\033[48;5;0mBlack\033[0m"         , "<span style=\"background-color: #000000;\">Black</span>");
+        assertThatAnnotateIs("\033[48;5;1mRed\033[0m"           , "<span style=\"background-color: #CD0000;\">Red</span>");
+        assertThatAnnotateIs("\033[48;5;2mGreen\033[0m"         , "<span style=\"background-color: #00CD00;\">Green</span>");
+        assertThatAnnotateIs("\033[48;5;3mYellow\033[0m"        , "<span style=\"background-color: #CDCD00;\">Yellow</span>");
+        assertThatAnnotateIs("\033[48;5;4mBlue\033[0m"          , "<span style=\"background-color: #1E90FF;\">Blue</span>");
+        assertThatAnnotateIs("\033[48;5;5mMagenta\033[0m"       , "<span style=\"background-color: #CD00CD;\">Magenta</span>");
+        assertThatAnnotateIs("\033[48;5;6mCyan\033[0m"          , "<span style=\"background-color: #00CDCD;\">Cyan</span>");
+        assertThatAnnotateIs("\033[48;5;7mGray\033[0m"          , "<span style=\"background-color: #E5E5E5;\">Gray</span>");
+        assertThatAnnotateIs("\033[48;5;8mDark gray\033[0m"     , "<span style=\"background-color: #4C4C4C;\">Dark gray</span>");
+        assertThatAnnotateIs("\033[48;5;9mLight red\033[0m"     , "<span style=\"background-color: #FF0000;\">Light red</span>");
+        assertThatAnnotateIs("\033[48;5;10mLight green\033[0m"  , "<span style=\"background-color: #00FF00;\">Light green</span>");
+        assertThatAnnotateIs("\033[48;5;11mLight yellow\033[0m" , "<span style=\"background-color: #FFFF00;\">Light yellow</span>");
+        assertThatAnnotateIs("\033[48;5;12mLight blue\033[0m"   , "<span style=\"background-color: #4682B4;\">Light blue</span>");
+        assertThatAnnotateIs("\033[48;5;13mLight magenta\033[0m", "<span style=\"background-color: #FF00FF;\">Light magenta</span>");
+        assertThatAnnotateIs("\033[48;5;14mLight cyan\033[0m"   , "<span style=\"background-color: #00FFFF;\">Light cyan</span>");
+        assertThatAnnotateIs("\033[48;5;15mWhite\033[0m"        , "<span style=\"background-color: #FFFFFF;\">White</span>");
+
+        // some of the 6x6x6=216 color cube
+        assertThatAnnotateIs("\033[48;5;16mABC\033[0m"          , "<span style=\"background-color: #000000;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;21mABC\033[0m"          , "<span style=\"background-color: #0000FF;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;196mABC\033[0m"         , "<span style=\"background-color: #FF0000;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;201mABC\033[0m"         , "<span style=\"background-color: #FF00FF;\">ABC</span>");
+
+        assertThatAnnotateIs("\033[48;5;22mABC\033[0m"          , "<span style=\"background-color: #005F00;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;27mABC\033[0m"          , "<span style=\"background-color: #005FFF;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;202mABC\033[0m"         , "<span style=\"background-color: #FF5F00;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;207mABC\033[0m"         , "<span style=\"background-color: #FF5FFF;\">ABC</span>");
+
+        assertThatAnnotateIs("\033[48;5;28mABC\033[0m"          , "<span style=\"background-color: #008700;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;33mABC\033[0m"          , "<span style=\"background-color: #0087FF;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;208mABC\033[0m"         , "<span style=\"background-color: #FF8700;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;213mABC\033[0m"         , "<span style=\"background-color: #FF87FF;\">ABC</span>");
+
+        assertThatAnnotateIs("\033[48;5;34mABC\033[0m"          , "<span style=\"background-color: #00AF00;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;39mABC\033[0m"          , "<span style=\"background-color: #00AFFF;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;214mABC\033[0m"         , "<span style=\"background-color: #FFAF00;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;219mABC\033[0m"         , "<span style=\"background-color: #FFAFFF;\">ABC</span>");
+
+        assertThatAnnotateIs("\033[48;5;40mABC\033[0m"          , "<span style=\"background-color: #00D700;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;45mABC\033[0m"          , "<span style=\"background-color: #00D7FF;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;220mABC\033[0m"         , "<span style=\"background-color: #FFD700;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;225mABC\033[0m"         , "<span style=\"background-color: #FFD7FF;\">ABC</span>");
+
+        assertThatAnnotateIs("\033[48;5;46mABC\033[0m"          , "<span style=\"background-color: #00FF00;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;51mABC\033[0m"          , "<span style=\"background-color: #00FFFF;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;226mABC\033[0m"         , "<span style=\"background-color: #FFFF00;\">ABC</span>");
+        assertThatAnnotateIs("\033[48;5;231mABC\033[0m"         , "<span style=\"background-color: #FFFFFF;\">ABC</span>");
+
+        // some of the 24 gray shades
+        assertThatAnnotateIs("\033[48;5;232mGray\033[0m"        , "<span style=\"background-color: #080808;\">Gray</span>");
+        assertThatAnnotateIs("\033[48;5;240mGray\033[0m"        , "<span style=\"background-color: #585858;\">Gray</span>");
+        assertThatAnnotateIs("\033[48;5;248mGray\033[0m"        , "<span style=\"background-color: #A8A8A8;\">Gray</span>");
+        assertThatAnnotateIs("\033[48;5;255mGray\033[0m"        , "<span style=\"background-color: #EEEEEE;\">Gray</span>");
+    }
+
+    @Test
+    public void testBackgroundColorRgb() throws IOException {
+        // mainly copied code from testForegroundColorRgb()
+        assertThatAnnotateIs("\033[48;2;0;0;0mBlack\033[0m"      , "<span style=\"background-color: #000000;\">Black</span>");
+        assertThatAnnotateIs("\033[48;2;255;0;0mRed\033[0m"      , "<span style=\"background-color: #FF0000;\">Red</span>");
+        assertThatAnnotateIs("\033[48;2;0;255;0mGreen\033[0m"    , "<span style=\"background-color: #00FF00;\">Green</span>");
+        assertThatAnnotateIs("\033[48;2;255;255;0mYellow\033[0m" , "<span style=\"background-color: #FFFF00;\">Yellow</span>");
+        assertThatAnnotateIs("\033[48;2;0;0;255mBlue\033[0m"     , "<span style=\"background-color: #0000FF;\">Blue</span>");
+        assertThatAnnotateIs("\033[48;2;255;0;255mMagenta\033[0m", "<span style=\"background-color: #FF00FF;\">Magenta</span>");
+        assertThatAnnotateIs("\033[48;2;0;255;255mCyan\033[0m"   , "<span style=\"background-color: #00FFFF;\">Cyan</span>");
+        assertThatAnnotateIs("\033[48;2;255;255;255mWhite\033[0m", "<span style=\"background-color: #FFFFFF;\">White</span>");
+        assertThatAnnotateIs("\033[48;2;128;128;128mGray\033[0m" , "<span style=\"background-color: #808080;\">Gray</span>");
     }
 
     @Test
