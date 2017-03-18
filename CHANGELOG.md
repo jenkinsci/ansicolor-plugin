@@ -1,11 +1,12 @@
 0.4.4 (Next)
 ============
 
-* [#90](https://github.com/dblock/jenkins-ansicolor-plugin/pull/90): Added missing handling for ATTRIBUTE_CONCEAL_OFF - [@Joe-Merten](https://github.com/Joe-Merten).
-* [#90](https://github.com/dblock/jenkins-ansicolor-plugin/pull/90): Added support for italic, strikeout, framed and overline attributes - [@Joe-Merten](https://github.com/Joe-Merten).
-* [#92](https://github.com/dblock/jenkins-ansicolor-plugin/pull/92): Fixed high intensity colors for both foreground and background - [@Joe-Merten](https://github.com/Joe-Merten).
-* [#94](https://github.com/dblock/jenkins-ansicolor-plugin/pull/94): Added support for negative (inverse colors) attribute - [@Joe-Merten](https://github.com/Joe-Merten).
-* [#96](https://github.com/dblock/jenkins-ansicolor-plugin/pull/96): Added support for xterm 256 colors and 24 bit colors - [@Joe-Merten](https://github.com/Joe-Merten).
+* [#90](https://github.com/dblock/jenkins-ansicolor-plugin/pull/90): Added missing handling for ATTRIBUTE_CONCEAL_OFF - [@JoeMerten](https://github.com/JoeMerten).
+* [#90](https://github.com/dblock/jenkins-ansicolor-plugin/pull/90): Added support for italic, strikeout, framed and overline attributes - [@JoeMerten](https://github.com/JoeMerten).
+* [#92](https://github.com/dblock/jenkins-ansicolor-plugin/pull/92): Fixed high intensity colors for both foreground and background - [@JoeMerten](https://github.com/JoeMerten).
+* [#94](https://github.com/dblock/jenkins-ansicolor-plugin/pull/94): Added support for negative (inverse colors) attribute - [@JoeMerten](https://github.com/JoeMerten).
+* [#96](https://github.com/dblock/jenkins-ansicolor-plugin/pull/96): Added support for xterm 256 colors and 24 bit colors - [@JoeMerten](https://github.com/JoeMerten).
+* [#98](https://github.com/dblock/jenkins-ansicolor-plugin/pull/98): Get rid of jansi version dependendy - [@JoeMerten](https://github.com/JoeMerten).
 * Your contribution here.
 
 0.4.3 (11/20/2016)
