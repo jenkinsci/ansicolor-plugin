@@ -23,9 +23,9 @@
   </pluginRepositories>
 
   <scm>
-    <connection>scm:git:git://github.com/dblock/jenkins-ansicolor-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:dblock/jenkins-ansicolor-plugin.git</developerConnection>
-    <url>http://github.com/dblock/jenkins-ansicolor-plugin</url>
+    <connection>scm:git:git://github.com/jenkinsci/ansicolor-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/ansicolor-plugin.git</developerConnection>
+    <url>http://github.com/jenkinsci/ansicolor-plugin</url>
     <tag>HEAD</tag>
   </scm>
 

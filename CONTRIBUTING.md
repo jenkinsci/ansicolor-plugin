@@ -1,7 +1,7 @@
 Contributing
 ============
 
-You're encouraged to submit [pull requests](https://github.com/dblock/jenkins-ansicolor-plugin/pulls), [propose features and discuss issues](https://github.com/dblock/jenkins-ansicolor-plugin/issues).
+You're encouraged to submit [pull requests](https://github.com/jenkinsci/ansicolor-plugin/pulls), [propose features and discuss issues](https://github.com/jenkinsci/ansicolor-plugin/issues).
 
 #### Writing Jenkins Plugins
 
@@ -9,12 +9,12 @@ Before you begin, check out the [Jenkins-CI Plugin Tutorial](https://wiki.jenkin
 
 #### Fork the Project
 
-Fork the [project on Github](https://github.com/dblock/jenkins-ansicolor-plugin) and check out your copy.
+Fork the [project on Github](https://github.com/jenkinsci/ansicolor-plugin) and check out your copy.
 
 ```
-git clone https://github.com/contributor/jenkins-ansicolor-plugin.git
-cd jenkins-ansicolor-plugin
-git remote add upstream https://github.com/dblock/jenkins-ansicolor-plugin.git
+git clone https://github.com/contributor/ansicolor-plugin.git
+cd ansicolor-plugin
+git remote add upstream https://github.com/jenkinsci/ansicolor-plugin.git
 ```
 
 #### Create a Topic Branch
@@ -75,7 +75,7 @@ git push origin my-feature-branch
 
 #### Make a Pull Request
 
-Go to https://github.com/contributor/jenkins-ansicolor-plugin and select your feature branch. Click the 'Pull Request' button and fill out the form. Pull requests are usually reviewed within a few days.
+Go to https://github.com/contributor/ansicolor-plugin and select your feature branch. Click the 'Pull Request' button and fill out the form. Pull requests are usually reviewed within a few days.
 
 #### Rebase
 
@@ -92,7 +92,7 @@ git push origin my-feature-branch -f
 Update the [CHANGELOG](CHANGELOG.md) with the pull request number. A typical entry looks as follows.
 
 ```
-* [#123](https://github.com/dblock/jenkins-ansicolor-plugin/pull/123): Reticulated splines - [@contributor](https://github.com/contributor).
+* [#123](https://github.com/jenkinsci/ansicolor-plugin/pull/123): Reticulated splines - [@contributor](https://github.com/contributor).
 ```
 
 Amend your previous commit and force push the changes.

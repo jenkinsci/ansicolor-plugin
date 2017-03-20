@@ -371,7 +371,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         //System.out.println("processSetAttribute(" + attribute + ")");
         // For some reason, AnsiOutputStream.processEscapeCommand() sometimes won't call our processSetFore/BackgroundColor().
         // Seems that this could be happen, if there was an old version of jansi in jenkins home directory, e.g. `/home/jenkins/.jenkins/war/WEB-INF/lib/jansi-1.9.jar`.
-        // See also: https://github.com/dblock/jenkins-ansicolor-plugin/issues/91
+        // See also: https://github.com/jenkinsci/ansicolor-plugin/issues/91
         if (attribute >= 90 && attribute <= 97) {
             processSetForegroundColor(attribute - 90, true);
         }

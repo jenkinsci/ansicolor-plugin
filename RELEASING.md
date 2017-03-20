@@ -22,7 +22,7 @@ Make sure you have a [Jenkins-CI account](https://jenkins-ci.org/account) config
  </settings>
 ```
 
-You must have r/w permissions to [github.com/dblock/jenkins-ansicolor-plugin](https://github.com/dblock/jenkins-ansicolor-plugin) under the same username.
+You must have r/w permissions to [github.com/jenkinsci/ansicolor-plugin](https://github.com/jenkinsci/ansicolor-plugin) under the same username.
 
 ### Release
 
@@ -32,7 +32,7 @@ Run tests, check that all tests succeed locally.
 mvn test
 ```
 
-Check that the last build succeeded in [Travis CI](https://travis-ci.org/dblock/jenkins-ansicolor-plugin).
+Check that the last build succeeded in [Travis CI](https://travis-ci.org/jenkinsci/ansicolor-plugin).
 
 In [pom.xml](pom.xml), remove the `-SNAPSHOT` postfix from the version string.
 

@@ -1,6 +1,6 @@
 # Jenkins ANSI Color Plugin
 
-[![Build Status](https://travis-ci.org/dblock/jenkins-ansicolor-plugin.svg)](https://travis-ci.org/dblock/jenkins-ansicolor-plugin)
+[![Build Status](https://travis-ci.org/jenkinsci/ansicolor-plugin.svg)](https://travis-ci.org/jenkinsci/ansicolor-plugin)
 
 This plugin adds support for standard ANSI escape sequences, including color, to Console Output.
 
