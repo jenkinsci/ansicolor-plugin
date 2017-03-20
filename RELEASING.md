@@ -22,7 +22,8 @@ Make sure you have a [Jenkins-CI account](https://jenkins-ci.org/account) config
  </settings>
 ```
 
-You must have r/w permissions to [github.com/jenkinsci/ansicolor-plugin](https://github.com/jenkinsci/ansicolor-plugin) under the same username.
+You must have r/w permissions to [github.com/jenkinsci/ansicolor-plugin](https://github.com/jenkinsci/ansicolor-plugin) under the same username
+and you need to be listed as developer in [jenkins plugin-ansicolor.yml](https://github.com/jenkins-infra/repository-permissions-updater/blob/master/permissions/plugin-ansicolor.yml) (see also [jenkins #258](https://github.com/jenkins-infra/repository-permissions-updater/pull/258)).
 
 ### Release
 
@@ -34,16 +35,13 @@ mvn test
 
 Check that the last build succeeded in [Travis CI](https://travis-ci.org/jenkinsci/ansicolor-plugin).
 
-In [pom.xml](pom.xml), remove the `-SNAPSHOT` postfix from the version string.
+Ensure that the version in [pom.xml](pom.xml) is correct and ends with `-SNAPSHOT`.
 
 ``` xml
 <artifactId>ansicolor</artifactId>
 <packaging>hpi</packaging>
-<version>0.4.1</version>
+<version>0.4.1-SNAPSHOT</version>
 ```
-
-*  Leave the version as it is (just removing `-SNAPSHOT`) if the release has bug fixes and/or very minor features, only.
-*  Increment the second number if the release contains major features or breaking API changes (eg. change `0.4.1` to `0.5.0`).
 
 Change "Next Release" in [CHANGELOG.md](CHANGELOG.md) to the new version.
 
@@ -58,9 +56,11 @@ Commit your changes.
 
 ```
 git add CHANGELOG.md
-git commit -m "Preparing for release, 0.4.1."
+git commit -m "Preparing for release, 0.4.1"
 git push origin master
 ```
+
+Make sure that your working directory is clean (no uncommited changes).
 
 Make a release.
 
@@ -68,16 +68,19 @@ Make a release.
 $ mvn release:prepare release:perform
 ```
 
+The `mvn release:prepare` will interactively prompt you for version numbers:
+
+    [INFO] Checking dependencies and plugins for snapshots ...
+    What is the release version for "AnsiColor"? (org.jenkins-ci.plugins:ansicolor) 0.4.1: :
+    What is SCM release tag or label for "AnsiColor"? (org.jenkins-ci.plugins:ansicolor) ansicolor-0.4.1: :
+    What is the new development version for "AnsiColor"? (org.jenkins-ci.plugins:ansicolor) 0.4.2-SNAPSHOT: :
+
+Please read [Maven Release Plugin](http://maven.apache.org/maven-release/maven-release-plugin/examples/prepare-release.html).
+
+*  Leave the version as provided (plugin will just remove the `-SNAPSHOT` postfix) if the release has bug fixes and/or very minor features, only (e.g. `0.4.1`).
+*  Increment the second number if the release contains major features or breaking API changes (eg. change `0.4.1` to `0.5.0`).
+
 ### Prepare for the Next Version
-
-In [pom.xml](pom.xml), increment the third number of the version string and add the `-SNAPSHOT` postfix (eg. change `0.4.1` to `0.4.2-SNAPSHOT`).
-
-``` xml
-<artifactId>ansicolor</artifactId>
-<packaging>hpi</packaging>
-<version>0.4.2-SNAPSHOT</version>
-```
-
 
 Add the next release to [CHANGELOG.md](CHANGELOG.md).
 
@@ -92,6 +95,6 @@ Commit your changes.
 
 ```
 git add CHANGELOG.md
-git commit -m "Preparing for next development iteration."
+git commit -m "Preparing for next development iteration"
 git push origin master
 ```
