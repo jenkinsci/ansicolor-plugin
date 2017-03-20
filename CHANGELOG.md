@@ -1,6 +1,7 @@
 0.5.1 (Next)
 ============
 
+* [#100](https://github.com/jenkinsci/ansicolor-plugin/pull/100): Migrated hosting to github.com/jenkinsci - [@JoeMerten](https://github.com/JoeMerten) & [@dblock](https://github.com/dblock).
 * Your contribution here.
 
 0.5.0  (03/18/2017)
