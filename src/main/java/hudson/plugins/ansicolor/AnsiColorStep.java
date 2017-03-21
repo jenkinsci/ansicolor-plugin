@@ -88,7 +88,7 @@ public class AnsiColorStep extends AbstractStepImpl {
     /**
      * Descriptor for {@link AnsiColorStep}.
      */
-    @Extension
+    @Extension(optional = true)
     public static class StepDescriptorImpl extends AbstractStepDescriptorImpl {
 
         public StepDescriptorImpl() {
