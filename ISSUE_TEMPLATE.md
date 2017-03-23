@@ -12,7 +12,7 @@ Screenshots are welcome.
 
 ### Actual behavior
 
-What's goning wrong? Screenshots are welcome.
+What's going wrong? Screenshots are welcome.
 
 ### Steps to reproduce the behavior
 
