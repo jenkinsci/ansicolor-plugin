@@ -3,6 +3,7 @@
 
 * [#100](https://github.com/jenkinsci/ansicolor-plugin/pull/100): Migrated hosting to github.com/jenkinsci - [@JoeMerten](https://github.com/JoeMerten) & [@dblock](https://github.com/dblock).
 * [#101](https://github.com/jenkinsci/ansicolor-plugin/pull/101): Some exceptions during plugin install and following jenkins start - [@JoeMerten](https://github.com/JoeMerten).
+* [#107](https://github.com/jenkinsci/ansicolor-plugin/pull/107): Removing startup banner - [@jglick](https://github.com/jglick).
 * Your contribution here.
 
 0.5.0  (03/18/2017)
