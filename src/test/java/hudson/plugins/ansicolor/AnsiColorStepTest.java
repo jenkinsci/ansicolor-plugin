@@ -7,6 +7,7 @@ import java.io.StringWriter;
 
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,12 +47,14 @@ public class AnsiColorStepTest {
                 p.setDefinition(new CpsFlowDefinition(
                         "ansiColor('xterm') {\n"
                                 + "  echo 'The following word is supposed to be \\u001B[31mred\\u001B[0m'\n"
+                                + " echo \"TERM=${env.TERM}\""
                                 + "}"
-                        ));
-                story.j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+                        , true));
+                WorkflowRun run = story.j.assertBuildStatusSuccess(p.scheduleBuild2(0));
                 StringWriter writer = new StringWriter();
                 p.getLastBuild().getLogText().writeHtmlTo(0L, writer);
                 String html = writer.toString();
+                story.j.assertLogContains("TERM=xterm", run);
                 assertTrue("Failed to match color attribute in following HTML log output:\n" + html,
                         html.matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"));
             }

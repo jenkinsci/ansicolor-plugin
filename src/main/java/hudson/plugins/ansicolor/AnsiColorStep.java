@@ -6,6 +6,7 @@ import hudson.plugins.ansicolor.AnsiColorBuildWrapper.DescriptorImpl;
 import hudson.util.ListBoxModel;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import javax.annotation.Nonnull;
 
@@ -16,6 +17,7 @@ import org.jenkinsci.plugins.workflow.steps.AbstractStepExecutionImpl;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl;
 import org.jenkinsci.plugins.workflow.steps.BodyExecutionCallback;
 import org.jenkinsci.plugins.workflow.steps.BodyInvoker;
+import org.jenkinsci.plugins.workflow.steps.EnvironmentExpander;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -64,8 +66,11 @@ public class AnsiColorStep extends AbstractStepImpl {
         @Override
         public boolean start() throws Exception {
             StepContext context = getContext();
+            EnvironmentExpander currentEnvironment = context.get(EnvironmentExpander.class);
+            EnvironmentExpander terminalEnvironment = EnvironmentExpander.constant(Collections.singletonMap("TERM", step.getColorMapName()));
             context.newBodyInvoker().withContext(createConsoleLogFilter(context))
-                    .withCallback(BodyExecutionCallback.wrap(context)).start();
+                   .withContext(EnvironmentExpander.merge(currentEnvironment, terminalEnvironment))
+                                                   .withCallback(BodyExecutionCallback.wrap(context)).start();
             return false;
         }
 
