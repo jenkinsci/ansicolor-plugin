@@ -23,6 +23,7 @@
  */
 package hudson.plugins.ansicolor;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -129,7 +130,7 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
         }
 
         public void setColorMaps(AnsiColorMap[] maps) {
-            colorMaps = maps;
+            colorMaps = maps.clone();
             save();
         }
 
@@ -176,7 +177,7 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
          */
         @Override
         public String getDisplayName() {
-            return Messages.DisplayName();
+            return Messages.plugin_DisplayName();
         }
 
         /**

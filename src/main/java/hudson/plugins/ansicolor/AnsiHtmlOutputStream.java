@@ -25,6 +25,7 @@ package hudson.plugins.ansicolor;
 
 import static hudson.plugins.ansicolor.AnsiAttributeElement.AnsiAttrType;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.console.ConsoleNote;
 import hudson.util.NullStream;
 import java.io.IOException;
@@ -77,7 +78,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     private void logdebug(String format, Object... args) throws IOException {
         String msg = String.format(format, args);
         emitter.emitHtml("<span style=\"border: 1px solid; color: #009000; background-color: #003000; font-size: 70%; font-weight: normal; font-style: normal\">");
-        out.write(msg.getBytes());
+        out.write(msg.getBytes("UTF-8"));
         emitter.emitHtml("</span>");
     }
 
@@ -193,6 +194,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         }
     }
 
+    @SuppressFBWarnings("SF_SWITCH_NO_DEFAULT")
     @Override
     public void write(int data) throws IOException {
         // This little state machine only exists to handle embedded notes from other sources, whereas
@@ -366,6 +368,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     protected static final int ATTRIBUTE_FRAMED_OFF      = 54;  // framed and encircled off
     protected static final int ATTRIBUTE_OVERLINE_OFF    = 55;
 
+    @SuppressFBWarnings("SF_SWITCH_NO_DEFAULT")
     @Override
     protected void processSetAttribute(int attribute) throws IOException {
         //System.out.println("processSetAttribute(" + attribute + ")");
@@ -473,6 +476,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         return "#" + String.format("%02X", r) + String.format("%02X", g) + String.format("%02X", b);
     }
 
+    @SuppressFBWarnings("UC_USELESS_CONDITION")
     private String getPaletteColor(int paletteIndex) throws IOException {
         // for xterm 256 colors see also https://upload.wikimedia.org/wikipedia/commons/1/15/Xterm_256color_chart.svg
         if (paletteIndex < 0 || paletteIndex > 255)
