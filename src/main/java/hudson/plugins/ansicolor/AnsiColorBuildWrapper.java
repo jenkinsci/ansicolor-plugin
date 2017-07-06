@@ -23,7 +23,6 @@
  */
 package hudson.plugins.ansicolor;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
