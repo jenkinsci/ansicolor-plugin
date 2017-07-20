@@ -42,7 +42,7 @@ import java.util.Iterator;
  */
 public class AnsiOutputStream extends FilterOutputStream {
 
-    private static final byte[] REST_CODE = resetCode();
+    public static final byte[] REST_CODE = resetCode();
 
     public AnsiOutputStream(OutputStream os) {
         super(os);
