@@ -176,7 +176,7 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
          */
         @Override
         public String getDisplayName() {
-            return Messages.plugin_DisplayName();
+            return Messages.DisplayName();
         }
 
         /**

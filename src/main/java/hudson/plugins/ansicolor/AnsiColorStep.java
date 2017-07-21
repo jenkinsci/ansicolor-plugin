@@ -102,7 +102,7 @@ public class AnsiColorStep extends AbstractStepImpl {
 
         @Override
         public String getDisplayName() {
-            return Messages.plugin_DisplayName();
+            return Messages.DisplayName();
         }
 
         /**
