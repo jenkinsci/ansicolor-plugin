@@ -107,9 +107,9 @@ public class AnsiOutputStream extends FilterOutputStream {
                 } else if (';' == data) {
                     options.add(null);
                 } else if ('?' == data) {
-                    options.add('?');
+                    options.add(new Character('?'));
                 } else if ('=' == data) {
-                    options.add('=');
+                    options.add(new Character('='));
                 } else {
                     reset(processEscapeCommand(options, data));
                 }
@@ -121,7 +121,7 @@ public class AnsiOutputStream extends FilterOutputStream {
                 buffer[pos++] = (byte) data;
                 if (!('0' <= data && data <= '9')) {
                     String strValue = new String(buffer, startOfValue, (pos - 1) - startOfValue, "UTF-8");
-                    Integer value = Integer.valueOf(strValue);
+                    Integer value = new Integer(strValue);
                     options.add(value);
                     if (data == ';') {
                         state = LOOKING_FOR_NEXT_ARG;
@@ -158,7 +158,7 @@ public class AnsiOutputStream extends FilterOutputStream {
                 buffer[pos++] = (byte) data;
                 if (';' == data) {
                     String strValue = new String(buffer, startOfValue, (pos - 1) - startOfValue, "UTF-8");
-                    Integer value = Integer.valueOf(strValue);
+                    Integer value = new Integer(strValue);
                     options.add(value);
                     startOfValue = pos;
                     state = LOOKING_FOR_OSC_PARAM;
@@ -577,7 +577,7 @@ public class AnsiOutputStream extends FilterOutputStream {
     static private byte[] resetCode() {
         try {
             //return new Ansi().reset().toString().getBytes("UTF-8");
-            return "".getBytes("UTF-8");
+            return new String("").getBytes("UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
