@@ -25,7 +25,6 @@ package hudson.plugins.ansicolor;
 
 import static hudson.plugins.ansicolor.AnsiAttributeElement.AnsiAttrType;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.console.ConsoleNote;
 import hudson.util.NullStream;
 import java.io.IOException;
@@ -193,7 +192,6 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         }
     }
 
-    @SuppressFBWarnings("SF_SWITCH_NO_DEFAULT")
     @Override
     public void write(int data) throws IOException {
         // This little state machine only exists to handle embedded notes from other sources, whereas
@@ -237,6 +235,8 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
             case POSTAMBLE:
                 collectAmbleCharacter(data, ConsoleNote.POSTAMBLE);
                 break;
+            default:
+                throw new IllegalStateException("State " + state + " should not be reached");
         }
     }
 
@@ -367,7 +367,6 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     protected static final int ATTRIBUTE_FRAMED_OFF      = 54;  // framed and encircled off
     protected static final int ATTRIBUTE_OVERLINE_OFF    = 55;
 
-    @SuppressFBWarnings("SF_SWITCH_NO_DEFAULT")
     @Override
     protected void processSetAttribute(int attribute) throws IOException {
         //System.out.println("processSetAttribute(" + attribute + ")");
@@ -466,6 +465,8 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         case ATTRIBUTE_OVERLINE_OFF:
             closeTagOfType(AnsiAttrType.OVERLINE);
             break;
+        default:
+            throw new IllegalStateException("Attribute " + attribute + " should not be reached");
         }
     }
 
