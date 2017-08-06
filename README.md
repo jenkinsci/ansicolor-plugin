@@ -26,11 +26,20 @@ wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {
 }
 ```
 
-Also the following pipeline syntax can be used without allocating a node and a separate build wrapper.
+Also, the following pipeline syntax can be used without allocating a node and a separate build wrapper.
 
 ```groovy
 ansiColor('xterm') {
   echo 'something that outputs ansi colored stuff'
+}
+```
+
+The `TERM` environment variable will be set to the provided name inside the block scope.
+
+```groovy
+ansiColor('xterm') {
+  echo "TERM=${env.TERM}"
+  // prints out TERM=xterm
 }
 ```
 

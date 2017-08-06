@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Stack;
-import hudson.plugins.ansicolor.AnsiOutputStream;
 
 /**
  * Filters an outputstream of ANSI escape sequences and emits appropriate HTML elements instead.
@@ -77,7 +76,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     private void logdebug(String format, Object... args) throws IOException {
         String msg = String.format(format, args);
         emitter.emitHtml("<span style=\"border: 1px solid; color: #009000; background-color: #003000; font-size: 70%; font-weight: normal; font-style: normal\">");
-        out.write(msg.getBytes());
+        out.write(msg.getBytes("UTF-8"));
         emitter.emitHtml("</span>");
     }
 
@@ -236,6 +235,8 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
             case POSTAMBLE:
                 collectAmbleCharacter(data, ConsoleNote.POSTAMBLE);
                 break;
+            default:
+                throw new IllegalStateException("State " + state + " should not be reached");
         }
     }
 
@@ -464,6 +465,8 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         case ATTRIBUTE_OVERLINE_OFF:
             closeTagOfType(AnsiAttrType.OVERLINE);
             break;
+        default:
+            throw new IllegalStateException("Attribute " + attribute + " should not be reached");
         }
     }
 
@@ -475,10 +478,9 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 
     private String getPaletteColor(int paletteIndex) throws IOException {
         // for xterm 256 colors see also https://upload.wikimedia.org/wikipedia/commons/1/15/Xterm_256color_chart.svg
-        if (paletteIndex < 0 || paletteIndex > 255)
+        if (paletteIndex < 0 || paletteIndex > 255) {
             throw new IllegalArgumentException();
-
-        if (paletteIndex < 16) {
+        } else if (paletteIndex < 16) {
             // xterm 256 colors seen at https://upload.wikimedia.org/wikipedia/commons/1/15/Xterm_256color_chart.svg but this source might be wrong.
             // switch (paletteIndex) {
             // case  0: return "#000000";
@@ -501,13 +503,12 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
             // Tested with xterm on Kubuntu 16.04 (xterm version: 322-1ubuntu1), I find out, that
             // xterm itself uses the same 16 colors here for [30m…[37m & [90m…[97m
             // So I decide to do it the same way.
-            if (paletteIndex < 8)
+            if (paletteIndex < 8) {
                 return colorMap.getNormal(paletteIndex);
-            else
+            } else {
                 return colorMap.getBright(paletteIndex - 8);
-        }
-
-        if (paletteIndex < 232) { // 216 (6*6*6) color cube
+            }
+        } else if (paletteIndex < 232) { // 216 (6*6*6) color cube
             int c = paletteIndex - 16; // c = 0…215
             int b = c % 6;
             c /= 6;
@@ -521,17 +522,13 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
             if (g != 0) g = 55 + g * 40;
             if (b != 0) b = 55 + b * 40;
             return getRgbColor(r, g, b);
-        }
-
-        if (paletteIndex < 256) { // 24 gray shades from nealy black #080808 to nearly white #EEEEEE
+        } else { // 24 gray shades from nealy black #080808 to nearly white #EEEEEE
             // 08, 12, 1C, 26, 30, 3A, 44, 4E, 58, 62, 6C, 76, 80, 8A, 94, 9E, A8, B2, BC, C6, D0, DA, E4, EE
             int g = paletteIndex - 232; // c = 0…23
             g *= 10;        // c = 0…230
             g += 8;         // c = 8…238
             return getRgbColor(g, g, g);
         }
-
-        throw new IllegalArgumentException();
     }
 
     @Override

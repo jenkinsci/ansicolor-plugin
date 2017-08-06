@@ -3,6 +3,7 @@
 
 * [#100](https://github.com/jenkinsci/ansicolor-plugin/pull/100): Migrated hosting to github.com/jenkinsci - [@JoeMerten](https://github.com/JoeMerten) & [@dblock](https://github.com/dblock).
 * [#101](https://github.com/jenkinsci/ansicolor-plugin/pull/101): Some exceptions during plugin install and following jenkins start - [@JoeMerten](https://github.com/JoeMerten).
+* [#109](https://github.com/jenkinsci/ansicolor-plugin/pull/109): Set `TERM` environment variable inside of the `ansiColor` step when using Jenkins pipelines - [@mkobit](https://github.com/mkobit).
 * Your contribution here.
 
 0.5.0  (03/18/2017)

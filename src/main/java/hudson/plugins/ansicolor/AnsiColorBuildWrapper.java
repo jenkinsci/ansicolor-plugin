@@ -129,7 +129,7 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
         }
 
         public void setColorMaps(AnsiColorMap[] maps) {
-            colorMaps = maps;
+            colorMaps = maps.clone();
             save();
         }
 
