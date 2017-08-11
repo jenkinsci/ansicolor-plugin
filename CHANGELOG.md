@@ -1,10 +1,11 @@
 0.5.2 (Next)
 ============
 
+* [#111](https://github.com/jenkinsci/ansicolor-plugin/pull/111): Filter out escape sequence 'character set' select - [@pmhahn](https://github.com/pmhahn).
 * Your contribution here.
 
 0.5.1 (08/10/2017)
-============
+==================
 
 * [#100](https://github.com/jenkinsci/ansicolor-plugin/pull/100): Migrated hosting to github.com/jenkinsci - [@JoeMerten](https://github.com/JoeMerten) & [@dblock](https://github.com/dblock).
 * [#101](https://github.com/jenkinsci/ansicolor-plugin/pull/101): Some exceptions during plugin install and following jenkins start - [@JoeMerten](https://github.com/JoeMerten).

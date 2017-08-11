@@ -591,6 +591,12 @@ public class AnsiHtmlOutputStreamTest {
         );
     }
 
+    @Test
+    public void testResetCharacterSet() throws IOException {
+        assertThatAnnotateIs("(\033(0)", "()");
+        assertThatAnnotateIs("(\033)0)", "()");
+    }
+
     private void assertThatAnnotateIs(String ansi, String html) throws IOException {
         assertThat(annotate(ansi), is(html));
     }
