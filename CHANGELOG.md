@@ -2,6 +2,7 @@
 ============
 
 * [#111](https://github.com/jenkinsci/ansicolor-plugin/pull/111): Filter out escape sequence 'character set' select - [@pmhahn](https://github.com/pmhahn).
+* [#112](https://github.com/jenkinsci/ansicolor-plugin/pull/112): Filter out 'font select' escape sequence - [@pmhahn](https://github.com/pmhahn).
 * Your contribution here.
 
 0.5.1 (08/10/2017)
