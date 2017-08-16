@@ -357,7 +357,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     }
 
     // add attribute constants which are currently missing in jansi
-    // see also https://en.wikipedia.org/wiki/ANSI_escape_code
+    // see also <https://en.wikipedia.org/wiki/ANSI_escape_code#graphics>
     protected static final int ATTRIBUTE_STRIKEOUT       =  9;
     protected static final int ATTRIBUTE_ITALIC_OFF      = 23;
     protected static final int ATTRIBUTE_STRIKEOUT_OFF   = 29;
@@ -375,6 +375,9 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         // See also: https://github.com/jenkinsci/ansicolor-plugin/issues/91
         if (attribute >= 90 && attribute <= 97) {
             processSetForegroundColor(attribute - 90, true);
+        }
+        else if (attribute >= 10 && attribute <= 19) {
+            // Select Primary(Default) / n-th alternate font
         }
         else if (attribute >= 100 && attribute <= 107) {
             processSetBackgroundColor(attribute - 100, true);
@@ -466,7 +469,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
             closeTagOfType(AnsiAttrType.OVERLINE);
             break;
         default:
-            throw new IllegalStateException("Attribute " + attribute + " should not be reached");
+            break;
         }
     }
 
