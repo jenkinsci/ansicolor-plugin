@@ -1,0 +1,9 @@
+<FindBugsFilter>
+  <Match>
+    <Class name="~.*\.Messages"/>
+  </Match>
+  <Match>
+    <!-- This class is copied from jansi, and excluding it makes it easier to import upstream changes. -->
+    <Class name="hudson.plugins.ansicolor.AnsiOutputStream"/>
+  </Match>
+</FindBugsFilter>
