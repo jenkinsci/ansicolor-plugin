@@ -2,6 +2,7 @@
 ============
 
 * Your contribution here.
+* [#107](https://github.com/jenkinsci/ansicolor-plugin/pull/107): Removing startup banner - [@jglick](https://github.com/jglick).
 
 0.5.2 (08/17/2017)
 ============
