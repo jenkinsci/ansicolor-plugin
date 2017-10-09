@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Filters an outputstream of ANSI escape sequences and emits appropriate HTML elements instead.
@@ -45,8 +47,29 @@ import java.util.Stack;
  * handling via state machine. Simply remove this if you plan to use this class somewhere else.
  */
 public class AnsiHtmlOutputStream extends AnsiOutputStream {
+    private static final Logger LOG = Logger.getLogger(AnsiHtmlOutputStream.class.getName());
+
     private final AnsiColorMap colorMap;
     private final AnsiAttributeElement.Emitter emitter;
+
+    /**
+     * Returns a {@link AnsiHtmlOutputStream} which emits the HTML using {@link SimpleHtmlNote}
+     *
+     * @param logger output stream to wrap
+     * @param colorMap the colour map for the ansi log
+     */
+    public static AnsiHtmlOutputStream createJenkinsAnsiHtmlOutputStream(final OutputStream logger, AnsiColorMap colorMap) {
+        return new AnsiHtmlOutputStream(logger, colorMap, new AnsiAttributeElement.Emitter() {
+            @Override
+            public void emitHtml(String html) {
+                try {
+                    new SimpleHtmlNote(html).encodeTo(logger);
+                } catch (IOException e) {
+                    LOG.log(Level.WARNING, "Failed to add HTML markup '" + html + "'", e);
+                }
+            }
+        });
+    }
 
     private static enum State {
         INIT, DATA, PREAMBLE, NOTE, POSTAMBLE
