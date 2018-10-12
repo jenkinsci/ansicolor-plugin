@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -8,75 +8,10 @@
     <version>2.25</version>
   </parent>
 
-  <repositories>
-    <repository>
-      <id>repo.jenkins-ci.org</id>
-      <url>http://repo.jenkins-ci.org/public/</url>
-    </repository>
-  </repositories>
-
-  <properties>
-    <jenkins.version>1.642.3</jenkins.version>
-  </properties>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>repo.jenkins-ci.org</id>
-      <url>http://repo.jenkins-ci.org/public/</url>
-    </pluginRepository>
-  </pluginRepositories>
-
-  <scm>
-    <connection>scm:git:git://github.com/jenkinsci/ansicolor-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:jenkinsci/ansicolor-plugin.git</developerConnection>
-    <url>http://github.com/jenkinsci/ansicolor-plugin</url>
-    <tag>HEAD</tag>
-  </scm>
-
-  <distributionManagement>
-    <repository>
-      <id>repo.jenkins-ci.org</id>
-      <url>https://repo.jenkins-ci.org/releases/</url>
-    </repository>
-  </distributionManagement>
-
-  <build>
-    <plugins>
-      <!-- Enforce Java 5.0 compatibility. -->
-       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <configuration>
-            <signature>
-                <groupId>org.codehaus.mojo.signature</groupId>
-                <artifactId>java15</artifactId>
-                <version>1.0</version>
-            </signature>
-        </configuration>
-        <executions>
-            <execution>
-                <id>animal-sniffer</id>
-                <phase>verify</phase>
-                <goals>
-                    <goal>check</goal>
-                </goals>
-            </execution>
-        </executions>
-    </plugin>
-      <!-- Needed to build against Jenkins/Hudson 1.387 or earlier. -->
-      <plugin>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>2.5.1</version>
-        <configuration>
-          <goals>deploy</goals>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
   <artifactId>ansicolor</artifactId>
-  <packaging>hpi</packaging>
   <version>0.5.3-SNAPSHOT</version>
+  <packaging>hpi</packaging>
+
   <name>AnsiColor</name>
   <description>Adds ANSI coloring to the Console Output</description>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/AnsiColor+Plugin</url>
@@ -88,14 +23,32 @@
     </license>
   </licenses>
 
+  <developers>
+    <developer>
+      <id>dblock</id>
+      <name>Daniel Doubrovkine</name>
+      <email>dblock@dblock.org</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/jenkinsci/ansicolor-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/ansicolor-plugin.git</developerConnection>
+    <url>http://github.com/jenkinsci/ansicolor-plugin</url>
+    <tag>HEAD</tag>
+  </scm>
+  <distributionManagement>
+    <repository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/releases/</url>
+    </repository>
+  </distributionManagement>
+
+  <properties>
+    <jenkins.version>1.642.3</jenkins.version>
+  </properties>
+
   <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
-      <scope>test</scope>
-      <type>jar</type>
-    </dependency>
     <dependency>
      <groupId>org.jenkins-ci.plugins.workflow</groupId>
      <artifactId>workflow-step-api</artifactId>
@@ -110,13 +63,16 @@
     </dependency>
   </dependencies>
 
-  <developers>
-    <developer>
-      <id>dblock</id>
-      <name>Daniel Doubrovkine</name>
-      <email>dblock@dblock.org</email>
-    </developer>
-  </developers>
-
+  <repositories>
+    <repository>
+      <id>repo.jenkins-ci.org</id>
+      <url>http://repo.jenkins-ci.org/public/</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.jenkins-ci.org</id>
+      <url>http://repo.jenkins-ci.org/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
 </project>
-
