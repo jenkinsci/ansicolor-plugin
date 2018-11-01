@@ -33,6 +33,13 @@ public final class AnsiColorConsoleLogFilter extends ConsoleLogFilter implements
         for (AnsiColorMap.Color color : AnsiColorMap.Color.values()) {
             pregenerateNote(new AnsiAttributeElement(AnsiAttributeElement.AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getNormal(color.ordinal()) + ";\""));
         }
+        pregenerateNote(AnsiAttributeElement.bold());
+        pregenerateNote(AnsiAttributeElement.italic());
+        pregenerateNote(AnsiAttributeElement.underline());
+        pregenerateNote(AnsiAttributeElement.underlineDouble());
+        pregenerateNote(AnsiAttributeElement.strikeout());
+        pregenerateNote(AnsiAttributeElement.framed());
+        pregenerateNote(AnsiAttributeElement.overline());
         // TODO other cases, and other methods
         LOG.log(Level.FINE, "Notes pregenerated for {0}", notes.keySet());
     }

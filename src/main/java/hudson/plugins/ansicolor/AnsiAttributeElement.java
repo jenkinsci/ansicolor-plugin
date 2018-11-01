@@ -64,4 +64,34 @@ class AnsiAttributeElement {
         result = 31 * result + attributes.hashCode();
         return result;
     }
+
+    public static AnsiAttributeElement bold() {
+        return new AnsiAttributeElement(AnsiAttributeElement.AnsiAttrType.BOLD, "b", "");
+    }
+
+    public static AnsiAttributeElement italic() {
+        return new AnsiAttributeElement(AnsiAttrType.ITALIC, "i", "");
+    }
+
+    public static AnsiAttributeElement underline() {
+        return new AnsiAttributeElement(AnsiAttrType.UNDERLINE, "u", "");
+    }
+
+    public static AnsiAttributeElement underlineDouble() {
+        return new AnsiAttributeElement(AnsiAttrType.UNDERLINE, "span", "style=\"border-bottom: 3px double;\"");
+    }
+
+    public static AnsiAttributeElement strikeout() {
+        return new AnsiAttributeElement(AnsiAttrType.STRIKEOUT, "span", "style=\"text-decoration: line-through;\"");
+    }
+
+    public static AnsiAttributeElement framed() {
+        return new AnsiAttributeElement(AnsiAttrType.FRAMED, "span", "style=\"border: 1px solid;\"");
+    }
+
+    public static AnsiAttributeElement overline() {
+        return new AnsiAttributeElement(AnsiAttrType.OVERLINE, "span", "style=\"text-decoration: overline;\"");
+        // return new AnsiAttributeElement(AnsiAttrType.OVERLINE, "span", "style=\"border-top: 1px solid;\""); // alternate approach
+    }
+
 }

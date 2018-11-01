@@ -106,42 +106,7 @@ public class AnsiColorConsoleLogFilterTest extends AnsiHtmlOutputStreamTest {
     }
 
     @Override
-    public void testBold() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
-    public void testUnderline() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
-    public void testUnderlineDouble() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
-    public void testItalic() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
     public void testNegative() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
-    public void testStrikeout() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
-    public void testFramed() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
-    public void testOverlined() throws IOException {
         throw new AssumptionViolatedException("TODO not implemented");
     }
 

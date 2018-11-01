@@ -391,28 +391,28 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
             break;
         case ATTRIBUTE_INTENSITY_BOLD:
             closeTagOfType(AnsiAttrType.BOLD);
-            openTag(new AnsiAttributeElement(AnsiAttrType.BOLD, "b", ""));
+            openTag(AnsiAttributeElement.bold());
             break;
         case ATTRIBUTE_INTENSITY_NORMAL:
             closeTagOfType(AnsiAttrType.BOLD);
             break;
         case ATTRIBUTE_ITALIC:
             closeTagOfType(AnsiAttrType.ITALIC);
-            openTag(new AnsiAttributeElement(AnsiAttrType.ITALIC, "i", ""));
+            openTag(AnsiAttributeElement.italic());
             break;
         case ATTRIBUTE_ITALIC_OFF:
             closeTagOfType(AnsiAttrType.ITALIC);
             break;
         case ATTRIBUTE_UNDERLINE:
             closeTagOfType(AnsiAttrType.UNDERLINE);
-            openTag(new AnsiAttributeElement(AnsiAttrType.UNDERLINE, "u", ""));
+            openTag(AnsiAttributeElement.underline());
             break;
         case ATTRIBUTE_UNDERLINE_DOUBLE:
             // Double underlining is handled entirely different from single underlining, by using a CSS border
             // instead of a u-element, but it's still of the same attribute type and previously opened elements of
             // either type are closed accordingly.
             closeTagOfType(AnsiAttrType.UNDERLINE);
-            openTag(new AnsiAttributeElement(AnsiAttrType.UNDERLINE, "span", "style=\"border-bottom: 3px double;\""));
+            openTag(AnsiAttributeElement.underlineDouble());
             break;
         case ATTRIBUTE_UNDERLINE_OFF:
             closeTagOfType(AnsiAttrType.UNDERLINE);
@@ -447,7 +447,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
             // alternatives are <del> <s> (both tested and successfully rendered in firefox 51.0.1)
             // but I finally decide for "text-decoration: line-through"
             closeTagOfType(AnsiAttrType.STRIKEOUT);
-            openTag(new AnsiAttributeElement(AnsiAttrType.STRIKEOUT, "span", "style=\"text-decoration: line-through;\""));
+            openTag(AnsiAttributeElement.strikeout());
             // openTag(new AnsiAttributeElement(AnsiAttrType.STRIKEOUT, "s", "")); // alternate approach
             break;
         case ATTRIBUTE_STRIKEOUT_OFF:
@@ -455,15 +455,14 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
             break;
         case ATTRIBUTE_FRAMED:
             closeTagOfType(AnsiAttrType.FRAMED);
-            openTag(new AnsiAttributeElement(AnsiAttrType.FRAMED, "span", "style=\"border: 1px solid;\""));
+            openTag(AnsiAttributeElement.framed());
             break;
         case ATTRIBUTE_FRAMED_OFF:
             closeTagOfType(AnsiAttrType.FRAMED);
             break;
         case ATTRIBUTE_OVERLINE:
             closeTagOfType(AnsiAttrType.OVERLINE);
-            openTag(new AnsiAttributeElement(AnsiAttrType.OVERLINE, "span", "style=\"text-decoration: overline;\""));
-            //openTag(new AnsiAttributeElement(AnsiAttrType.OVERLINE, "span", "style=\"border-top: 1px solid;\"")); // alternate approach
+            openTag(AnsiAttributeElement.overline());
             break;
         case ATTRIBUTE_OVERLINE_OFF:
             closeTagOfType(AnsiAttrType.OVERLINE);
