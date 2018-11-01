@@ -32,6 +32,7 @@ public final class AnsiColorConsoleLogFilter extends ConsoleLogFilter implements
         // some cases of AnsiHtmlOutputStream.setForegroundColor:
         for (AnsiColorMap.Color color : AnsiColorMap.Color.values()) {
             pregenerateNote(new AnsiAttributeElement(AnsiAttributeElement.AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getNormal(color.ordinal()) + ";\""));
+            pregenerateNote(new AnsiAttributeElement(AnsiAttributeElement.AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getBright(color.ordinal()) + ";\""));
         }
         pregenerateNote(AnsiAttributeElement.bold());
         pregenerateNote(AnsiAttributeElement.italic());

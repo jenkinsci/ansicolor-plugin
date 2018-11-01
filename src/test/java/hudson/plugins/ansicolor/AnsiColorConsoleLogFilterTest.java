@@ -131,11 +131,6 @@ public class AnsiColorConsoleLogFilterTest extends AnsiHtmlOutputStreamTest {
     }
 
     @Override
-    public void testForegroundColorHighIntensity() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
     public void testForegroundColor256() throws IOException {
         throw new AssumptionViolatedException("other than the standard colors, which could be split into a separate test, seems unimplementable");
     }
