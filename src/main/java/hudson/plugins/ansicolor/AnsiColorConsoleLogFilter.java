@@ -75,6 +75,7 @@ public final class AnsiColorConsoleLogFilter extends ConsoleLogFilter implements
                     if (pregenerated != null) {
                         logger.write(pregenerated);
                     } else {
+                        // TODO decline to use pregenerated form of end tag if start tag could not be pregenerated
                         new SimpleHtmlNote(html).encodeTo(logger);
                     }
                 } catch (IOException e) {

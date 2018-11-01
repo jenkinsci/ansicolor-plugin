@@ -610,7 +610,7 @@ public class AnsiHtmlOutputStreamTest {
         assertThat(annotate(ansi, colorMap), is(html));
     }
 
-    private String annotate(String text, AnsiColorMap colorMap) throws IOException {
+    protected String annotate(String text, AnsiColorMap colorMap) throws IOException {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         AnsiHtmlOutputStream ansi = new AnsiHtmlOutputStream(bos, colorMap, new AnsiAttributeElement.Emitter() {
             public void emitHtml(String html) {
