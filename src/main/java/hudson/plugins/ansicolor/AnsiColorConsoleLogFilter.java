@@ -1,7 +1,6 @@
 package hudson.plugins.ansicolor;
 
 import hudson.console.ConsoleLogFilter;
-import hudson.console.LineTransformationOutputStream;
 import hudson.model.AbstractBuild;
 import java.io.ByteArrayOutputStream;
 
@@ -68,36 +67,20 @@ public final class AnsiColorConsoleLogFilter extends ConsoleLogFilter implements
             return null;
         }
 
-        return new LineTransformationOutputStream() {
-            AnsiHtmlOutputStream ansi = new AnsiHtmlOutputStream(logger, colorMap, new AnsiAttributeElement.Emitter() {
-                @Override
-                public void emitHtml(String html) {
-                    try {
-                        byte[] pregenerated = notes.get(html);
-                        if (pregenerated != null) {
-                            logger.write(pregenerated);
-                        } else {
-                            new SimpleHtmlNote(html).encodeTo(logger);
-                        }
-                    } catch (IOException e) {
-                        LOG.log(Level.WARNING, "Failed to add HTML markup '" + html + "'", e);
+        return new AnsiHtmlOutputStream(logger, colorMap, new AnsiAttributeElement.Emitter() {
+            @Override
+            public void emitHtml(String html) {
+                try {
+                    byte[] pregenerated = notes.get(html);
+                    if (pregenerated != null) {
+                        logger.write(pregenerated);
+                    } else {
+                        new SimpleHtmlNote(html).encodeTo(logger);
                     }
+                } catch (IOException e) {
+                    LOG.log(Level.WARNING, "Failed to add HTML markup '" + html + "'", e);
                 }
-            });
-
-            @Override
-            protected void eol(byte[] b, int len) throws IOException {
-                ansi.write(b, 0, len);
-                ansi.flush();
-                logger.flush();
             }
-
-            @Override
-            public void close() throws IOException {
-                ansi.close();
-                logger.close();
-                super.close();
-            }
-        };
+        });
     }
 }
