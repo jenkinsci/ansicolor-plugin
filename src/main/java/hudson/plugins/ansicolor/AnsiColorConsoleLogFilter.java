@@ -32,7 +32,15 @@ public final class AnsiColorConsoleLogFilter extends ConsoleLogFilter implements
         // some cases of AnsiHtmlOutputStream.setForegroundColor:
         for (AnsiColorMap.Color color : AnsiColorMap.Color.values()) {
             pregenerateNote(new AnsiAttributeElement(AnsiAttributeElement.AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getNormal(color.ordinal()) + ";\""));
+            pregenerateNote(new AnsiAttributeElement(AnsiAttributeElement.AnsiAttrType.FG, "span", "style=\"color: " + colorMap.getBright(color.ordinal()) + ";\""));
         }
+        pregenerateNote(AnsiAttributeElement.bold());
+        pregenerateNote(AnsiAttributeElement.italic());
+        pregenerateNote(AnsiAttributeElement.underline());
+        pregenerateNote(AnsiAttributeElement.underlineDouble());
+        pregenerateNote(AnsiAttributeElement.strikeout());
+        pregenerateNote(AnsiAttributeElement.framed());
+        pregenerateNote(AnsiAttributeElement.overline());
         // TODO other cases, and other methods
         LOG.log(Level.FINE, "Notes pregenerated for {0}", notes.keySet());
     }
@@ -75,6 +83,7 @@ public final class AnsiColorConsoleLogFilter extends ConsoleLogFilter implements
                     if (pregenerated != null) {
                         logger.write(pregenerated);
                     } else {
+                        // TODO decline to use pregenerated form of end tag if start tag could not be pregenerated
                         new SimpleHtmlNote(html).encodeTo(logger);
                     }
                 } catch (IOException e) {
