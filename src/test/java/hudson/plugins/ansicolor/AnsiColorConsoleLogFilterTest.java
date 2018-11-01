@@ -101,11 +101,6 @@ public class AnsiColorConsoleLogFilterTest extends AnsiHtmlOutputStreamTest {
     }
 
     @Override
-    public void testDefaultColors() throws IOException {
-        throw new AssumptionViolatedException("TODO missing background-color");
-    }
-
-    @Override
     public void testEmbeddedConsoleNote() throws IOException {
         throw new AssumptionViolatedException("seems irrelevant");
     }
@@ -116,8 +111,53 @@ public class AnsiColorConsoleLogFilterTest extends AnsiHtmlOutputStreamTest {
     }
 
     @Override
-    public void testOverlapping() throws IOException {
-        throw new AssumptionViolatedException("TODO missing some things");
+    public void testUnderline() throws IOException {
+        throw new AssumptionViolatedException("TODO not implemented");
+    }
+
+    @Override
+    public void testUnderlineDouble() throws IOException {
+        throw new AssumptionViolatedException("TODO not implemented");
+    }
+
+    @Override
+    public void testItalic() throws IOException {
+        throw new AssumptionViolatedException("TODO not implemented");
+    }
+
+    @Override
+    public void testNegative() throws IOException {
+        throw new AssumptionViolatedException("TODO not implemented");
+    }
+
+    @Override
+    public void testStrikeout() throws IOException {
+        throw new AssumptionViolatedException("TODO not implemented");
+    }
+
+    @Override
+    public void testFramed() throws IOException {
+        throw new AssumptionViolatedException("TODO not implemented");
+    }
+
+    @Override
+    public void testOverlined() throws IOException {
+        throw new AssumptionViolatedException("TODO not implemented");
+    }
+
+    @Override
+    public void testGreenOnWhite() throws IOException {
+        throw new AssumptionViolatedException("TODO missing background-color");
+    }
+
+    @Override
+    public void testGreenOnWhiteCSS() throws IOException {
+        throw new AssumptionViolatedException("TODO missing background-color");
+    }
+
+    @Override
+    public void testGreenOnWhiteXTerm() throws IOException {
+        throw new AssumptionViolatedException("TODO missing background-color");
     }
 
     @Override
@@ -126,12 +166,7 @@ public class AnsiColorConsoleLogFilterTest extends AnsiHtmlOutputStreamTest {
     }
 
     @Override
-    public void testUnderline() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
-    public void testOverlined() throws IOException {
+    public void testForegroundColorHighIntensity() throws IOException {
         throw new AssumptionViolatedException("TODO not implemented");
     }
 
@@ -146,58 +181,13 @@ public class AnsiColorConsoleLogFilterTest extends AnsiHtmlOutputStreamTest {
     }
 
     @Override
-    public void testStrikeout() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
-    public void testForegroundColorHighIntensity() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
-    public void testGreenOnWhite() throws IOException {
-        throw new AssumptionViolatedException("TODO missing background-color");
-    }
-
-    @Override
-    public void testBackgroundColorHighIntensity() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
-    public void testGreenOnWhiteXTerm() throws IOException {
-        throw new AssumptionViolatedException("TODO missing background-color");
-    }
-
-    @Override
-    public void testFramed() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
-    public void testItalic() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
     public void testResetBackgroundColor() throws IOException {
         throw new AssumptionViolatedException("TODO not implemented");
     }
 
     @Override
-    public void testNegative() throws IOException {
+    public void testBackgroundColorHighIntensity() throws IOException {
         throw new AssumptionViolatedException("TODO not implemented");
-    }
-
-    @Override
-    public void testConsoleNote() throws IOException {
-        throw new AssumptionViolatedException("seems irrelevant");
-    }
-
-    @Override
-    public void testGreenOnWhiteCSS() throws IOException {
-        throw new AssumptionViolatedException("TODO missing background-color");
     }
 
     @Override
@@ -211,8 +201,18 @@ public class AnsiColorConsoleLogFilterTest extends AnsiHtmlOutputStreamTest {
     }
 
     @Override
-    public void testUnderlineDouble() throws IOException {
-        throw new AssumptionViolatedException("TODO not implemented");
+    public void testDefaultColors() throws IOException {
+        throw new AssumptionViolatedException("TODO missing background-color");
+    }
+
+    @Override
+    public void testConsoleNote() throws IOException {
+        throw new AssumptionViolatedException("seems irrelevant");
+    }
+
+    @Override
+    public void testOverlapping() throws IOException {
+        throw new AssumptionViolatedException("TODO missing some things");
     }
 
 }
