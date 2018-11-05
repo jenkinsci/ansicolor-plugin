@@ -109,8 +109,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                 if (action != null) {
                     return new ColorConsoleAnnotator(action.colorMapName, ((Run) context).getCharset().name());
                 }
-            } else if (context.getClass().getName().equals("org.jenkinsci.plugins.workflow.graph.FlowNode")) {
-                // Note that prior to 2.145, we actually get FlowNode.class here rather than a FlowNode, so there is no per-step annotation.
+            } else if (Jenkins.get().getPlugin("workflow-api") != null && context instanceof FlowNode) {
                 FlowNode node = (FlowNode) context;
                 FlowExecutionOwner owner = node.getExecution().getOwner();
                 if (owner != null) {
