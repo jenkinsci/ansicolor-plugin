@@ -6,7 +6,9 @@ import hudson.console.ConsoleNote;
 
 /**
  * A simple ConsoleNote which represents just a simple tag.
+ * @deprecated Only here for serial form compatibility.
  */
+@Deprecated
 public class SimpleHtmlNote extends ConsoleNote<Object> {
     private String tagHtml;
 

@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.StringWriter;
+import java.util.logging.Level;
 
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -13,6 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.BuildWatcher;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
 public class AnsiColorStepTest {
@@ -36,6 +38,8 @@ public class AnsiColorStepTest {
     public static BuildWatcher buildWatcher = new BuildWatcher();
     @Rule
     public RestartableJenkinsRule story = new RestartableJenkinsRule();
+    @Rule
+    public LoggerRule logging = new LoggerRule().record(ColorConsoleAnnotator.class, Level.FINER);
 
     @Test
     public void testPipelineStep() throws Exception {
@@ -56,7 +60,7 @@ public class AnsiColorStepTest {
                 String html = writer.toString();
                 story.j.assertLogContains("TERM=xterm", run);
                 assertTrue("Failed to match color attribute in following HTML log output:\n" + html,
-                        html.matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"));
+                        html.replaceAll("<span style=\"display: none\">.+?</span>", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"));
             }
         });
     }

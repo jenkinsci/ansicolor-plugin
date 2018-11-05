@@ -1,32 +1,30 @@
 package hudson.plugins.ansicolor;
 
 import hudson.Extension;
-import hudson.console.ConsoleLogFilter;
 import hudson.plugins.ansicolor.AnsiColorBuildWrapper.DescriptorImpl;
 import hudson.util.ListBoxModel;
 
-import java.io.IOException;
 import java.util.Collections;
 
-import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
 
-import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepExecutionImpl;
-import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl;
 import org.jenkinsci.plugins.workflow.steps.BodyExecutionCallback;
-import org.jenkinsci.plugins.workflow.steps.BodyInvoker;
 import org.jenkinsci.plugins.workflow.steps.EnvironmentExpander;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import com.google.inject.Inject;
+import hudson.model.Run;
+import java.util.Set;
+import org.jenkinsci.plugins.workflow.steps.Step;
+import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
+import org.jenkinsci.plugins.workflow.steps.StepExecution;
 
 /**
  * Custom pipeline step that can be used without a node and build wrapper.
  */
-public class AnsiColorStep extends AbstractStepImpl {
+public class AnsiColorStep extends Step {
 
     private final String colorMapName;
 
@@ -50,15 +48,24 @@ public class AnsiColorStep extends AbstractStepImpl {
         return Jenkins.getActiveInstance().getDescriptorByType(DescriptorImpl.class);
     }
 
+    @Override
+    public StepExecution start(StepContext context) throws Exception {
+        return new ExecutionImpl(context, colorMapName);
+    }
+
     /**
      * Execution for {@link AnsiColorStep}.
      */
-    public static class ExecutionImpl extends AbstractStepExecutionImpl {
+    private static class ExecutionImpl extends AbstractStepExecutionImpl {
 
         private static final long serialVersionUID = 1L;
 
-        @Inject(optional = true)
-        private transient AnsiColorStep step;
+        private final String colorMapName;
+
+        ExecutionImpl(StepContext context, String colorMapName) {
+            super(context);
+            this.colorMapName = colorMapName;
+        }
 
         /**
          * {@inheritDoc}
@@ -66,39 +73,22 @@ public class AnsiColorStep extends AbstractStepImpl {
         @Override
         public boolean start() throws Exception {
             StepContext context = getContext();
+            context.get(Run.class).replaceAction(new ColorizedAction(colorMapName));
             EnvironmentExpander currentEnvironment = context.get(EnvironmentExpander.class);
-            EnvironmentExpander terminalEnvironment = EnvironmentExpander.constant(Collections.singletonMap("TERM", step.getColorMapName()));
-            context.newBodyInvoker().withContext(createConsoleLogFilter(context))
+            EnvironmentExpander terminalEnvironment = EnvironmentExpander.constant(Collections.singletonMap("TERM", colorMapName));
+            context.newBodyInvoker()
                    .withContext(EnvironmentExpander.merge(currentEnvironment, terminalEnvironment))
                                                    .withCallback(BodyExecutionCallback.wrap(context)).start();
             return false;
         }
 
-        private ConsoleLogFilter createConsoleLogFilter(StepContext context)
-                throws IOException, InterruptedException {
-            ConsoleLogFilter original = context.get(ConsoleLogFilter.class);
-            ConsoleLogFilter subsequent = new AnsiColorConsoleLogFilter(step.getColorMap());
-            return BodyInvoker.mergeConsoleLogFilters(original, subsequent);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void stop(@Nonnull Throwable cause) throws Exception {
-            getContext().onFailure(cause);
-        }
     }
 
     /**
      * Descriptor for {@link AnsiColorStep}.
      */
     @Extension(optional = true)
-    public static class StepDescriptorImpl extends AbstractStepDescriptorImpl {
-
-        public StepDescriptorImpl() {
-            super(ExecutionImpl.class);
-        }
+    public static class StepDescriptorImpl extends StepDescriptor {
 
         @Override
         public String getDisplayName() {
@@ -124,5 +114,11 @@ public class AnsiColorStep extends AbstractStepImpl {
         public ListBoxModel doFillColorMapNameItems() {
             return getWrapperDescriptor().doFillColorMapNameItems();
         }
+
+        @Override
+        public Set<? extends Class<?>> getRequiredContext() {
+            return Collections.singleton(Run.class);
+        }
+
     }
 }

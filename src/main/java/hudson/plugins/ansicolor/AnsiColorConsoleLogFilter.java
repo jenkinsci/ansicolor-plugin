@@ -15,7 +15,9 @@ import jenkins.util.JenkinsJVM;
 
 /**
  * {@link ConsoleLogFilter} that adds a {@link SimpleHtmlNote} to each line.
+ * @deprecated Only here for serial form compatibility.
  */
+@Deprecated
 public final class AnsiColorConsoleLogFilter extends ConsoleLogFilter implements Serializable {
 
     private static final long serialVersionUID = 1L;
