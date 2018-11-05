@@ -3,7 +3,7 @@
 
 * Your contribution here.
 * [#107](https://github.com/jenkinsci/ansicolor-plugin/pull/107): Removing startup banner - [@jglick](https://github.com/jglick).
-* [#131](https://github.com/jenkinsci/ansicolor-plugin/pull/131): Reworked implementation to add markup on display, not to the actual build log - [@jglick](https://github.com/jglick).
+* [#132](https://github.com/jenkinsci/ansicolor-plugin/pull/132): Reworked implementation to add markup on display, not to the actual build log - [@jglick](https://github.com/jglick).
 
 0.5.2 (08/17/2017)
 ============
