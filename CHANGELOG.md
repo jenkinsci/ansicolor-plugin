@@ -1,7 +1,6 @@
-0.5.3 (Next)
+0.5.3 (11/06/2018)
 ============
 
-* Your contribution here.
 * [#107](https://github.com/jenkinsci/ansicolor-plugin/pull/107): Removing startup banner - [@jglick](https://github.com/jglick).
 * [#128](https://github.com/jenkinsci/ansicolor-plugin/pull/128): Restoring limited compatibility for coloration generated remotely by Pipeline builds on agents - [@jglick](https://github.com/jglick).
 
