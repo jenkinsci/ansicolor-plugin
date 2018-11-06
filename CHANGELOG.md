@@ -1,9 +1,14 @@
 0.6 (Next)
 ============
 
-* Your contribution here.
-* [#107](https://github.com/jenkinsci/ansicolor-plugin/pull/107): Removing startup banner - [@jglick](https://github.com/jglick).
 * [#132](https://github.com/jenkinsci/ansicolor-plugin/pull/132): Reworked implementation to add markup on display, not to the actual build log - [@jglick](https://github.com/jglick).
+* Your contribution here.
+
+0.5.3 (11/06/2018)
+============
+
+* [#107](https://github.com/jenkinsci/ansicolor-plugin/pull/107): Removing startup banner - [@jglick](https://github.com/jglick).
+* [#128](https://github.com/jenkinsci/ansicolor-plugin/pull/128): Restoring limited compatibility for coloration generated remotely by Pipeline builds on agents - [@jglick](https://github.com/jglick).
 
 0.5.2 (08/17/2017)
 ============
