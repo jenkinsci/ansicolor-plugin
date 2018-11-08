@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>ansicolor</artifactId>
-  <version>0.5.4-SNAPSHOT</version>
+  <version>0.6-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <name>AnsiColor</name>
@@ -46,7 +46,7 @@
   </distributionManagement>
 
   <properties>
-    <jenkins.version>2.121.2</jenkins.version>
+    <jenkins.version>2.145</jenkins.version> <!-- to pick up https://github.com/jenkinsci/jenkins/pull/3662 -->
     <java.level>8</java.level>
   </properties>
 
@@ -56,6 +56,12 @@
      <artifactId>workflow-step-api</artifactId>
      <version>2.15</version>
      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-api</artifactId>
+      <version>2.30</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -88,6 +94,11 @@
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>structs</artifactId>
         <version>1.17</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>scm-api</artifactId>
+        <version>2.2.6</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

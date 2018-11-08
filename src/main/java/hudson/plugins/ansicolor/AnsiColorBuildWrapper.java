@@ -27,7 +27,6 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.console.ConsoleLogFilter;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
@@ -80,6 +79,7 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
     @Override
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener,
             EnvVars initialEnvironment) throws IOException, InterruptedException {
+        build.replaceAction(new ColorizedAction(colorMapName));
     }
 
     /**
@@ -188,8 +188,4 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
         }
     }
 
-    @Override
-    public ConsoleLogFilter createLoggerDecorator(Run<?, ?> build) {
-        return new AnsiColorConsoleLogFilter(getDescriptor().getColorMap(colorMapName));
-    }
 }
