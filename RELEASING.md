@@ -14,7 +14,7 @@ Make sure you have a [Jenkins-CI account](https://jenkins-ci.org/account) config
   </pluginGroups>
   <servers>
     <server>
-      <id>repo.jenkins-ci.org</id>
+      <id>maven.jenkins-ci.org</id>
       <username>...</username>
       <password>...</password>
     </server>
