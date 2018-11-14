@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>ansicolor</artifactId>
-  <version>0.6.0</version>
+  <version>0.6.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <name>AnsiColor</name>
@@ -36,7 +36,7 @@
     <connection>scm:git:git://github.com/jenkinsci/ansicolor-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/ansicolor-plugin.git</developerConnection>
     <url>http://github.com/jenkinsci/ansicolor-plugin</url>
-    <tag>ansicolor-0.6.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
