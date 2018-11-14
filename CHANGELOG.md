@@ -1,8 +1,7 @@
-0.6 (Next)
+0.6 (11/14/2018)
 ============
 
 * [#132](https://github.com/jenkinsci/ansicolor-plugin/pull/132): Reworked implementation to add markup on display, not to the actual build log - [@jglick](https://github.com/jglick).
-* Your contribution here.
 
 0.5.3 (11/06/2018)
 ============
