@@ -17,7 +17,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Assume;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.BuildWatcher;
@@ -90,7 +89,6 @@ public class AnsiColorBuildWrapperTest {
     }
 
     @Test
-    @Ignore
     public void testMultilineEscapeSequence() throws Exception {
         story.then(r -> {
             FreeStyleProject p = r.createFreeStyleProject();
@@ -99,6 +97,7 @@ public class AnsiColorBuildWrapperTest {
                 @Override
                 public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                     listener.getLogger().println("\u001B[1;34mThis text should be bold and blue");
+                    listener.getLogger().println("Still bold and blue");
                     listener.getLogger().println("\u001B[mThis text should be normal");
                     return true;
                 }
@@ -110,9 +109,8 @@ public class AnsiColorBuildWrapperTest {
             System.out.print(html);
             assertThat(html.replaceAll("<span style=\"display: none\">.+?</span>", ""),
                 allOf(
-                    // <b> and <span> are never closed.
-                    containsString("<b><span style=\"color: #1E90FF;\">This text should be bold and blue</span></b>"),
-                    // This should be inside of a span with `display: none`, but it is not.
+                    containsString("<b><span style=\"color: #1E90FF;\">This text should be bold and blue\n</span></b>"),
+                    containsString("<b><span style=\"color: #1E90FF;\">Still bold and blue\n</span></b>"),
                     not(containsString("\u001B[m"))));
         });
     }

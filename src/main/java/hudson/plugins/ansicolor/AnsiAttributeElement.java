@@ -65,6 +65,11 @@ class AnsiAttributeElement {
         return result;
     }
 
+    @Override
+    public String toString() {
+        return "<" + name + " " + attributes + ">";
+    }
+
     public static AnsiAttributeElement bold() {
         return new AnsiAttributeElement(AnsiAttributeElement.AnsiAttrType.BOLD, "b", "");
     }

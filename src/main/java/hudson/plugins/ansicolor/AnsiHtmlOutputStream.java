@@ -30,6 +30,7 @@ import hudson.util.NullStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 /**
@@ -93,12 +94,19 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         this.out = logOutput;
     }
 
-    private void openTag(AnsiAttributeElement tag) throws IOException {
+    /**
+     * @return A copy of the {@link AnsiAttributeElement}s which are currently opened, in order from outermost to innermost tag.
+     */
+    /*package*/ List<AnsiAttributeElement> getOpenTags() {
+        return new ArrayList<>(openTags);
+    }
+
+    /*package*/ void openTag(AnsiAttributeElement tag) throws IOException {
         openTags.add(tag);
         tag.emitOpen(emitter);
     }
 
-    private void closeOpenTags(AnsiAttrType until) throws IOException {
+    /*package*/ void closeOpenTags(AnsiAttrType until) throws IOException {
         while (!openTags.isEmpty()) {
             int index = openTags.size() - 1;
             if (until != null && openTags.get(index).ansiAttrType == until)
