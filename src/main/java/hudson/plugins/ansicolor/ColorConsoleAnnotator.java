@@ -60,7 +60,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
         this.colorMapName = colorMapName;
         this.charset = charset;
         this.openTags = openTags;
-        LOGGER.log(Level.FINE, "creating annotator with colorMapName={0} charset={1}, openTags={2}", new Object[] { colorMapName, charset, openTags });
+        LOGGER.log(Level.FINE, "creating annotator with colorMapName={0} charset={1} openTags={2}", new Object[] { colorMapName, charset, openTags });
     }
 
     ColorConsoleAnnotator(String colorMapName, String charset) {
@@ -71,6 +71,8 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
     public ConsoleAnnotator<Object> annotate(Object context, MarkupText text) {
         String s = text.getText();
         List<AnsiAttributeElement> nextOpenTags = openTags;
+        // TODO: As a performance improvement, we could create a branch for `s.indexOf('\u001B') == -1 & !openTags.isEmpty()`
+        // that just surrounds the text in the appropriate tags without going through AnsiHtmlOutputStream.
         if (s.indexOf('\u001B') != -1 || !openTags.isEmpty()) {
             AnsiColorMap colorMap = Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getColorMap(colorMapName);
             CountingOutputStream outgoing = new CountingOutputStream(new NullOutputStream());
@@ -99,10 +101,9 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                 }
             }
             EmitterImpl emitter = new EmitterImpl();
-            AnsiHtmlOutputStream ansiOs = new AnsiHtmlOutputStream(outgoing, colorMap, emitter);
-            CountingOutputStream incoming = new CountingOutputStream(ansiOs);
-            emitter.incoming = incoming;
-            try {
+            try (AnsiHtmlOutputStream ansiOs = new AnsiHtmlOutputStream(outgoing, colorMap, emitter);
+                    CountingOutputStream incoming = new CountingOutputStream(ansiOs)) {
+                emitter.incoming = incoming;
                 for (AnsiAttributeElement element : openTags) {
                     // We need to reopen tags that were still open at the end of the previous line in the
                     // so the stream's state is correct in case those tags are closed mid-line.
@@ -114,8 +115,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                     incoming.write(data[i]);
                 }
                 nextOpenTags = ansiOs.getOpenTags();
-                // Close any tags that are still open at the end of the line.
-                ansiOs.closeOpenTags(null);
+                // Tags open at the end of the line are closed when the stream is closed by the try-with-resources block.
             } catch (IOException x) {
                 LOGGER.log(Level.WARNING, null, x);
             }

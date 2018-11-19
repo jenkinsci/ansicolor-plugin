@@ -106,7 +106,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         tag.emitOpen(emitter);
     }
 
-    /*package*/ void closeOpenTags(AnsiAttrType until) throws IOException {
+    private void closeOpenTags(AnsiAttrType until) throws IOException {
         while (!openTags.isEmpty()) {
             int index = openTags.size() - 1;
             if (until != null && openTags.get(index).ansiAttrType == until)

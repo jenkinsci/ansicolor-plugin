@@ -67,7 +67,7 @@ class AnsiAttributeElement {
 
     @Override
     public String toString() {
-        return "<" + name + " " + attributes + ">";
+        return "AnsiAttributeElement{ansiAttrType=" + ansiAttrType + ",name=" + name + ",attributes=" + attributes + "}";
     }
 
     public static AnsiAttributeElement bold() {
