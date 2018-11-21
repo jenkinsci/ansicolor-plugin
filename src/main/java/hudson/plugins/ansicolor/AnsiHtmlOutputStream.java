@@ -30,8 +30,10 @@ import hudson.util.NullStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
+import javax.annotation.Nonnull;
 
 /**
  * Filters an outputstream of ANSI escape sequences and emits appropriate HTML elements instead.
@@ -60,16 +62,27 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     private boolean swapColors = false;  // true if negative / inverse mode is active (esc[7m)
 
     // A Deque might be a better choice, but we are constrained by the Java 5 API.
-    private ArrayList<AnsiAttributeElement> openTags = new ArrayList<AnsiAttributeElement>();
+    private ArrayList<AnsiAttributeElement> openTags;
 
     private OutputStream logOutput;
 
-    public AnsiHtmlOutputStream(final OutputStream os, final AnsiColorMap colorMap,
-        final AnsiAttributeElement.Emitter emitter) {
+    /**
+     * @param tagsToOpen A list of tags to open in the given order immediately after opening the tag for the default
+     * foreground/background colors (if such colors are specified by the color map) before any data is written to the
+     * underlying stream.
+     */
+    /*package*/ AnsiHtmlOutputStream(final OutputStream os, final AnsiColorMap colorMap,
+        final AnsiAttributeElement.Emitter emitter, @Nonnull List<AnsiAttributeElement> tagsToOpen) {
         super(os);
         this.logOutput = os;
         this.colorMap = colorMap;
         this.emitter = emitter;
+        this.openTags = new ArrayList<>(tagsToOpen);
+    }
+
+    public AnsiHtmlOutputStream(final OutputStream os, final AnsiColorMap colorMap,
+        final AnsiAttributeElement.Emitter emitter) {
+        this(os, colorMap, emitter, Collections.emptyList());
     }
 
     // Debug output for plugin developers. Puts the debug message into the html page
@@ -101,7 +114,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         return new ArrayList<>(openTags);
     }
 
-    /*package*/ void openTag(AnsiAttributeElement tag) throws IOException {
+    private void openTag(AnsiAttributeElement tag) throws IOException {
         openTags.add(tag);
         tag.emitOpen(emitter);
     }
@@ -206,6 +219,9 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         // the preamble is an ANSI escape sequence itself.
 
         if (state == State.INIT) {
+            List<AnsiAttributeElement> tagsToOpen = new ArrayList<>(openTags);
+            openTags.clear();
+
             Integer defaultFg = colorMap.getDefaultForeground();
             Integer defaultBg = colorMap.getDefaultBackground();
 
@@ -213,6 +229,10 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
                 openTag(new AnsiAttributeElement(AnsiAttrType.DEFAULT, "div", "style=\"" +
                         (defaultBg != null ? "background-color: " + colorMap.getNormal(defaultBg) + ";" : "") +
                         (defaultFg != null ? "color: " + colorMap.getNormal(defaultFg) + ";" : "") + "\""));
+            }
+
+            for (AnsiAttributeElement tag : tagsToOpen) {
+                openTag(tag);
             }
 
             state = State.DATA;

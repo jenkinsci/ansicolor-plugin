@@ -115,6 +115,34 @@ public class AnsiColorBuildWrapperTest {
         });
     }
 
+    @Test
+    public void testDefaultForegroundBackground() throws Exception {
+        story.then(r -> {
+            FreeStyleProject p = r.createFreeStyleProject();
+            // The VGA ColorMap sets default foreground and background colors.
+            p.getBuildWrappersList().add(new AnsiColorBuildWrapper("vga"));
+            p.getBuildersList().add(new TestBuilder() {
+                @Override
+                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                    listener.getLogger().println("White on black");
+                    listener.getLogger().println("\u001B[1;34mBold and blue on black");
+                    listener.getLogger().println("Still bold and blue on black\u001B[mBack to white on black");
+                    return true;
+                }
+            });
+            FreeStyleBuild b = r.buildAndAssertSuccess(p);
+            StringWriter writer = new StringWriter();
+            b.getLogText().writeHtmlTo(0L, writer);
+            String html = writer.toString();
+            System.out.print(html);
+            assertThat(html.replaceAll("<span style=\"display: none\">.+?</span>", ""),
+                allOf(
+                    containsString("<div style=\"background-color: #000000;color: #AAAAAA;\">White on black\n</div>"),
+                    containsString("<div style=\"background-color: #000000;color: #AAAAAA;\"><b><span style=\"color: #0000AA;\">Bold and blue on black\n</span></b></div>"),
+                    containsString("<div style=\"background-color: #000000;color: #AAAAAA;\"><b><span style=\"color: #0000AA;\">Still bold and blue on black</span></b>Back to white on black\n</div>")));
+        });
+    }
+
     @Issue("JENKINS-54133")
     @Test
     public void testWorkflowWrap() throws Exception {

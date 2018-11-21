@@ -71,10 +71,10 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
     public ConsoleAnnotator<Object> annotate(Object context, MarkupText text) {
         String s = text.getText();
         List<AnsiAttributeElement> nextOpenTags = openTags;
-        // TODO: As a performance improvement, we could create a branch for `s.indexOf('\u001B') == -1 & !openTags.isEmpty()`
-        // that just surrounds the text in the appropriate tags without going through AnsiHtmlOutputStream.
-        if (s.indexOf('\u001B') != -1 || !openTags.isEmpty()) {
-            AnsiColorMap colorMap = Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getColorMap(colorMapName);
+        // TODO: As a performance improvement, we could create a branch where `s.indexOf('\u001B') == -1` but other
+        // conditions are true that surrounds the text in the appropriate tags without going through AnsiHtmlOutputStream.
+        AnsiColorMap colorMap = Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getColorMap(colorMapName);
+        if (s.indexOf('\u001B') != -1 || !openTags.isEmpty() || colorMap.getDefaultBackground() != null || colorMap.getDefaultForeground() != null) {
             CountingOutputStream outgoing = new CountingOutputStream(new NullOutputStream());
             class EmitterImpl implements AnsiAttributeElement.Emitter {
                 CountingOutputStream incoming;
@@ -82,13 +82,20 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                 int lastPoint = -1; // multiple HTML tags may be emitted for one control sequence
                 @Override
                 public void emitHtml(String html) {
-                    LOGGER.log(Level.FINEST, "emitting {0} @{1}", new Object[] { html, incoming.getCount() });
-                    text.addMarkup(incoming.getCount(), html);
-                    if (incoming.getCount() != lastPoint) {
-                        lastPoint = incoming.getCount();
-                        int hide = incoming.getCount() - outgoing.getCount() - adjustment;
+                    int inCount = incoming.getCount();
+                    // All ANSI escapes sequences contain at least 2 bytes on modern platforms, so any HTML emitted
+                    // directly after the first byte is received is due to the initialization process of the stream and
+                    // belongs at position 0 (i.e. default background/foreground colors).
+                    if (inCount == 1) {
+                        inCount = 0;
+                    }
+                    LOGGER.log(Level.FINEST, "emitting {0} @{1}", new Object[] { html, inCount });
+                    text.addMarkup(inCount, html);
+                    if (inCount != lastPoint) {
+                        lastPoint = inCount;
+                        int hide = inCount - outgoing.getCount() - adjustment;
                         // If openTags is not empty, but there are no escape sequences directly on this line, or if we
-                        // are just closing tags at the end of the line, there is nothing to hide.
+                        // are emitting closing tags when closing the stream, there is nothing to hide.
                         if (hide != 0) {
                             LOGGER.log(Level.FINEST, "hiding {0} @{1}", new Object[] { hide, outgoing.getCount() + adjustment });
                             text.addMarkup(outgoing.getCount() + adjustment, outgoing.getCount() + adjustment + hide, "<span style=\"display: none\">", "</span>");
@@ -101,20 +108,22 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                 }
             }
             EmitterImpl emitter = new EmitterImpl();
-            try (AnsiHtmlOutputStream ansiOs = new AnsiHtmlOutputStream(outgoing, colorMap, emitter);
+            // We need to reopen tags that were still open at the end of the previous line so the stream's state is
+            // correct in case those tags are closed in the middle of this line.
+            try (AnsiHtmlOutputStream ansiOs = new AnsiHtmlOutputStream(outgoing, colorMap, emitter, openTags);
                     CountingOutputStream incoming = new CountingOutputStream(ansiOs)) {
                 emitter.incoming = incoming;
-                for (AnsiAttributeElement element : openTags) {
-                    // We need to reopen tags that were still open at the end of the previous line in the
-                    // so the stream's state is correct in case those tags are closed mid-line.
-                    ansiOs.openTag(element);
-                }
                 byte[] data = s.getBytes(charset);
                 for (int i = 0; i < data.length; i++) {
                     // Do not use write(byte[]) as offsets in incoming would not be accurate.
                     incoming.write(data[i]);
                 }
                 nextOpenTags = ansiOs.getOpenTags();
+                if (colorMap.getDefaultBackground() != null || colorMap.getDefaultForeground() != null) {
+                    // The default color scheme will be opened automatically at the beginning of the stream on the next
+                    // line, so we don't want to duplicate it.
+                    nextOpenTags.remove(0);
+                }
                 // Tags open at the end of the line are closed when the stream is closed by the try-with-resources block.
             } catch (IOException x) {
                 LOGGER.log(Level.WARNING, null, x);
