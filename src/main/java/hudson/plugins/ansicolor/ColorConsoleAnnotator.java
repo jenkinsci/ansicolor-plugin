@@ -76,7 +76,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                         lastPoint = incoming.getCount();
                         int hide = incoming.getCount() - outgoing.getCount() - adjustment;
                         LOGGER.finest("hiding " + hide + " @" + (outgoing.getCount() + adjustment));
-                        text.addMarkup(outgoing.getCount() + adjustment, outgoing.getCount() + adjustment + hide, "<span style=\"display: none\">", "</span>");
+                        text.addMarkup(outgoing.getCount() + adjustment, outgoing.getCount() + adjustment + hide, "<!--", "-->");
                         adjustment += hide;
                     }
                 }

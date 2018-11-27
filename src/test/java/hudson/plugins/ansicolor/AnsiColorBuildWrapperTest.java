@@ -81,7 +81,7 @@ public class AnsiColorBuildWrapperTest {
             b.getLogText().writeHtmlTo(0L, writer);
             String html = writer.toString();
             System.out.print(html);
-            assertThat(html.replaceAll("<span style=\"display: none\">.+?</span>", ""),
+            assertThat(html.replaceAll("<!--.+?-->", ""),
                 allOf(
                     containsString("[<b><span style=\"color: #1E90FF;\">INFO</span></b>]"),
                     containsString("<b>--------------&lt; </b><span style=\"color: #00CDCD;\">org.jenkins-ci.plugins:build-token-root</span><b> &gt;---------------</b>")));
@@ -112,7 +112,7 @@ public class AnsiColorBuildWrapperTest {
                 p.getLastBuild().getLogText().writeHtmlTo(0L, writer);
                 String html = writer.toString();
                 assertTrue("Failed to match color attribute in following HTML log output:\n" + html,
-                    html.replaceAll("<span style=\"display: none\">.+?</span>", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"));
+                    html.replaceAll("<!--.+?-->", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"));
             }
         });
     }
