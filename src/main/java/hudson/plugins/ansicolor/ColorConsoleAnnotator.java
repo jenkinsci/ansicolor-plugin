@@ -89,7 +89,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                     if (inCount == 1) {
                         inCount = 0;
                     }
-                    LOGGER.log(Level.FINEST, "emitting {0} @{1}", new Object[] { html, inCount });
+                    LOGGER.log(Level.FINEST, "emitting {0} @{1}/{2}", new Object[] { html, inCount, text.getText().length() });
                     text.addMarkup(inCount, html);
                     if (inCount != lastPoint) {
                         lastPoint = inCount;
@@ -113,10 +113,15 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
             try (AnsiHtmlOutputStream ansiOs = new AnsiHtmlOutputStream(outgoing, colorMap, emitter, openTags);
                     CountingOutputStream incoming = new CountingOutputStream(ansiOs)) {
                 emitter.incoming = incoming;
-                byte[] data = s.getBytes(charset);
-                for (int i = 0; i < data.length; i++) {
-                    // Do not use write(byte[]) as offsets in incoming would not be accurate.
-                    incoming.write(data[i]);
+                // We need to write one UTF-16 code unit at a time so that byte offsets match Java character offsets when inserting HTML.
+                for (int i = 0; i < s.length(); i++) {
+                    // TODO: Do we need to switch to using code points to support Unicode characters outside of the BMP?
+                    char c = s.charAt(i);
+                    if ((c & 0xFF00) != 0) {
+                        incoming.write(new byte[] { (byte) ((c & 0xFF00) >> 1), (byte) (c & 0x00FF) });
+                    } else {
+                        incoming.write((byte) c);
+                    }
                 }
                 nextOpenTags = ansiOs.getOpenTags();
                 if (colorMap.getDefaultBackground() != null || colorMap.getDefaultForeground() != null) {
