@@ -98,7 +98,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                         // are emitting closing tags when closing the stream, there is nothing to hide.
                         if (hide != 0) {
                             LOGGER.log(Level.FINEST, "hiding {0} @{1}", new Object[] { hide, outgoing.getCount() + adjustment });
-                            text.addMarkup(outgoing.getCount() + adjustment, outgoing.getCount() + adjustment + hide, "<span style=\"display: none\">", "</span>");
+                            text.addMarkup(outgoing.getCount() + adjustment, outgoing.getCount() + adjustment + hide, "<!--", "-->");
                             adjustment += hide;
                         }
                     }

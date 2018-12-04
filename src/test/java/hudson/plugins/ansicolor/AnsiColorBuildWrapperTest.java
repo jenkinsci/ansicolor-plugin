@@ -81,7 +81,7 @@ public class AnsiColorBuildWrapperTest {
             b.getLogText().writeHtmlTo(0L, writer);
             String html = writer.toString();
             System.out.print(html);
-            assertThat(html.replaceAll("<span style=\"display: none\">.+?</span>", ""),
+            assertThat(html.replaceAll("<!--.+?-->", ""),
                 allOf(
                     containsString("[<b><span style=\"color: #1E90FF;\">INFO</span></b>]"),
                     containsString("<b>--------------&lt; </b><span style=\"color: #00CDCD;\">org.jenkins-ci.plugins:build-token-root</span><b> &gt;---------------</b>")));
@@ -107,7 +107,7 @@ public class AnsiColorBuildWrapperTest {
             b.getLogText().writeHtmlTo(0L, writer);
             String html = writer.toString();
             System.out.print(html);
-            assertThat(html.replaceAll("<span style=\"display: none\">.+?</span>", ""),
+            assertThat(html.replaceAll("<!--.+?-->", ""),
                 allOf(
                     containsString("<b><span style=\"color: #1E90FF;\">This text should be bold and blue\n</span></b>"),
                     containsString("<b><span style=\"color: #1E90FF;\">Still bold and blue\n</span></b>"),
@@ -135,7 +135,7 @@ public class AnsiColorBuildWrapperTest {
             b.getLogText().writeHtmlTo(0L, writer);
             String html = writer.toString();
             System.out.print(html);
-            assertThat(html.replaceAll("<span style=\"display: none\">.+?</span>", ""),
+            assertThat(html.replaceAll("<!--.+?-->", ""),
                 allOf(
                     containsString("<div style=\"background-color: #000000;color: #AAAAAA;\">White on black\n</div>"),
                     containsString("<div style=\"background-color: #000000;color: #AAAAAA;\"><b><span style=\"color: #0000AA;\">Bold and blue on black\n</span></b></div>"),
@@ -167,7 +167,7 @@ public class AnsiColorBuildWrapperTest {
                 p.getLastBuild().getLogText().writeHtmlTo(0L, writer);
                 String html = writer.toString();
                 assertTrue("Failed to match color attribute in following HTML log output:\n" + html,
-                    html.replaceAll("<span style=\"display: none\">.+?</span>", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"));
+                    html.replaceAll("<!--.+?-->", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"));
             }
         });
     }
@@ -189,7 +189,7 @@ public class AnsiColorBuildWrapperTest {
             b.getLogText().writeHtmlTo(0L, writer);
             String html = writer.toString();
             System.out.print(html);
-            assertThat(html.replaceAll("<span style=\"display: none\">.+?</span>", ""),
+            assertThat(html.replaceAll("<!--.+?-->", ""),
                     containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] Récupération du numéro de version de l'application</b></span>"));
         });
     }
