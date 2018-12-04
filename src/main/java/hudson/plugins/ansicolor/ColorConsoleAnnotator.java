@@ -66,18 +66,21 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
             CountingOutputStream outgoing = new CountingOutputStream(new NullOutputStream());
             class EmitterImpl implements AnsiAttributeElement.Emitter {
                 CountingOutputStream incoming;
-                int adjustment;
+                int multiByteCharAdjustment;
+                int hiddenCharAdjustment;
                 int lastPoint = -1; // multiple HTML tags may be emitted for one control sequence
                 @Override
                 public void emitHtml(String html) {
-                    LOGGER.finest("emitting " + html + " @" + incoming.getCount());
-                    text.addMarkup(incoming.getCount(), html);
-                    if (incoming.getCount() != lastPoint) {
-                        lastPoint = incoming.getCount();
-                        int hide = incoming.getCount() - outgoing.getCount() - adjustment;
-                        LOGGER.finest("hiding " + hide + " @" + (outgoing.getCount() + adjustment));
-                        text.addMarkup(outgoing.getCount() + adjustment, outgoing.getCount() + adjustment + hide, "<!--", "-->");
-                        adjustment += hide;
+                    int inCount = incoming.getCount() - multiByteCharAdjustment;
+                    int outCount = outgoing.getCount() - multiByteCharAdjustment + hiddenCharAdjustment;
+                    LOGGER.log(Level.FINEST, "emitting {0} @{1}/{2}", new Object[] { html, inCount, s.length() });
+                    text.addMarkup(inCount, html);
+                    if (inCount != lastPoint) {
+                        lastPoint = inCount;
+                        int hide = inCount - outCount;
+                        LOGGER.log(Level.FINEST, "hiding {0} @{1}", new Object[] { hide, outCount });
+                        text.addMarkup(outCount, outCount + hide, "<!--", "-->");
+                        hiddenCharAdjustment += hide;
                     }
                 }
             }
@@ -85,10 +88,11 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
             CountingOutputStream incoming = new CountingOutputStream(new AnsiHtmlOutputStream(outgoing, colorMap, emitter));
             emitter.incoming = incoming;
             try {
-                byte[] data = s.getBytes(charset);
-                for (int i = 0; i < data.length; i++) {
-                    // Do not use write(byte[]) as offsets in incoming would not be accurate.
-                    incoming.write(data[i]);
+                for (int i = 0; i < s.length(); i++) {
+                    // We write one UTF-16 code unit at a time so that our counting methods can handle multibyte characters correctly.
+                    byte[] chars = String.valueOf(s.charAt(i)).getBytes(charset);
+                    emitter.multiByteCharAdjustment += chars.length - 1;
+                    incoming.write(chars);
                 }
             } catch (IOException x) {
                 LOGGER.log(Level.WARNING, null, x);
