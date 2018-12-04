@@ -105,9 +105,6 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                         }
                     }
                 }
-                public void emitHtmlDirect(String html) {
-                    text.addMarkup(incoming.getCount(), html);
-                }
             }
             EmitterImpl emitter = new EmitterImpl();
             // We need to reopen tags that were still open at the end of the previous line so the stream's state is
