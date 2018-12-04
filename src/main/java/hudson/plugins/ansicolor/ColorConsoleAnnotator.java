@@ -78,13 +78,15 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
             CountingOutputStream outgoing = new CountingOutputStream(new NullOutputStream());
             class EmitterImpl implements AnsiAttributeElement.Emitter {
                 CountingOutputStream incoming;
-                int adjustment;
+                int multiByteCharAdjustment;
+                int hiddenCharAdjustment;
                 int lastPoint = -1; // multiple HTML tags may be emitted for one control sequence
                 @Override
                 public void emitHtml(String html) {
-                    int inCount = incoming.getCount();
+                    int inCount = incoming.getCount() - multiByteCharAdjustment;
+                    int outCount = outgoing.getCount() - multiByteCharAdjustment + hiddenCharAdjustment;
                     // All ANSI escapes sequences contain at least 2 bytes on modern platforms, so any HTML emitted
-                    // directly after the first byte is received is due to the initialization process of the stream and
+                    // directly after the first character is received is due to the initialization process of the stream and
                     // belongs at position 0 (i.e. default background/foreground colors).
                     if (inCount == 1) {
                         inCount = 0;
@@ -93,13 +95,13 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                     text.addMarkup(inCount, html);
                     if (inCount != lastPoint) {
                         lastPoint = inCount;
-                        int hide = inCount - outgoing.getCount() - adjustment;
+                        int hide = inCount - outCount;
                         // If openTags is not empty, but there are no escape sequences directly on this line, or if we
                         // are emitting closing tags when closing the stream, there is nothing to hide.
                         if (hide != 0) {
-                            LOGGER.log(Level.FINEST, "hiding {0} @{1}", new Object[] { hide, outgoing.getCount() + adjustment });
-                            text.addMarkup(outgoing.getCount() + adjustment, outgoing.getCount() + adjustment + hide, "<!--", "-->");
-                            adjustment += hide;
+                            LOGGER.log(Level.FINEST, "hiding {0} @{1}", new Object[] { hide, outCount });
+                            text.addMarkup(outCount, outCount + hide, "<!--", "-->");
+                            hiddenCharAdjustment += hide;
                         }
                     }
                 }
@@ -115,13 +117,9 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                 emitter.incoming = incoming;
                 // We need to write one UTF-16 code unit at a time so that byte offsets match Java character offsets when inserting HTML.
                 for (int i = 0; i < s.length(); i++) {
-                    // TODO: Do we need to switch to using code points to support Unicode characters outside of the BMP?
-                    char c = s.charAt(i);
-                    if ((c & 0xFF00) != 0) {
-                        incoming.write(new byte[] { (byte) ((c & 0xFF00) >> 1), (byte) (c & 0x00FF) });
-                    } else {
-                        incoming.write((byte) c);
-                    }
+                    byte[] chars = String.valueOf(s.charAt(i)).getBytes(charset);
+                    emitter.multiByteCharAdjustment += chars.length - 1;
+                    incoming.write(chars);
                 }
                 nextOpenTags = ansiOs.getOpenTags();
                 if (colorMap.getDefaultBackground() != null || colorMap.getDefaultForeground() != null) {
