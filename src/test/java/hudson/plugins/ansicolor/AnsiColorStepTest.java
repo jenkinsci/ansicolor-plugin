@@ -60,7 +60,7 @@ public class AnsiColorStepTest {
                 String html = writer.toString();
                 story.j.assertLogContains("TERM=xterm", run);
                 assertTrue("Failed to match color attribute in following HTML log output:\n" + html,
-                        html.replaceAll("<span style=\"display: none\">.+?</span>", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"));
+                        html.replaceAll("<!--.+?-->", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"));
             }
         });
     }
