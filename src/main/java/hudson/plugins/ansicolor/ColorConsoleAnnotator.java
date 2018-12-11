@@ -92,6 +92,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                  */
                 byte[] data = s.getBytes("US-ASCII");
                 for (int i = 0; i < data.length; i++) {
+                    // Do not use write(byte[]) as offsets in incoming would not be accurate.
                     incoming.write(data[i]);
                 }
             } catch (IOException x) {
