@@ -50,12 +50,10 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
     private static final long serialVersionUID = 1;
 
     private final String colorMapName;
-    private final String charset;
 
-    ColorConsoleAnnotator(String colorMapName, String charset) {
+    ColorConsoleAnnotator(String colorMapName) {
         this.colorMapName = colorMapName;
-        this.charset = charset;
-        LOGGER.fine("creating annotator with colorMapName=" + colorMapName + " charset=" + charset);
+        LOGGER.fine("creating annotator with colorMapName=" + colorMapName);
     }
 
     @Override
@@ -66,21 +64,18 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
             CountingOutputStream outgoing = new CountingOutputStream(new NullOutputStream());
             class EmitterImpl implements AnsiAttributeElement.Emitter {
                 CountingOutputStream incoming;
-                int multiByteCharAdjustment;
-                int hiddenCharAdjustment;
+                int adjustment;
                 int lastPoint = -1; // multiple HTML tags may be emitted for one control sequence
                 @Override
                 public void emitHtml(String html) {
-                    int inCount = incoming.getCount() - multiByteCharAdjustment;
-                    int outCount = outgoing.getCount() - multiByteCharAdjustment + hiddenCharAdjustment;
-                    LOGGER.log(Level.FINEST, "emitting {0} @{1}/{2}", new Object[] { html, inCount, s.length() });
-                    text.addMarkup(inCount, html);
-                    if (inCount != lastPoint) {
-                        lastPoint = inCount;
-                        int hide = inCount - outCount;
-                        LOGGER.log(Level.FINEST, "hiding {0} @{1}", new Object[] { hide, outCount });
-                        text.addMarkup(outCount, outCount + hide, "<!--", "-->");
-                        hiddenCharAdjustment += hide;
+                    LOGGER.log(Level.FINEST, "emitting {0} @{1}/{2}", new Object[] { html, incoming.getCount(), s.length() });
+                    text.addMarkup(incoming.getCount(), html);
+                    if (incoming.getCount() != lastPoint) {
+                        lastPoint = incoming.getCount();
+                        int hide = incoming.getCount() - outgoing.getCount() - adjustment;
+                        LOGGER.log(Level.FINEST, "hiding {0} @{1}", new Object[] { hide, outgoing.getCount() + adjustment });
+                        text.addMarkup(outgoing.getCount() + adjustment, outgoing.getCount() + adjustment + hide, "<!--", "-->");
+                        adjustment += hide;
                     }
                 }
             }
@@ -88,11 +83,16 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
             CountingOutputStream incoming = new CountingOutputStream(new AnsiHtmlOutputStream(outgoing, colorMap, emitter));
             emitter.incoming = incoming;
             try {
-                for (int i = 0; i < s.length(); i++) {
-                    // We write one UTF-16 code unit at a time so that our counting methods can handle multibyte characters correctly.
-                    byte[] chars = String.valueOf(s.charAt(i)).getBytes(charset);
-                    emitter.multiByteCharAdjustment += chars.length - 1;
-                    incoming.write(chars);
+                /*
+                 * We only use AnsiHtmlOutputStream for its calls to Emitter.emitHtml when it encounters ANSI escape
+                 * sequences. The output of the stream will be discarded. We encode the String using US_ASCII because
+                 * all ANSI escape sequences can be represented in ASCII using a single byte, and any non-ASCII
+                 * characters will be replaced with '?', which is good, since it means that byte offsets will match
+                 * character offsets in the emitter without any extra work.
+                 */
+                byte[] data = s.getBytes("US-ASCII");
+                for (int i = 0; i < data.length; i++) {
+                    incoming.write(data[i]);
                 }
             } catch (IOException x) {
                 LOGGER.log(Level.WARNING, null, x);
@@ -111,7 +111,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
             if (context instanceof Run) {
                 ColorizedAction action = ((Run) context).getAction(ColorizedAction.class);
                 if (action != null) {
-                    return new ColorConsoleAnnotator(action.colorMapName, ((Run) context).getCharset().name());
+                    return new ColorConsoleAnnotator(action.colorMapName);
                 }
             } else if (Jenkins.get().getPlugin("workflow-api") != null && context instanceof FlowNode) {
                 FlowNode node = (FlowNode) context;
@@ -126,7 +126,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                     if (exec instanceof Run) {
                         ColorizedAction action = ((Run) exec).getAction(ColorizedAction.class);
                         if (action != null) {
-                            return new ColorConsoleAnnotator(action.colorMapName, /* JEp-206 */ "UTF-8");
+                            return new ColorConsoleAnnotator(action.colorMapName);
                         }
                     }
                 }
