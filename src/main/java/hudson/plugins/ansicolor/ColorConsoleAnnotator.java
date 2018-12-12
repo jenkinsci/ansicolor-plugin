@@ -87,9 +87,10 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                  * We only use AnsiHtmlOutputStream for its calls to Emitter.emitHtml when it encounters ANSI escape
                  * sequences; the output of the stream will be discarded. To know where to insert HTML in the MarkupText,
                  * we track the number of bytes we have written, and use that as a char (UTF-16 code unit) offset into
-                 * the original String. Since all ANSI escape sequences can be represented in ASCII using a single byte,
-                 * and ASCII characters are represented in UTF-16BE using just the lower byte, we write all ASCII chars
-                 * to the stream unmodified, and convert any other character into '?' as a placeholder so the number of
+                 * the original String. Since all ANSI escape sequences only use ASCII characters, and ASCII characters
+                 * in UTF-16BE are all represented using a single code unit whose high byte is 0, and whose low byte is
+                 * the same as it would be in an 8-bit ASCII encoding, we write all ASCII chars to the stream as the low
+                 * byte of the code unit, and convert any other character into '?' as a placeholder so the number of
                  * bytes written matches the char offset into the String.
                  */
                 for (int i = 0; i < s.length(); i++) {
