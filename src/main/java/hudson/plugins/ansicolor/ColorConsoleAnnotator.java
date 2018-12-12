@@ -85,15 +85,21 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
             try {
                 /*
                  * We only use AnsiHtmlOutputStream for its calls to Emitter.emitHtml when it encounters ANSI escape
-                 * sequences. The output of the stream will be discarded. We encode the String using US_ASCII because
-                 * all ANSI escape sequences can be represented in ASCII using a single byte, and any non-ASCII
-                 * characters will be replaced with '?', which is good, since it means that byte offsets will match
-                 * character offsets in the emitter without any extra work.
+                 * sequences; the output of the stream will be discarded. To know where to insert HTML in the MarkupText,
+                 * we track the number of bytes we have written, and use that as a char (UTF-16 code unit) offset into
+                 * the original String. Since all ANSI escape sequences can be represented in ASCII using a single byte,
+                 * and ASCII characters are represented in UTF-16BE using just the lower byte, we write all ASCII chars
+                 * to the stream unmodified, and convert any other character into '?' as a placeholder so the number of
+                 * bytes written matches the char offset into the String.
                  */
-                byte[] data = s.getBytes("US-ASCII");
-                for (int i = 0; i < data.length; i++) {
-                    // Do not use write(byte[]) as offsets in incoming would not be accurate.
-                    incoming.write(data[i]);
+                for (int i = 0; i < s.length(); i++) {
+                    char c = s.charAt(i);
+                    // The highest ASCII character is 0x7F (DEL). High and low surrogate pairs in UTF-16BE will always
+                    // be at least 0xD800 and will be converted to '?'.
+                    if (c >= 0x80) {
+                        c = '?';
+                    }
+                    incoming.write(c);
                 }
             } catch (IOException x) {
                 LOGGER.log(Level.WARNING, null, x);
