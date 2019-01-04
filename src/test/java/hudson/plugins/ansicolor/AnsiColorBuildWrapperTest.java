@@ -88,6 +88,61 @@ public class AnsiColorBuildWrapperTest {
         });
     }
 
+    @Test
+    public void testMultilineEscapeSequence() throws Exception {
+        story.then(r -> {
+            FreeStyleProject p = r.createFreeStyleProject();
+            p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
+            p.getBuildersList().add(new TestBuilder() {
+                @Override
+                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                    listener.getLogger().println("\u001B[1;34mThis text should be bold and blue");
+                    listener.getLogger().println("Still bold and blue");
+                    listener.getLogger().println("\u001B[mThis text should be normal");
+                    return true;
+                }
+            });
+            FreeStyleBuild b = r.buildAndAssertSuccess(p);
+            StringWriter writer = new StringWriter();
+            b.getLogText().writeHtmlTo(0L, writer);
+            String html = writer.toString();
+            System.out.print(html);
+            assertThat(html.replaceAll("<!--.+?-->", ""),
+                allOf(
+                    containsString("<b><span style=\"color: #1E90FF;\">This text should be bold and blue\n</span></b>"),
+                    containsString("<b><span style=\"color: #1E90FF;\">Still bold and blue\n</span></b>"),
+                    not(containsString("\u001B[m"))));
+        });
+    }
+
+    @Test
+    public void testDefaultForegroundBackground() throws Exception {
+        story.then(r -> {
+            FreeStyleProject p = r.createFreeStyleProject();
+            // The VGA ColorMap sets default foreground and background colors.
+            p.getBuildWrappersList().add(new AnsiColorBuildWrapper("vga"));
+            p.getBuildersList().add(new TestBuilder() {
+                @Override
+                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                    listener.getLogger().println("White on black");
+                    listener.getLogger().println("\u001B[1;34mBold and blue on black");
+                    listener.getLogger().println("Still bold and blue on black\u001B[mBack to white on black");
+                    return true;
+                }
+            });
+            FreeStyleBuild b = r.buildAndAssertSuccess(p);
+            StringWriter writer = new StringWriter();
+            b.getLogText().writeHtmlTo(0L, writer);
+            String html = writer.toString();
+            System.out.print(html);
+            assertThat(html.replaceAll("<!--.+?-->", ""),
+                allOf(
+                    containsString("<div style=\"background-color: #000000;color: #AAAAAA;\">White on black\n</div>"),
+                    containsString("<div style=\"background-color: #000000;color: #AAAAAA;\"><b><span style=\"color: #0000AA;\">Bold and blue on black\n</span></b></div>"),
+                    containsString("<div style=\"background-color: #000000;color: #AAAAAA;\"><b><span style=\"color: #0000AA;\">Still bold and blue on black</span></b>Back to white on black\n</div>")));
+        });
+    }
+
     @Issue("JENKINS-54133")
     @Test
     public void testWorkflowWrap() throws Exception {

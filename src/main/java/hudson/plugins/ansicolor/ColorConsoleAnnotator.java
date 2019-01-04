@@ -31,8 +31,11 @@ import hudson.console.ConsoleAnnotatorFactory;
 import hudson.model.Queue;
 import hudson.model.Run;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
@@ -50,17 +53,24 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
     private static final long serialVersionUID = 1;
 
     private final String colorMapName;
+    private final @Nonnull List<AnsiAttributeElement> openTags;
+
+    ColorConsoleAnnotator(String colorMapName, List<AnsiAttributeElement> openTags) {
+        this.colorMapName = colorMapName;
+        this.openTags = openTags;
+        LOGGER.log(Level.FINE, "creating annotator with colorMapName={0} openTags={1}", new Object[] { colorMapName, openTags });
+    }
 
     ColorConsoleAnnotator(String colorMapName) {
-        this.colorMapName = colorMapName;
-        LOGGER.fine("creating annotator with colorMapName=" + colorMapName);
+        this(colorMapName, Collections.emptyList());
     }
 
     @Override
     public ConsoleAnnotator<Object> annotate(Object context, MarkupText text) {
         String s = text.getText();
-        if (s.indexOf('\u001B') != -1) {
-            AnsiColorMap colorMap = Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getColorMap(colorMapName);
+        List<AnsiAttributeElement> nextOpenTags = openTags;
+        AnsiColorMap colorMap = Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getColorMap(colorMapName);
+        if (s.indexOf('\u001B') != -1 || !openTags.isEmpty() || colorMap.getDefaultBackground() != null || colorMap.getDefaultForeground() != null) {
             CountingOutputStream outgoing = new CountingOutputStream(new NullOutputStream());
             class EmitterImpl implements AnsiAttributeElement.Emitter {
                 CountingOutputStream incoming;
@@ -68,21 +78,35 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                 int lastPoint = -1; // multiple HTML tags may be emitted for one control sequence
                 @Override
                 public void emitHtml(String html) {
-                    LOGGER.log(Level.FINEST, "emitting {0} @{1}/{2}", new Object[] { html, incoming.getCount(), s.length() });
-                    text.addMarkup(incoming.getCount(), html);
-                    if (incoming.getCount() != lastPoint) {
-                        lastPoint = incoming.getCount();
-                        int hide = incoming.getCount() - outgoing.getCount() - adjustment;
-                        LOGGER.log(Level.FINEST, "hiding {0} @{1}", new Object[] { hide, outgoing.getCount() + adjustment });
-                        text.addMarkup(outgoing.getCount() + adjustment, outgoing.getCount() + adjustment + hide, "<!--", "-->");
-                        adjustment += hide;
+                    int inCount = incoming.getCount();
+                    int outCount = outgoing.getCount() + adjustment;
+                    // All ANSI escapes sequences contain at least 2 bytes on modern platforms, so any HTML emitted
+                    // directly after the first character is received is due to the initialization process of the stream and
+                    // belongs at position 0 (i.e. default background/foreground colors).
+                    if (inCount == 1) {
+                        inCount = 0;
+                    }
+                    LOGGER.log(Level.FINEST, "emitting {0} @{1}/{2}", new Object[] { html, inCount, text.getText().length() });
+                    text.addMarkup(inCount, html);
+                    if (inCount != lastPoint) {
+                        lastPoint = inCount;
+                        int hide = inCount - outCount;
+                        // If openTags is not empty, but there are no escape sequences directly on this line, or if we
+                        // are emitting closing tags when closing the stream, there is nothing to hide.
+                        if (hide != 0) {
+                            LOGGER.log(Level.FINEST, "hiding {0} @{1}", new Object[] { hide, outCount });
+                            text.addMarkup(outCount, outCount + hide, "<!--", "-->");
+                            adjustment += hide;
+                        }
                     }
                 }
             }
             EmitterImpl emitter = new EmitterImpl();
-            CountingOutputStream incoming = new CountingOutputStream(new AnsiHtmlOutputStream(outgoing, colorMap, emitter));
-            emitter.incoming = incoming;
-            try {
+            // We need to reopen tags that were still open at the end of the previous line so the stream's state is
+            // correct in case those tags are closed in the middle of this line.
+            try (AnsiHtmlOutputStream ansiOs = new AnsiHtmlOutputStream(outgoing, colorMap, emitter, openTags);
+                    CountingOutputStream incoming = new CountingOutputStream(ansiOs)) {
+                emitter.incoming = incoming;
                 /*
                  * We only use AnsiHtmlOutputStream for its calls to Emitter.emitHtml when it encounters ANSI escape
                  * sequences; the output of the stream will be discarded. To know where to insert HTML in the MarkupText,
@@ -102,12 +126,22 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                     }
                     incoming.write(c);
                 }
+                nextOpenTags = ansiOs.getOpenTags();
+                if (colorMap.getDefaultBackground() != null || colorMap.getDefaultForeground() != null) {
+                    // The default color scheme will be opened automatically at the beginning of the stream on the next
+                    // line, so we don't want to duplicate it.
+                    // AnsiHtmlOutputStream#getOpenTags makes a copy so calling `remove` is safe.
+                    nextOpenTags.remove(0);
+                }
+                // Tags open at the end of the line are closed when the stream is closed by the try-with-resources block.
             } catch (IOException x) {
                 LOGGER.log(Level.WARNING, null, x);
             }
             LOGGER.finer(() -> "\"" + StringEscapeUtils.escapeJava(s) + "\" → \"" + StringEscapeUtils.escapeJava(text.toString(true)) + "\"");
         }
-        return this;
+        return openTags == nextOpenTags
+                ? this
+                : new ColorConsoleAnnotator(colorMapName, nextOpenTags);
     }
 
     @Extension
@@ -115,7 +149,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
 
         @Override
         public ConsoleAnnotator<Object> newInstance(Object context) {
-            LOGGER.fine("context=" + context);
+            LOGGER.log(Level.FINE, "context={0}", context);
             if (context instanceof Run) {
                 ColorizedAction action = ((Run) context).getAction(ColorizedAction.class);
                 if (action != null) {

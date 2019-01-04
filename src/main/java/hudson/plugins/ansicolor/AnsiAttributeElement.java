@@ -1,5 +1,7 @@
 package hudson.plugins.ansicolor;
 
+import java.io.Serializable;
+
 /**
  * Represents an HTML elements which maps to an ANSI attribute.
  *
@@ -12,7 +14,9 @@ package hudson.plugins.ansicolor;
  * other software or testing the HTML may be emitted otherwise.
  */
 
-class AnsiAttributeElement {
+class AnsiAttributeElement implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     public static enum AnsiAttrType {
         DEFAULT, BOLD, ITALIC, UNDERLINE, STRIKEOUT, FRAMED, OVERLINE, FG, BG, FGBG
     }
@@ -63,6 +67,11 @@ class AnsiAttributeElement {
         result = 31 * result + name.hashCode();
         result = 31 * result + attributes.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "AnsiAttributeElement{ansiAttrType=" + ansiAttrType + ",name=" + name + ",attributes=" + attributes + "}";
     }
 
     public static AnsiAttributeElement bold() {
