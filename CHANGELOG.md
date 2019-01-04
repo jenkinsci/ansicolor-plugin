@@ -2,6 +2,7 @@
 ============
 
 * Your contribution here.
+* [#139](https://github.com/jenkinsci/ansicolor-plugin/issues/139)/[#143](https://github.com/jenkinsci/ansicolor-plugin/pull/143): Prevent an `IndexOutOfBoundsException` from being thrown when two or more non-ASCII-compatible characters are present in colored text - [@dwnusbaum](https://github.com/dwnusbaum).
 
 0.6.0 (11/14/2018)
 ============

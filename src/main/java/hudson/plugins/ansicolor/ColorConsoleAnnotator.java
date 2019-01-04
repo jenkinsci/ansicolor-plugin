@@ -50,12 +50,10 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
     private static final long serialVersionUID = 1;
 
     private final String colorMapName;
-    private final String charset;
 
-    ColorConsoleAnnotator(String colorMapName, String charset) {
+    ColorConsoleAnnotator(String colorMapName) {
         this.colorMapName = colorMapName;
-        this.charset = charset;
-        LOGGER.fine("creating annotator with colorMapName=" + colorMapName + " charset=" + charset);
+        LOGGER.fine("creating annotator with colorMapName=" + colorMapName);
     }
 
     @Override
@@ -70,12 +68,12 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                 int lastPoint = -1; // multiple HTML tags may be emitted for one control sequence
                 @Override
                 public void emitHtml(String html) {
-                    LOGGER.finest("emitting " + html + " @" + incoming.getCount());
+                    LOGGER.log(Level.FINEST, "emitting {0} @{1}/{2}", new Object[] { html, incoming.getCount(), s.length() });
                     text.addMarkup(incoming.getCount(), html);
                     if (incoming.getCount() != lastPoint) {
                         lastPoint = incoming.getCount();
                         int hide = incoming.getCount() - outgoing.getCount() - adjustment;
-                        LOGGER.finest("hiding " + hide + " @" + (outgoing.getCount() + adjustment));
+                        LOGGER.log(Level.FINEST, "hiding {0} @{1}", new Object[] { hide, outgoing.getCount() + adjustment });
                         text.addMarkup(outgoing.getCount() + adjustment, outgoing.getCount() + adjustment + hide, "<!--", "-->");
                         adjustment += hide;
                     }
@@ -85,10 +83,24 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
             CountingOutputStream incoming = new CountingOutputStream(new AnsiHtmlOutputStream(outgoing, colorMap, emitter));
             emitter.incoming = incoming;
             try {
-                byte[] data = s.getBytes(charset);
-                for (int i = 0; i < data.length; i++) {
-                    // Do not use write(byte[]) as offsets in incoming would not be accurate.
-                    incoming.write(data[i]);
+                /*
+                 * We only use AnsiHtmlOutputStream for its calls to Emitter.emitHtml when it encounters ANSI escape
+                 * sequences; the output of the stream will be discarded. To know where to insert HTML in the MarkupText,
+                 * we track the number of bytes we have written, and use that as a char (UTF-16 code unit) offset into
+                 * the original String. Since all ANSI escape sequences only use ASCII characters, and ASCII characters
+                 * in UTF-16BE are all represented using a single code unit whose high byte is 0, and whose low byte is
+                 * the same as it would be in an 8-bit ASCII encoding, we write all ASCII chars to the stream as the low
+                 * byte of the code unit, and convert any other character into '?' as a placeholder so the number of
+                 * bytes written matches the char offset into the String.
+                 */
+                for (int i = 0; i < s.length(); i++) {
+                    char c = s.charAt(i);
+                    // The highest ASCII character is 0x7F (DEL). High and low surrogate pairs in UTF-16BE will always
+                    // be at least 0xD800 and will be converted to '?'.
+                    if (c >= 0x80) {
+                        c = '?';
+                    }
+                    incoming.write(c);
                 }
             } catch (IOException x) {
                 LOGGER.log(Level.WARNING, null, x);
@@ -107,7 +119,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
             if (context instanceof Run) {
                 ColorizedAction action = ((Run) context).getAction(ColorizedAction.class);
                 if (action != null) {
-                    return new ColorConsoleAnnotator(action.colorMapName, ((Run) context).getCharset().name());
+                    return new ColorConsoleAnnotator(action.colorMapName);
                 }
             } else if (Jenkins.get().getPlugin("workflow-api") != null && context instanceof FlowNode) {
                 FlowNode node = (FlowNode) context;
@@ -122,7 +134,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                     if (exec instanceof Run) {
                         ColorizedAction action = ((Run) exec).getAction(ColorizedAction.class);
                         if (action != null) {
-                            return new ColorConsoleAnnotator(action.colorMapName, /* JEp-206 */ "UTF-8");
+                            return new ColorConsoleAnnotator(action.colorMapName);
                         }
                     }
                 }

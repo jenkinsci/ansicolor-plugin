@@ -116,4 +116,32 @@ public class AnsiColorBuildWrapperTest {
             }
         });
     }
+
+    @Test
+    public void testNonAscii() throws Exception {
+        story.then(r -> {
+            FreeStyleProject p = r.createFreeStyleProject();
+            p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
+            p.getBuildersList().add(new TestBuilder() {
+                @Override
+                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                    listener.getLogger().println("\033[94;1m[ INFO ] Récupération du numéro de version de l'application\033[0m");
+                    listener.getLogger().println("\033[94;1m[ INFO ] ビルドのコンソール出力を取得します。\033[0m");
+                     // There are 3 smiley face emojis in this String
+                    listener.getLogger().println("\033[94;1m[ INFO ] 😀😀\033[0m😀");
+                    return true;
+                }
+            });
+            FreeStyleBuild b = r.buildAndAssertSuccess(p);
+            StringWriter writer = new StringWriter();
+            b.getLogText().writeHtmlTo(0L, writer);
+            String html = writer.toString();
+            System.out.print(html);
+            assertThat(html.replaceAll("<!--.+?-->", ""),
+                allOf(
+                    containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] Récupération du numéro de version de l'application</b></span>"),
+                    containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] ビルドのコンソール出力を取得します。</b></span>"),
+                    containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] 😀😀</b></span>😀")));
+        });
+    }
 }
