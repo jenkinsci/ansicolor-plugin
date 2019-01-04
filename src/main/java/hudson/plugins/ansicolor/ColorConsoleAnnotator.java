@@ -58,7 +58,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
     ColorConsoleAnnotator(String colorMapName, List<AnsiAttributeElement> openTags) {
         this.colorMapName = colorMapName;
         this.openTags = openTags;
-        LOGGER.log(Level.FINE, "creating annotator with colorMapName={0} openTags={2}", new Object[] { colorMapName, openTags });
+        LOGGER.log(Level.FINE, "creating annotator with colorMapName={0} openTags={1}", new Object[] { colorMapName, openTags });
     }
 
     ColorConsoleAnnotator(String colorMapName) {
@@ -69,8 +69,6 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
     public ConsoleAnnotator<Object> annotate(Object context, MarkupText text) {
         String s = text.getText();
         List<AnsiAttributeElement> nextOpenTags = openTags;
-        // TODO: As a performance improvement, we could create a branch where `s.indexOf('\u001B') == -1` but other
-        // conditions are true that surrounds the text in the appropriate tags without going through AnsiHtmlOutputStream.
         AnsiColorMap colorMap = Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getColorMap(colorMapName);
         if (s.indexOf('\u001B') != -1 || !openTags.isEmpty() || colorMap.getDefaultBackground() != null || colorMap.getDefaultForeground() != null) {
             CountingOutputStream outgoing = new CountingOutputStream(new NullOutputStream());
@@ -132,6 +130,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                 if (colorMap.getDefaultBackground() != null || colorMap.getDefaultForeground() != null) {
                     // The default color scheme will be opened automatically at the beginning of the stream on the next
                     // line, so we don't want to duplicate it.
+                    // AnsiHtmlOutputStream#getOpenTags makes a copy so calling `remove` is safe.
                     nextOpenTags.remove(0);
                 }
                 // Tags open at the end of the line are closed when the stream is closed by the try-with-resources block.

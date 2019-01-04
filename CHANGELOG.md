@@ -2,6 +2,7 @@
 ============
 
 * Your contribution here.
+* [#137](https://github.com/jenkinsci/ansicolor-plugin/pull/137): Allow escape sequences to span multiple lines and support color maps that set default background/foreground colors - [@dwnusbaum](https://github.com/dwnusbaum).
 
 0.6.1 (01/04/2019)
 ============
