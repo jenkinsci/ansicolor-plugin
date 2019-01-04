@@ -145,15 +145,6 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                 : new ColorConsoleAnnotator(colorMapName, nextOpenTags);
     }
 
-    private Object readResolve() {
-        // Compatibility for instances serialized before the openTags field was added.
-        if (openTags == null) {
-            return new ColorConsoleAnnotator(colorMapName);
-        } else {
-            return this;
-        }
-    }
-
     @Extension
     public static final class Factory extends ConsoleAnnotatorFactory<Object> {
 
