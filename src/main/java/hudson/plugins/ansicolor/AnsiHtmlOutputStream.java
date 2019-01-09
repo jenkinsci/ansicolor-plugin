@@ -120,6 +120,12 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     }
 
     private void closeOpenTags(AnsiAttrType until) throws IOException {
+        // If this method is called because we saw SGR0 (reset graphics), but there are no open tags to close, then the
+        // current SGR0 is redundant. If `until` is null, then instead of seeing SGR0 it means the stream is closing,
+        // so we don't do anything special.
+        if (until == AnsiAttrType.DEFAULT && (openTags.isEmpty() || openTags.get(0).ansiAttrType == AnsiAttrType.DEFAULT)) {
+            emitter.emitRedundantReset();
+        }
         while (!openTags.isEmpty()) {
             int index = openTags.size() - 1;
             if (until != null && openTags.get(index).ansiAttrType == until)

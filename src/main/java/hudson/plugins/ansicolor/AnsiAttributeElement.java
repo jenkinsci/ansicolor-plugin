@@ -28,6 +28,12 @@ class AnsiAttributeElement implements Serializable {
 
     public static interface Emitter {
         public void emitHtml(String html);
+        /**
+         * Called when SGR0 (Set Graphics Rendition 0) reset is encountered in the stream, but no tags have been opened
+         * since its last occurrence. If you are using the output of AnsiOutputStream directly, you probably don't need
+         * to implement this method since the escape sequence will be transparently filtered from the output.
+         */
+        default void emitRedundantReset() { }
     }
 
     public AnsiAttributeElement(AnsiAttrType ansiAttrType, String name, String attributes) {

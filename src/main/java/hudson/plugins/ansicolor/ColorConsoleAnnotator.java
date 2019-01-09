@@ -86,19 +86,25 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                     if (inCount == 1) {
                         inCount = 0;
                     }
-                    LOGGER.log(Level.FINEST, "emitting {0} @{1}/{2}", new Object[] { html, inCount, text.getText().length() });
-                    text.addMarkup(inCount, html);
+                    if (html != null) {
+                        LOGGER.log(Level.FINEST, "emitting {0} @{1}/{2}", new Object[] { html, inCount, s.length() });
+                        text.addMarkup(inCount, html);
+                    }
                     if (inCount != lastPoint) {
                         lastPoint = inCount;
                         int hide = inCount - outCount;
                         // If openTags is not empty, but there are no escape sequences directly on this line, or if we
                         // are emitting closing tags when closing the stream, there is nothing to hide.
                         if (hide != 0) {
-                            LOGGER.log(Level.FINEST, "hiding {0} @{1}", new Object[] { hide, outCount });
+                            LOGGER.log(Level.FINEST, "hiding {0} @{1}{2}", new Object[] { hide, outCount, html == null ? " (ANSI sequence with no corresponding HTML tags)" : "" });
                             text.addMarkup(outCount, outCount + hide, "<!--", "-->");
                             adjustment += hide;
                         }
                     }
+                }
+                @Override
+                public void emitRedundantReset() {
+                    emitHtml(null);
                 }
             }
             EmitterImpl emitter = new EmitterImpl();
