@@ -199,4 +199,61 @@ public class AnsiColorBuildWrapperTest {
                     containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] 😀😀</b></span>😀")));
         });
     }
+
+    @Issue("JENKINS-55139")
+    @Test
+    public void testTerraform() throws Exception {
+        story.then(r -> {
+            FreeStyleProject p = r.createFreeStyleProject();
+            p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
+            p.getBuildersList().add(new TestBuilder() {
+                @Override
+                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                    // Mimics terraform, c.f. `docker run --rm hashicorp/terraform plan 2>&1 | od -t a`
+                    listener.getLogger().println("\033[31m");
+                    listener.getLogger().println("\033[1m\033[31mError: \033[0m\033[0m\033[1mNo configuration files found!");
+                    listener.getLogger().println("bold text blurb\033[0m");
+                    listener.getLogger().println("\033[0m\033[0m\033[0m");
+                    return true;
+                }
+            });
+            FreeStyleBuild b = r.buildAndAssertSuccess(p);
+            StringWriter writer = new StringWriter();
+            b.getLogText().writeHtmlTo(0L, writer);
+            String html = writer.toString();
+            System.out.print(html);
+            assertThat(html.replaceAll("<!--.+?-->", ""),
+                allOf(
+                    containsString("Error"),
+                    containsString("No configuration files found!"),
+                    not(containsString("\033[0m"))));
+        });
+    }
+
+    @Issue("JENKINS-55139")
+    @Test
+    public void testRedundantResets() throws Exception {
+        story.then(r -> {
+            FreeStyleProject p = r.createFreeStyleProject();
+            p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
+            p.getBuildersList().add(new TestBuilder() {
+                @Override
+                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                    listener.getLogger().println("[Foo] \033[0m[\033[0m\033[0minfo\033[0m] \033[0m\033[0m\033[32m- this text is green\033[0m\033[0m");
+                    return true;
+                }
+            });
+            FreeStyleBuild b = r.buildAndAssertSuccess(p);
+            StringWriter writer = new StringWriter();
+            b.getLogText().writeHtmlTo(0L, writer);
+            String html = writer.toString();
+            System.out.print(html);
+            assertThat(html.replaceAll("<!--.+?-->", ""),
+                allOf(
+                    containsString("[Foo]"),
+                    containsString("[info]"),
+                    containsString("<span style=\"color: #00CD00;\">- this text is green</span>"),
+                    not(containsString("\033[0m"))));
+        });
+    }
 }
