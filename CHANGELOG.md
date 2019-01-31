@@ -1,7 +1,6 @@
-0.6.2 (Next)
+0.6.2 (01/31/2019)
 ============
 
-* Your contribution here.
 * [#137](https://github.com/jenkinsci/ansicolor-plugin/pull/137): Allow escape sequences to span multiple lines and support color maps that set default background/foreground colors - [@dwnusbaum](https://github.com/dwnusbaum).
 * [#147](https://github.com/jenkinsci/ansicolor-plugin/pull/147): Handle redundant occurrences of SGR0 in build logs - [@dwnusbaum](https://github.com/dwnusbaum).
 
