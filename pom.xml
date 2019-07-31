@@ -13,6 +13,8 @@
   <version>0.6.3-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
+  <!-- Hello, world. -->
+
   <name>AnsiColor</name>
   <description>Adds ANSI coloring to the Console Output</description>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/AnsiColor+Plugin</url>
