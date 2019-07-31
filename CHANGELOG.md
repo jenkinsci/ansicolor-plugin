@@ -1,6 +1,8 @@
 0.6.3 (Next)
 ============
 
+* [#163](https://github.com/jenkinsci/ansicolor-plugin/pull/163): Use OpenJDK on Trusty Linux in Travis-CI - [@dblock](https://github.com/dblock).
+* [#163](https://github.com/jenkinsci/ansicolor-plugin/pull/163): Cache maven installation in Travis-CI - [@dblock](https://github.com/dblock).
 * Your contribution here.
 
 0.6.2 (01/31/2019)
