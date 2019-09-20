@@ -56,6 +56,7 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 @SuppressWarnings("unused")
 public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private final String colorMapName;
 
@@ -90,6 +91,8 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
 
         private AnsiColorMap[] colorMaps = new AnsiColorMap[0];
 
+        private String globalColorMapName;
+
         public DescriptorImpl() {
             super(AnsiColorBuildWrapper.class);
             load();
@@ -113,6 +116,8 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
             try {
                 setColorMaps(req.bindJSONToList(AnsiColorMap.class,
                         req.getSubmittedForm().get("colorMap")).toArray(new AnsiColorMap[1]));
+                setGlobalColorMapName(req.getSubmittedForm().getString("globalColorMapName"));
+                save();
                 return true;
             } catch (ServletException e) {
                 throw new FormException(e, "");
@@ -124,13 +129,20 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
             return (value.trim().length() == 0) ? FormValidation.error("Name cannot be empty.") : FormValidation.ok();
         }
 
+        public String getGlobalColorMapName() {
+            return globalColorMapName;
+        }
+
+        public void setGlobalColorMapName(String colorMapName) {
+            globalColorMapName = colorMapName;
+        }
+
         public AnsiColorMap[] getColorMaps() {
             return withDefaults(colorMaps);
         }
 
         public void setColorMaps(AnsiColorMap[] maps) {
             colorMaps = maps.clone();
-            save();
         }
 
         public AnsiColorMap getColorMap(final String name) {

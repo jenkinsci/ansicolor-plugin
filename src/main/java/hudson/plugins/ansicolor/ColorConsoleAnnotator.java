@@ -161,6 +161,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                 if (action != null) {
                     return new ColorConsoleAnnotator(action.colorMapName);
                 }
+                return getGlobalConsoleAnnotator();
             } else if (Jenkins.get().getPlugin("workflow-api") != null && context instanceof FlowNode) {
                 FlowNode node = (FlowNode) context;
                 FlowExecutionOwner owner = node.getExecution().getOwner();
@@ -178,6 +179,15 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                         }
                     }
                 }
+                return getGlobalConsoleAnnotator();
+            }
+            return null;
+        }
+
+        private ConsoleAnnotator<Object> getGlobalConsoleAnnotator() {
+            String globalColorMapName = Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getGlobalColorMapName();
+            if (globalColorMapName != null && !globalColorMapName.equals("")) {
+                return new ColorConsoleAnnotator(globalColorMapName);
             }
             return null;
         }
