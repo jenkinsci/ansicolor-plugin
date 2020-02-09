@@ -107,11 +107,15 @@ public class AnsiColorBuildWrapperTest {
             b.getLogText().writeHtmlTo(0L, writer);
             String html = writer.toString();
             System.out.print(html);
-            assertThat(html.replaceAll("<!--.+?-->", ""),
+            String nl = System.lineSeparator();
+            assertThat(
+                html.replaceAll("<!--.+?-->", ""),
                 allOf(
-                    containsString("<b><span style=\"color: #1E90FF;\">This text should be bold and blue\n</span></b>"),
-                    containsString("<b><span style=\"color: #1E90FF;\">Still bold and blue\n</span></b>"),
-                    not(containsString("\u001B[m"))));
+                    containsString("<b><span style=\"color: #1E90FF;\">This text should be bold and blue" + nl + "</span></b>"),
+                    containsString("<b><span style=\"color: #1E90FF;\">Still bold and blue" + nl + "</span></b>"),
+                    not(containsString("\u001B[m"))
+                )
+            );
         });
     }
 
@@ -135,11 +139,17 @@ public class AnsiColorBuildWrapperTest {
             b.getLogText().writeHtmlTo(0L, writer);
             String html = writer.toString();
             System.out.print(html);
-            assertThat(html.replaceAll("<!--.+?-->", ""),
+            String nl = System.lineSeparator();
+            assertThat(
+                html.replaceAll("<!--.+?-->", ""),
                 allOf(
-                    containsString("<div style=\"background-color: #000000;color: #AAAAAA;\">White on black\n</div>"),
-                    containsString("<div style=\"background-color: #000000;color: #AAAAAA;\"><b><span style=\"color: #0000AA;\">Bold and blue on black\n</span></b></div>"),
-                    containsString("<div style=\"background-color: #000000;color: #AAAAAA;\"><b><span style=\"color: #0000AA;\">Still bold and blue on black</span></b>Back to white on black\n</div>")));
+                    containsString("<div style=\"background-color: #000000;color: #AAAAAA;\">White on black" + nl + "</div>"),
+                    containsString("<div style=\"background-color: #000000;color: #AAAAAA;\"><b><span style=\"color: #0000AA;\">Bold and blue on black" + nl + "</span></b></div>"),
+                    containsString(
+                        "<div style=\"background-color: #000000;color: #AAAAAA;\"><b><span style=\"color: #0000AA;\">Still bold and blue on black</span></b>Back to white on black" + nl + "</div>"
+                    )
+                )
+            );
         });
     }
 
