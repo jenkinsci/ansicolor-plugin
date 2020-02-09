@@ -8,7 +8,9 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.StringWriter;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import static org.hamcrest.Matchers.*;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
@@ -19,13 +21,13 @@ import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.runners.model.Statement;
-import org.jvnet.hudson.test.BuildWatcher;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.LoggerRule;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
-import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.*;
 
 public class AnsiColorBuildWrapperTest {
+    private static final String CLR = "\033[2K";
+    private static String move(int lines, String direction) {
+        return "\033[" + lines + direction;
+    }
 
     public AnsiColorBuildWrapperTest() {
     }
@@ -255,5 +257,55 @@ public class AnsiColorBuildWrapperTest {
                     containsString("<span style=\"color: #00CD00;\">- this text is green</span>"),
                     not(containsString("\033[0m"))));
         });
+    }
+
+    @Test
+    public void canWorkWithMovingSequences() {
+        // https://en.wikipedia.org/wiki/ANSI_escape_code
+        // https://github.com/jenkinsci/ansicolor-plugin/issues/151
+        // seems to have beem working correctly in ansicolor-0.5.3
+        final String op1 = "Creating container_1";
+        final String op2 = "Creating container_2";
+        final String up2lines = move(2, "A");
+        final String down2lines = move(2, "B");
+
+        Consumer<PrintStream> inputProvider = stream -> {
+            stream.println(op1 + " ...");
+            stream.println(op2 + " ...");
+            stream.print(up2lines);
+            stream.print(CLR);
+            stream.print(op1 + " ... " + "done\r");
+            stream.print(down2lines);
+        };
+
+        story.then(r -> {
+            String html = runBuildWithPlugin(r, inputProvider);
+            assertThat(
+                html.replaceAll("<!--.+?-->", ""),
+                allOf(
+                    containsString(op1 + " ... done"),
+                    containsString(op2 + " ..."),
+                    not(containsString(up2lines)),
+                    not(containsString(CLR)),
+                    not(containsString(down2lines))
+                )
+            );
+        });
+    }
+
+    private String runBuildWithPlugin(JenkinsRule rule, Consumer<PrintStream> inputProvider) throws Exception {
+        FreeStyleProject p = rule.createFreeStyleProject();
+        p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                inputProvider.accept(listener.getLogger());
+                return true;
+            }
+        });
+        FreeStyleBuild b = rule.buildAndAssertSuccess(p);
+        StringWriter writer = new StringWriter();
+        b.getLogText().writeHtmlTo(0L, writer);
+        return writer.toString();
     }
 }
