@@ -627,4 +627,33 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     protected void processDefaultBackgroundColor() throws IOException {
         setBackgroundColor(null);
     }
+    
+    @Override
+    protected void processEraseLine(int eraseOption) throws IOException {
+        emitNothing();
+    }
+
+    @Override
+    protected void processCursorDown(int count) throws IOException {
+        emitNothing();
+    }
+
+    @Override
+    protected void processCursorUp(int count) throws IOException {
+        emitNothing();
+    }
+
+    @Override
+    protected void processCursorLeft(int count) throws IOException {
+        emitNothing();
+    }
+
+    @Override
+    protected void processCursorUpLine(int count) throws IOException {
+        emitNothing();
+    }
+
+    private void emitNothing() {
+        emitter.emitHtml("");
+    }
 }

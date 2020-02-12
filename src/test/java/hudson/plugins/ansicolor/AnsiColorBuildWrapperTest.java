@@ -261,9 +261,6 @@ public class AnsiColorBuildWrapperTest {
 
     @Test
     public void canWorkWithMovingSequences() {
-        // https://en.wikipedia.org/wiki/ANSI_escape_code
-        // https://github.com/jenkinsci/ansicolor-plugin/issues/151
-        // seems to have beem working correctly in ansicolor-0.5.3
         final String op1 = "Creating container_1";
         final String op2 = "Creating container_2";
         final String up2lines = move(2, "A");
