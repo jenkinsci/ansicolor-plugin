@@ -1,23 +1,22 @@
 package hudson.plugins.ansicolor;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 
 /**
  * Represents an HTML elements which maps to an ANSI attribute.
- *
- * An ANSI attribute change may open a new element or close an earlier one (e.g. "bold" opens, "bold off" closes).
- * Because HTML elements cannot overlap, any other enclosing element must be closed beforehand and subsequently
- * reopened.
- *
- * How the HTML is actually emitted depends on the specified {@link AnsiAttributeElement.Emitter}.
- * For Jenkins, the Emitter creates {@link hudson.console.ConsoleNote}s as part of the stream, but for
+ * <p>
+ * An ANSI attribute change may open a new element or close an earlier one (e.g. "bold" opens, "bold off" closes). Because HTML elements cannot overlap, any other enclosing element must be closed
+ * beforehand and subsequently reopened.
+ * <p>
+ * How the HTML is actually emitted depends on the specified {@link AnsiAttributeElement.Emitter}. For Jenkins, the Emitter creates {@link hudson.console.ConsoleNote}s as part of the stream, but for
  * other software or testing the HTML may be emitted otherwise.
  */
 
 class AnsiAttributeElement implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    public static enum AnsiAttrType {
+    public enum AnsiAttrType {
         DEFAULT, BOLD, ITALIC, UNDERLINE, STRIKEOUT, FRAMED, OVERLINE, FG, BG, FGBG
     }
 
@@ -26,14 +25,20 @@ class AnsiAttributeElement implements Serializable {
     String name;
     String attributes;
 
-    public static interface Emitter {
-        public void emitHtml(String html);
+    public interface Emitter {
+        void emitHtml(@Nonnull String html);
+
         /**
-         * Called when SGR0 (Set Graphics Rendition 0) reset is encountered in the stream, but no tags have been opened
-         * since its last occurrence. If you are using the output of AnsiOutputStream directly, you probably don't need
-         * to implement this method since the escape sequence will be transparently filtered from the output.
+         * Emit invisible ANSI sequence
+         * <p>
+         * Used for emitting output for sequences like:
+         * <li>SGR0 (Set Graphics Rendition 0)
+         * <li>CSI (Control Sequence Introducer)
+         * <p>
+         * In particular called when SGR0 reset is encountered in the stream, but no tags have been opened since its last occurrence. If you are using the output of AnsiOutputStream directly, you
+         * probably don't need to implement this method since the escape sequence will be transparently filtered from the output.
          */
-        default void emitRedundantReset() { }
+        default void emitInvisibleSequence() { }
     }
 
     public AnsiAttributeElement(AnsiAttrType ansiAttrType, String name, String attributes) {
@@ -106,7 +111,6 @@ class AnsiAttributeElement implements Serializable {
 
     public static AnsiAttributeElement overline() {
         return new AnsiAttributeElement(AnsiAttrType.OVERLINE, "span", "style=\"text-decoration: overline;\"");
-        // return new AnsiAttributeElement(AnsiAttrType.OVERLINE, "span", "style=\"border-top: 1px solid;\""); // alternate approach
     }
 
 }
