@@ -704,11 +704,6 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     }
 
     @Override
-    protected void processChangeIconNameAndWindowTitle(String label) {
-        emitter.emitInvisibleSequence();
-    }
-
-    @Override
     protected void processChangeIconName(String label) {
         emitter.emitInvisibleSequence();
     }

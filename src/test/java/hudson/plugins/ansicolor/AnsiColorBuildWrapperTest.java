@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -33,27 +34,31 @@ public class AnsiColorBuildWrapperTest {
     private static final String CLR = ESC + "[2K";
 
     private enum CSI {
-        CUU("A"),
-        CUD("B"),
-        CUF("C"),
-        CUB("D"),
-        CNL("E"),
-        CPL("F"),
-        CHA("G"),
-        CUP("H"), // 2 vals
-        ED("J"),
-        EL("K"),
-        SU("S"),
-        SD("T"),
-        HVP("f"), // 2 vals
-        AUXON("5i"), // 0 vals
-        AUXOFF("4i"), // 0 vals
-        DSR("6n"), // 0 vals
+        CUU("A", 1),
+        CUD("B", 1),
+        CUF("C", 1),
+        CUB("D", 1),
+        CNL("E", 1),
+        CPL("F", 1),
+        CHA("G", 1),
+        CUP("H", 2),
+        ED("J", 1),
+        EL("K", 1),
+        SU("S", 1),
+        SD("T", 1),
+        HVP("f", 2),
+        AUXON("5i", 0),
+        AUXOFF("4i", 0),
+        DSR("6n", 0),
+        SCP("s", 0),
+        RCP("u", 0),
         ;
         private final String code;
+        private final int paramsAmount;
 
-        CSI(String code) {
+        CSI(String code, int paramsAmount) {
             this.code = code;
+            this.paramsAmount = paramsAmount;
         }
     }
 
@@ -356,20 +361,18 @@ public class AnsiColorBuildWrapperTest {
     @Test
     public void canWorkWithVariousCsiSequences() {
         final String txt0 = "Test various sequences begin";
-        final List<String> csiSequences = Arrays.asList(
-            csi(3, CSI.CNL),
-            csi(9, CSI.CPL),
-            csi(2, CSI.CHA),
-            csi(2, 16, CSI.CUP),
-            csi(4, CSI.ED),
-            csi(7, CSI.EL),
-            csi(5, CSI.SU),
-            csi(3, CSI.SD),
-            csi(8, 8, CSI.HVP),
-            csi(CSI.AUXON),
-            csi(CSI.AUXOFF),
-            csi(CSI.DSR)
-        );
+        final List<String> csiSequences = Arrays.stream(CSI.values()).map(csi -> {
+            switch (csi.paramsAmount) {
+                case 0:
+                    return csi(csi);
+                case 1:
+                    return csi(6, csi);
+                case 2:
+                    return csi(6, 4, csi);
+            }
+            throw new IllegalArgumentException("Not supported amount of params");
+        }).collect(Collectors.toList());
+
         final String txt1 = "Test various sequences end";
         final Consumer<PrintStream> inputProvider = stream -> {
             stream.println(txt0);
