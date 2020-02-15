@@ -7,30 +7,72 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.StringWriter;
-import java.util.function.Consumer;
-import java.util.logging.Level;
-import static org.hamcrest.Matchers.*;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.*;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+
 public class AnsiColorBuildWrapperTest {
-    private static final String CLR = "\033[2K";
-    private static String move(int lines, String direction) {
-        return "\033[" + lines + direction;
+    private static final String ESC = "\033";
+    private static final String CLR = ESC + "[2K";
+
+    private enum CSI {
+        CUU("A"),
+        CUD("B"),
+        CUF("C"),
+        CUB("D"),
+        CNL("E"),
+        CPL("F"),
+        CHA("G"),
+        CUP("H"), // 2 vals
+        ED("J"),
+        EL("K"),
+        SU("S"),
+        SD("T"),
+        HVP("f"), // 2 vals
+        AUXON("5i"), // 0 vals
+        AUXOFF("4i"), // 0 vals
+        DSR("6n"), // 0 vals
+        ;
+        private final String code;
+
+        CSI(String code) {
+            this.code = code;
+        }
     }
 
-    public AnsiColorBuildWrapperTest() {
+    private static String csi(CSI csi) {
+        return csi("", csi);
     }
+
+    private static String csi(int n, CSI csi) {
+        return csi(String.valueOf(n), csi);
+    }
+
+    private static String csi(int n, int m, CSI csi) {
+        return csi(n + ";" + m, csi);
+    }
+
+    private static String csi(String nm, CSI csi) {
+        return ESC + "[" + nm + csi.code;
+    }
+
 
     @Test
     public void testGetColorMapNameNull() {
@@ -72,7 +114,9 @@ public class AnsiColorBuildWrapperTest {
                     listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1mBuilding Build Authorization Token Root Plugin 1.5-SNAPSHOT\u001B[m");
                     listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1m--------------------------------[ hpi ]---------------------------------\u001B[m");
                     listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] ");
-                    listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1m--- \u001B[0;32mmaven-clean-plugin:3.0.0:clean\u001B[m \u001B[1m(default-clean)\u001B[m @ \u001B[36mbuild-token-root\u001B[0;1m ---\u001B[m");
+                    listener.getLogger()
+                        .println(
+                            "[\u001B[1;34mINFO\u001B[m] \u001B[1m--- \u001B[0;32mmaven-clean-plugin:3.0.0:clean\u001B[m \u001B[1m(default-clean)\u001B[m @ \u001B[36mbuild-token-root\u001B[0;1m ---\u001B[m");
                     listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1m------------------------------------------------------------------------\u001B[m");
                     listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1;32mBUILD SUCCESS\u001B[m");
                     return true;
@@ -83,10 +127,13 @@ public class AnsiColorBuildWrapperTest {
             b.getLogText().writeHtmlTo(0L, writer);
             String html = writer.toString();
             System.out.print(html);
-            assertThat(html.replaceAll("<!--.+?-->", ""),
+            assertThat(
+                html.replaceAll("<!--.+?-->", ""),
                 allOf(
                     containsString("[<b><span style=\"color: #1E90FF;\">INFO</span></b>]"),
-                    containsString("<b>--------------&lt; </b><span style=\"color: #00CDCD;\">org.jenkins-ci.plugins:build-token-root</span><b> &gt;---------------</b>")));
+                    containsString("<b>--------------&lt; </b><span style=\"color: #00CDCD;\">org.jenkins-ci.plugins:build-token-root</span><b> &gt;---------------</b>")
+                )
+            );
         });
     }
 
@@ -166,7 +213,7 @@ public class AnsiColorBuildWrapperTest {
                 story.j.createSlave();
                 WorkflowJob p = story.j.jenkins.createProject(WorkflowJob.class, "p");
                 p.setDefinition(new CpsFlowDefinition(
-                        "node('!master') {\n"
+                    "node('!master') {\n"
                         + "  wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {\n"
                         + "    sh(\"\"\"#!/bin/bash\n"
                         + "      printf 'The following word is supposed to be \\\\e[31mred\\\\e[0m\\\\n'\"\"\"\n"
@@ -178,8 +225,10 @@ public class AnsiColorBuildWrapperTest {
                 StringWriter writer = new StringWriter();
                 p.getLastBuild().getLogText().writeHtmlTo(0L, writer);
                 String html = writer.toString();
-                assertTrue("Failed to match color attribute in following HTML log output:\n" + html,
-                    html.replaceAll("<!--.+?-->", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"));
+                assertTrue(
+                    "Failed to match color attribute in following HTML log output:\n" + html,
+                    html.replaceAll("<!--.+?-->", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*")
+                );
             }
         });
     }
@@ -194,7 +243,7 @@ public class AnsiColorBuildWrapperTest {
                 public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                     listener.getLogger().println("\033[94;1m[ INFO ] Récupération du numéro de version de l'application\033[0m");
                     listener.getLogger().println("\033[94;1m[ INFO ] ビルドのコンソール出力を取得します。\033[0m");
-                     // There are 3 smiley face emojis in this String
+                    // There are 3 smiley face emojis in this String
                     listener.getLogger().println("\033[94;1m[ INFO ] 😀😀\033[0m😀");
                     return true;
                 }
@@ -204,11 +253,14 @@ public class AnsiColorBuildWrapperTest {
             b.getLogText().writeHtmlTo(0L, writer);
             String html = writer.toString();
             System.out.print(html);
-            assertThat(html.replaceAll("<!--.+?-->", ""),
+            assertThat(
+                html.replaceAll("<!--.+?-->", ""),
                 allOf(
                     containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] Récupération du numéro de version de l'application</b></span>"),
                     containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] ビルドのコンソール出力を取得します。</b></span>"),
-                    containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] 😀😀</b></span>😀")));
+                    containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] 😀😀</b></span>😀")
+                )
+            );
         });
     }
 
@@ -234,11 +286,14 @@ public class AnsiColorBuildWrapperTest {
             b.getLogText().writeHtmlTo(0L, writer);
             String html = writer.toString();
             System.out.print(html);
-            assertThat(html.replaceAll("<!--.+?-->", ""),
+            assertThat(
+                html.replaceAll("<!--.+?-->", ""),
                 allOf(
                     containsString("Error"),
                     containsString("No configuration files found!"),
-                    not(containsString("\033[0m"))));
+                    not(containsString("\033[0m"))
+                )
+            );
         });
     }
 
@@ -260,12 +315,15 @@ public class AnsiColorBuildWrapperTest {
             b.getLogText().writeHtmlTo(0L, writer);
             String html = writer.toString();
             System.out.print(html);
-            assertThat(html.replaceAll("<!--.+?-->", ""),
+            assertThat(
+                html.replaceAll("<!--.+?-->", ""),
                 allOf(
                     containsString("[Foo]"),
                     containsString("[info]"),
                     containsString("<span style=\"color: #00CD00;\">- this text is green</span>"),
-                    not(containsString("\033[0m"))));
+                    not(containsString("\033[0m"))
+                )
+            );
         });
     }
 
@@ -273,35 +331,65 @@ public class AnsiColorBuildWrapperTest {
     public void canWorkWithMovingSequences() {
         final String op1 = "Creating container_1";
         final String op2 = "Creating container_2";
-        final String up2lines = move(2, "A");
-        final String down2lines = move(2, "B");
-
-        Consumer<PrintStream> inputProvider = stream -> {
+        final String up2lines = csi(2, CSI.CUU);
+        final String down2lines = csi(2, CSI.CUD);
+        final String back7chars = csi(7, CSI.CUB);
+        final String forward4chars = csi(4, CSI.CUF);
+        final Consumer<PrintStream> inputProvider = stream -> {
             stream.println(op1 + " ...");
             stream.println(op2 + " ...");
             stream.print(up2lines);
             stream.print(CLR);
             stream.print(op1 + " ... " + "done\r");
             stream.print(down2lines);
+            stream.print(back7chars);
+            stream.print(forward4chars);
         };
 
+        assertCorrectOutput(
+            Arrays.asList(op1 + " ... done", op2 + " ..."),
+            Arrays.asList(up2lines, CLR, down2lines, back7chars, forward4chars),
+            inputProvider
+        );
+    }
+
+    @Test
+    public void canWorkWithVariousCsiSequences() {
+        final String txt0 = "Test various sequences begin";
+        final List<String> csiSequences = Arrays.asList(
+            csi(3, CSI.CNL),
+            csi(9, CSI.CPL),
+            csi(2, CSI.CHA),
+            csi(2, 16, CSI.CUP),
+            csi(4, CSI.ED),
+            csi(7, CSI.EL),
+            csi(5, CSI.SU),
+            csi(3, CSI.SD),
+            csi(8, 8, CSI.HVP),
+            csi(CSI.AUXON),
+            csi(CSI.AUXOFF),
+            csi(CSI.DSR)
+        );
+        final String txt1 = "Test various sequences end";
+        final Consumer<PrintStream> inputProvider = stream -> {
+            stream.println(txt0);
+            csiSequences.forEach(stream::println);
+            stream.println(txt1);
+        };
+
+        assertCorrectOutput(Arrays.asList(txt0, txt1), csiSequences, inputProvider);
+    }
+
+    private void assertCorrectOutput(Collection<String> expectedOutput, Collection<String> notExpectedOutput, Consumer<PrintStream> inputProvider) {
         story.then(r -> {
-            String html = runBuildWithPlugin(r, inputProvider);
-            assertThat(
-                html.replaceAll("<!--.+?-->", ""),
-                allOf(
-                    containsString(op1 + " ... done"),
-                    containsString(op2 + " ..."),
-                    not(containsString(up2lines)),
-                    not(containsString(CLR)),
-                    not(containsString(down2lines))
-                )
-            );
+            final String html = runBuildWithPlugin(r, inputProvider).replaceAll("<!--.+?-->", "");
+            expectedOutput.forEach(s -> assertThat(html, containsString(s)));
+            notExpectedOutput.forEach(s -> assertThat("Test failed for sequence: " + s.replace(ESC, "ESC"), html, not(containsString(s))));
         });
     }
 
     private String runBuildWithPlugin(JenkinsRule rule, Consumer<PrintStream> inputProvider) throws Exception {
-        FreeStyleProject p = rule.createFreeStyleProject();
+        final FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
         p.getBuildersList().add(new TestBuilder() {
             @Override
@@ -310,8 +398,8 @@ public class AnsiColorBuildWrapperTest {
                 return true;
             }
         });
-        FreeStyleBuild b = rule.buildAndAssertSuccess(p);
-        StringWriter writer = new StringWriter();
+        final FreeStyleBuild b = rule.buildAndAssertSuccess(p);
+        final StringWriter writer = new StringWriter();
         b.getLogText().writeHtmlTo(0L, writer);
         return writer.toString();
     }
