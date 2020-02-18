@@ -185,7 +185,6 @@ public class AnsiColorBuildWrapperTest {
     @Test
     public void testNonAscii() throws Exception {
         story.then(r -> {
-            Assume.assumeTrue(!Functions.isWindows());
             FreeStyleProject p = r.createFreeStyleProject();
             p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
             p.getBuildersList().add(new TestBuilder() {
