@@ -26,6 +26,7 @@ package hudson.plugins.ansicolor;
 
 import hudson.Extension;
 import hudson.MarkupText;
+import hudson.Util;
 import hudson.console.ConsoleAnnotator;
 import hudson.console.ConsoleAnnotatorFactory;
 import hudson.model.Queue;
@@ -35,6 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.output.CountingOutputStream;
@@ -52,24 +54,33 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
 
     private static final long serialVersionUID = 1;
 
-    private final String colorMapName;
+    private final @CheckForNull String colorMapName;
     private final @Nonnull List<AnsiAttributeElement> openTags;
 
-    ColorConsoleAnnotator(String colorMapName, List<AnsiAttributeElement> openTags) {
+    private ColorConsoleAnnotator(String colorMapName, List<AnsiAttributeElement> openTags) {
         this.colorMapName = colorMapName;
         this.openTags = openTags;
         LOGGER.log(Level.FINE, "creating annotator with colorMapName={0} openTags={1}", new Object[] { colorMapName, openTags });
     }
 
-    ColorConsoleAnnotator(String colorMapName) {
-        this(colorMapName, Collections.emptyList());
+    ColorConsoleAnnotator() {
+        this(null, Collections.emptyList());
     }
 
     @Override
     public ConsoleAnnotator<Object> annotate(Object context, MarkupText text) {
+        String actualColorMapName;
+        if (colorMapName == null) {
+            actualColorMapName = colorMapNameFor(context);
+            if (actualColorMapName == null) {
+                return this;
+            }
+        } else {
+            actualColorMapName = colorMapName;
+        }
         String s = text.getText();
         List<AnsiAttributeElement> nextOpenTags = openTags;
-        AnsiColorMap colorMap = Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getColorMap(colorMapName);
+        AnsiColorMap colorMap = Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getColorMap(actualColorMapName);
         if (s.indexOf('\u001B') != -1 || !openTags.isEmpty() || colorMap.getDefaultBackground() != null || colorMap.getDefaultForeground() != null) {
             CountingOutputStream outgoing = new CountingOutputStream(new NullOutputStream());
             class EmitterImpl implements AnsiAttributeElement.Emitter {
@@ -147,7 +158,40 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
         }
         return openTags == nextOpenTags
                 ? this
-                : new ColorConsoleAnnotator(colorMapName, nextOpenTags);
+                : new ColorConsoleAnnotator(actualColorMapName, nextOpenTags);
+    }
+
+    private static @CheckForNull Run<?, ?> runOf(Object context) {
+        LOGGER.log(Level.FINE, "context={0}", context);
+        if (context instanceof Run) {
+            return (Run) context;
+        } else if (Jenkins.get().getPlugin("workflow-api") != null && context instanceof FlowNode) {
+            FlowNode node = (FlowNode) context;
+            FlowExecutionOwner owner = node.getExecution().getOwner();
+            if (owner != null) {
+                Queue.Executable exec = null;
+                try {
+                    exec = owner.getExecutable();
+                } catch (IOException x) {
+                    LOGGER.log(Level.WARNING, null, x);
+                }
+                if (exec instanceof Run) {
+                    return (Run) exec;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static @CheckForNull String colorMapNameFor(Object context) {
+        Run<?, ?> run = runOf(context);
+        if (run != null) {
+            ColorizedAction ca = run.getAction(ColorizedAction.class);
+            if (ca != null) {
+                return ca.colorMapName;
+            }
+        }
+        return Util.fixEmpty(Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getGlobalColorMapName());
     }
 
     @Extension
@@ -155,41 +199,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
 
         @Override
         public ConsoleAnnotator<Object> newInstance(Object context) {
-            LOGGER.log(Level.FINE, "context={0}", context);
-            if (context instanceof Run) {
-                ColorizedAction action = ((Run) context).getAction(ColorizedAction.class);
-                if (action != null) {
-                    return new ColorConsoleAnnotator(action.colorMapName);
-                }
-                return getGlobalConsoleAnnotator();
-            } else if (Jenkins.get().getPlugin("workflow-api") != null && context instanceof FlowNode) {
-                FlowNode node = (FlowNode) context;
-                FlowExecutionOwner owner = node.getExecution().getOwner();
-                if (owner != null) {
-                    Queue.Executable exec = null;
-                    try {
-                        exec = owner.getExecutable();
-                    } catch (IOException x) {
-                        LOGGER.log(Level.WARNING, null, x);
-                    }
-                    if (exec instanceof Run) {
-                        ColorizedAction action = ((Run) exec).getAction(ColorizedAction.class);
-                        if (action != null) {
-                            return new ColorConsoleAnnotator(action.colorMapName);
-                        }
-                    }
-                }
-                return getGlobalConsoleAnnotator();
-            }
-            return null;
-        }
-
-        private ConsoleAnnotator<Object> getGlobalConsoleAnnotator() {
-            String globalColorMapName = Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getGlobalColorMapName();
-            if (globalColorMapName != null && !globalColorMapName.equals("")) {
-                return new ColorConsoleAnnotator(globalColorMapName);
-            }
-            return null;
+            return new ColorConsoleAnnotator();
         }
 
     }
