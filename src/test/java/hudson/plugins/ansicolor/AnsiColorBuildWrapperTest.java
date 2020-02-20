@@ -33,6 +33,7 @@ public class AnsiColorBuildWrapperTest {
     private static final String ESC = "\033";
     private static final String CLR = ESC + "[2K";
 
+    @SuppressWarnings("unused")
     private enum CSI {
         CUU("A", 1),
         CUD("B", 1),
