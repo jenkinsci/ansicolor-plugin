@@ -257,7 +257,6 @@ public class AnsiColorBuildWrapperTest {
             StringWriter writer = new StringWriter();
             b.getLogText().writeHtmlTo(0L, writer);
             String html = writer.toString();
-            System.out.print(html);
             assertThat(
                 html.replaceAll("<!--.+?-->", ""),
                 allOf(
