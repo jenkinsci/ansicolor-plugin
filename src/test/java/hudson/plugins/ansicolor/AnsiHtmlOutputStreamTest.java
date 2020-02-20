@@ -31,6 +31,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
+
 public class AnsiHtmlOutputStreamTest {
 
     @Test
@@ -613,7 +615,7 @@ public class AnsiHtmlOutputStreamTest {
     private String annotate(String text, AnsiColorMap colorMap) throws IOException {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         AnsiHtmlOutputStream ansi = new AnsiHtmlOutputStream(bos, colorMap, new AnsiAttributeElement.Emitter() {
-            public void emitHtml(String html) {
+            public void emitHtml(@Nonnull String html) {
                 try {
                     bos.write(html.getBytes("UTF-8"));
                 } catch (IOException e) {

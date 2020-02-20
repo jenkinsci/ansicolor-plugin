@@ -124,7 +124,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         // current SGR0 is redundant. If `until` is null, then instead of seeing SGR0 it means the stream is closing,
         // so we don't do anything special.
         if (until == AnsiAttrType.DEFAULT && (openTags.isEmpty() || openTags.get(0).ansiAttrType == AnsiAttrType.DEFAULT)) {
-            emitter.emitRedundantReset();
+            emitter.emitInvisibleSequence();
         }
         while (!openTags.isEmpty()) {
             int index = openTags.size() - 1;
@@ -626,5 +626,100 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     @Override
     protected void processDefaultBackgroundColor() throws IOException {
         setBackgroundColor(null);
+    }
+    
+    @Override
+    protected void processEraseLine(int eraseOption) throws IOException {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processCursorDown(int count) throws IOException {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processCursorUp(int count) throws IOException {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processCursorLeft(int count) throws IOException {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processCursorUpLine(int count) throws IOException {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processRestoreCursorPosition() throws IOException {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processSaveCursorPosition() throws IOException {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processScrollDown(int optionInt) throws IOException {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processScrollUp(int optionInt) throws IOException {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processEraseScreen(int eraseOption) throws IOException {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processCursorTo(int row, int col) throws IOException {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processCursorToColumn(int x) throws IOException {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processCursorDownLine(int count) throws IOException {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processCursorRight(int count) throws IOException {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processUnknownExtension(ArrayList<Object> options, int command) {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processChangeIconName(String label) {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processChangeWindowTitle(String label) {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processUnknownOperatingSystemCommand(int command, String param) {
+        emitter.emitInvisibleSequence();
+    }
+
+    @Override
+    protected void processCharsetSelect(int set, char seq) {
+        emitter.emitInvisibleSequence();
     }
 }
