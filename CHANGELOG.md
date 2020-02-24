@@ -6,6 +6,7 @@
 * [#165](https://github.com/jenkinsci/ansicolor-plugin/pull/165): Allow for specifying a global color map - [@kcboschert](https://github.com/kcboschert).
 * [#168](https://github.com/jenkinsci/ansicolor-plugin/pull/168): Fix for working with moving sequences and other invisible escape codes - [@tszmytka](https://github.com/tszmytka)
 * [#169](https://github.com/jenkinsci/ansicolor-plugin/pull/169): Set up config and jenkins pipeline for testing/building the plugin on ci.jenkins.io - [@tszmytka](https://github.com/tszmytka)
+* [#171](https://github.com/jenkinsci/ansicolor-plugin/pull/171): Display colors without reloading page - [@jglick](https://github.com/jglick).
 * Your contribution here.
 
 0.6.2 (01/31/2019)
