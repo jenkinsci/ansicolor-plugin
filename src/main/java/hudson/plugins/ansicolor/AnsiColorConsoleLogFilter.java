@@ -13,6 +13,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.JenkinsJVM;
 
+import javax.annotation.Nonnull;
+
 /**
  * {@link ConsoleLogFilter} that adds a {@link SimpleHtmlNote} to each line.
  * @deprecated Only here for serial form compatibility.
@@ -79,7 +81,7 @@ public final class AnsiColorConsoleLogFilter extends ConsoleLogFilter implements
 
         return new AnsiHtmlOutputStream(logger, colorMap, new AnsiAttributeElement.Emitter() {
             @Override
-            public void emitHtml(String html) {
+            public void emitHtml(@Nonnull String html) {
                 try {
                     byte[] pregenerated = notes.get(html);
                     if (pregenerated != null) {

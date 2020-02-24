@@ -57,7 +57,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
     private final @CheckForNull String colorMapName;
     private final @Nonnull List<AnsiAttributeElement> openTags;
 
-    private ColorConsoleAnnotator(String colorMapName, List<AnsiAttributeElement> openTags) {
+    private ColorConsoleAnnotator(String colorMapName, @Nonnull List<AnsiAttributeElement> openTags) {
         this.colorMapName = colorMapName;
         this.openTags = openTags;
         LOGGER.log(Level.FINE, "creating annotator with colorMapName={0} openTags={1}", new Object[] { colorMapName, openTags });
@@ -68,7 +68,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
     }
 
     @Override
-    public ConsoleAnnotator<Object> annotate(Object context, MarkupText text) {
+    public ConsoleAnnotator<Object> annotate(@Nonnull Object context, MarkupText text) {
         String actualColorMapName;
         if (colorMapName == null) {
             actualColorMapName = colorMapNameFor(context);
@@ -88,34 +88,43 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                 int adjustment;
                 int lastPoint = -1; // multiple HTML tags may be emitted for one control sequence
                 @Override
-                public void emitHtml(String html) {
-                    int inCount = incoming.getCount();
-                    int outCount = outgoing.getCount() + adjustment;
-                    // All ANSI escapes sequences contain at least 2 bytes on modern platforms, so any HTML emitted
-                    // directly after the first character is received is due to the initialization process of the stream and
-                    // belongs at position 0 (i.e. default background/foreground colors).
-                    if (inCount == 1) {
-                        inCount = 0;
-                    }
-                    if (html != null) {
-                        LOGGER.log(Level.FINEST, "emitting {0} @{1}/{2}", new Object[] { html, inCount, s.length() });
-                        text.addMarkup(inCount, html);
-                    }
+                public void emitHtml(@Nonnull String html) {
+                    final int inCount = getIncomingCount();
+                    LOGGER.log(Level.FINEST, "emitting {0} @{1}/{2}", new Object[] { html, inCount, s.length() });
+                    text.addMarkup(inCount, html);
+                    hideIfNeeded(inCount, "");
+                }
+
+                /**
+                 * All ANSI escapes sequences contain at least 2 bytes on modern platforms, so any HTML emitted
+                 * directly after the first character is received is due to the initialization process of the stream and
+                 * belongs at position 0 (i.e. default background/foreground colors).
+                 *
+                 * @return Incoming chars count
+                 */
+                private int getIncomingCount() {
+                    final int inCount = incoming.getCount();
+                    return inCount == 1 ? 0 : inCount;
+                }
+
+                private void hideIfNeeded(int inCount, String msg) {
                     if (inCount != lastPoint) {
                         lastPoint = inCount;
-                        int hide = inCount - outCount;
+                        final int outCount = outgoing.getCount() + adjustment;
+                        final int hide = inCount - outCount;
                         // If openTags is not empty, but there are no escape sequences directly on this line, or if we
                         // are emitting closing tags when closing the stream, there is nothing to hide.
                         if (hide != 0) {
-                            LOGGER.log(Level.FINEST, "hiding {0} @{1}{2}", new Object[] { hide, outCount, html == null ? " (ANSI sequence with no corresponding HTML tags)" : "" });
+                            LOGGER.log(Level.FINEST, "hiding {0} @{1}{2}", new Object[] { hide, outCount, msg});
                             text.addMarkup(outCount, outCount + hide, "<!--", "-->");
                             adjustment += hide;
                         }
                     }
                 }
+
                 @Override
-                public void emitRedundantReset() {
-                    emitHtml(null);
+                public void emitInvisibleSequence() {
+                    hideIfNeeded(getIncomingCount(), " (ANSI sequence with no corresponding HTML tags)");
                 }
             }
             EmitterImpl emitter = new EmitterImpl();
