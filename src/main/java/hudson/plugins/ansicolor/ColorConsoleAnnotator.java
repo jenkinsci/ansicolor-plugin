@@ -197,7 +197,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
         if (run != null) {
             ColorizedAction ca = run.getAction(ColorizedAction.class);
             if (ca != null) {
-                return ca.colorMapName;
+                return ca.colorMapName != null ? ca.colorMapName : AnsiColorMap.DefaultName;
             }
         }
         return Util.fixEmpty(Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getGlobalColorMapName());
