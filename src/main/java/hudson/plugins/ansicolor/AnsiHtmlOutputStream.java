@@ -29,6 +29,7 @@ import hudson.console.ConsoleNote;
 import hudson.util.NullStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +37,7 @@ import java.util.Stack;
 import javax.annotation.Nonnull;
 
 /**
- * Filters an outputstream of ANSI escape sequences and emits appropriate HTML elements instead.
+ * Filters an output stream of ANSI escape sequences and emits appropriate HTML elements instead.
  *
  * Overlapping ANSI attribute combinations are handled by rewinding the HTML element stack.
  *
@@ -51,7 +52,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     private final AnsiColorMap colorMap;
     private final AnsiAttributeElement.Emitter emitter;
 
-    private static enum State {
+    private enum State {
         INIT, DATA, PREAMBLE, NOTE, POSTAMBLE
     }
     private State state = State.INIT;
@@ -62,9 +63,9 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     private boolean swapColors = false;  // true if negative / inverse mode is active (esc[7m)
 
     // A Deque might be a better choice, but we are constrained by the Java 5 API.
-    private ArrayList<AnsiAttributeElement> openTags;
+    private final ArrayList<AnsiAttributeElement> openTags;
 
-    private OutputStream logOutput;
+    private final OutputStream logOutput;
 
     /**
      * @param tagsToOpen A list of tags to open in the given order immediately after opening the tag for the default
@@ -90,7 +91,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     private void logdebug(String format, Object... args) throws IOException {
         String msg = String.format(format, args);
         emitter.emitHtml("<span style=\"border: 1px solid; color: #009000; background-color: #003000; font-size: 70%; font-weight: normal; font-style: normal\">");
-        out.write(msg.getBytes("UTF-8"));
+        out.write(msg.getBytes(StandardCharsets.UTF_8));
         emitter.emitHtml("</span>");
     }
 
@@ -114,12 +115,12 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         return new ArrayList<>(openTags);
     }
 
-    private void openTag(AnsiAttributeElement tag) throws IOException {
+    private void openTag(AnsiAttributeElement tag) {
         openTags.add(tag);
         tag.emitOpen(emitter);
     }
 
-    private void closeOpenTags(AnsiAttrType until) throws IOException {
+    private void closeOpenTags(AnsiAttrType until) {
         // If this method is called because we saw SGR0 (reset graphics), but there are no open tags to close, then the
         // current SGR0 is redundant. If `until` is null, then instead of seeing SGR0 it means the stream is closing,
         // so we don't do anything special.
@@ -144,7 +145,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
      *
      * Special handling is applied for AnsiAttrType.FGBG, as there will be closed all FG, BG and FGBG elements.
      */
-    private void closeTagOfType(AnsiAttrType ansiAttrType) throws IOException {
+    private void closeTagOfType(AnsiAttrType ansiAttrType) {
         if (ansiAttrType == AnsiAttrType.FGBG) {
             closeTagsOfTypeFGBG();
             return;
@@ -160,10 +161,11 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
 
         if (sameTypePos == 0) {
             // No need to unwind anything if the attribute has not been touched yet.
+            emitter.emitInvisibleSequence();
             return;
         }
 
-        Stack<AnsiAttributeElement> reopen = new Stack<AnsiAttributeElement>();
+        Stack<AnsiAttributeElement> reopen = new Stack<>();
 
         // Unwind ...
         for (int unwindAt = openTags.size(); unwindAt > sameTypePos; unwindAt--) {
@@ -185,7 +187,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     }
 
     // Like closeTagOfType(), but closes all FG, BG and FGBG elements.
-    private void closeTagsOfTypeFGBG() throws IOException {
+    private void closeTagsOfTypeFGBG() {
         int firstMatch;
 
         // Search for first element with matching type.
@@ -199,7 +201,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
             // No need to unwind anything if none of the attributes has not been touched yet.
             return;
 
-        Stack<AnsiAttributeElement> reopen = new Stack<AnsiAttributeElement>();
+        Stack<AnsiAttributeElement> reopen = new Stack<>();
 
         // Unwind, close all elements until firstMatch (including all FG, BG, FGBG)
         for (int unwindAt = openTags.size(); unwindAt > firstMatch;) {
@@ -356,7 +358,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     }
 
     // @in  color  Html color value like e.g. "#AABBCC" or null for default color
-    private void setForegroundColor(String color) throws IOException {
+    private void setForegroundColor(String color) {
         AnsiAttrType attrType = !swapColors ? AnsiAttrType.FG : AnsiAttrType.BG;
         String attrName = !swapColors ? "color" : "background-color";
         if (color == null && swapColors) color = getDefaultForegroundColor();
@@ -380,7 +382,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     }
 
     // @in  color  Html color value like e.g. "#AABBCC" or null for default color
-    public void setBackgroundColor(String color) throws IOException {
+    public void setBackgroundColor(String color) {
         AnsiAttrType attrType = !swapColors ? AnsiAttrType.BG : AnsiAttrType.FG;
         String attrName = !swapColors ? "background-color" : "color";
         if (color == null && swapColors) color = getDefaultBackgroundColor();
@@ -402,7 +404,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     protected static final int ATTRIBUTE_OVERLINE_OFF    = 55;
 
     @Override
-    protected void processSetAttribute(int attribute) throws IOException {
+    protected void processSetAttribute(int attribute) {
         //System.out.println("processSetAttribute(" + attribute + ")");
         // For some reason, AnsiOutputStream.processEscapeCommand() sometimes won't call our processSetFore/BackgroundColor().
         // Seems that this could be happen, if there was an old version of jansi in jenkins home directory, e.g. `/home/jenkins/.jenkins/war/WEB-INF/lib/jansi-1.9.jar`.
@@ -427,8 +429,14 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
             closeTagOfType(AnsiAttrType.BOLD);
             openTag(AnsiAttributeElement.bold());
             break;
+        case ATTRIBUTE_INTENSITY_FAINT:
+            final AnsiAttributeElement faint = AnsiAttributeElement.faint();
+            closeTagOfType(faint.ansiAttrType);
+            openTag(faint);
+            break;
         case ATTRIBUTE_INTENSITY_NORMAL:
             closeTagOfType(AnsiAttrType.BOLD);
+            closeTagOfType(AnsiAttrType.FAINT);
             break;
         case ATTRIBUTE_ITALIC:
             closeTagOfType(AnsiAttrType.ITALIC);
@@ -506,13 +514,13 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         }
     }
 
-    private String getRgbColor(int r, int g, int b) throws IOException {
+    private String getRgbColor(int r, int g, int b) {
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255)
             throw new IllegalArgumentException();
         return "#" + String.format("%02X", r) + String.format("%02X", g) + String.format("%02X", b);
     }
 
-    private String getPaletteColor(int paletteIndex) throws IOException {
+    private String getPaletteColor(int paletteIndex) {
         // for xterm 256 colors see also https://upload.wikimedia.org/wikipedia/commons/1/15/Xterm_256color_chart.svg
         if (paletteIndex < 0 || paletteIndex > 255) {
             throw new IllegalArgumentException();
@@ -568,7 +576,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     }
 
     @Override
-    protected void processAttributeRest() throws IOException {
+    protected void processAttributeRest() {
         currentForegroundColor = null;
         currentBackgroundColor = null;
         swapColors = false;
@@ -577,124 +585,124 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
     }
 
     @Override
-    protected void processSetForegroundColor(int color) throws IOException {
+    protected void processSetForegroundColor(int color) {
         setForegroundColor(colorMap.getNormal(color));
     }
 
     // set foreground color to non standard ANSI colors (90 - 97)
     @Override
-    protected void processSetForegroundColor(int color, boolean bright) throws IOException {
+    protected void processSetForegroundColor(int color, boolean bright) {
         setForegroundColor(colorMap.getBright(color));
     }
 
     @Override
-    protected void processSetForegroundColorExt(int paletteIndex) throws IOException {
+    protected void processSetForegroundColorExt(int paletteIndex) {
         setForegroundColor(getPaletteColor(paletteIndex));
     }
 
     @Override
-    protected void processSetForegroundColorExt(int r, int g, int b) throws IOException {
+    protected void processSetForegroundColorExt(int r, int g, int b) {
         setForegroundColor(getRgbColor(r, g, b));
     }
 
     @Override
-    protected void processSetBackgroundColor(int color) throws IOException {
+    protected void processSetBackgroundColor(int color) {
         setBackgroundColor(colorMap.getNormal(color));
     }
 
     // set background color to non standard ANSI colors (100 - 107)
     @Override
-    protected void processSetBackgroundColor(int color, boolean bright) throws IOException {
+    protected void processSetBackgroundColor(int color, boolean bright) {
         setBackgroundColor(colorMap.getBright(color));
     }
 
     @Override
-    protected void processSetBackgroundColorExt(int paletteIndex) throws IOException {
+    protected void processSetBackgroundColorExt(int paletteIndex) {
         setBackgroundColor(getPaletteColor(paletteIndex));
     }
 
     @Override
-    protected void processSetBackgroundColorExt(int r, int g, int b) throws IOException {
+    protected void processSetBackgroundColorExt(int r, int g, int b) {
         setBackgroundColor(getRgbColor(r, g, b));
     }
 
     @Override
-    protected void processDefaultTextColor() throws IOException {
+    protected void processDefaultTextColor() {
         setForegroundColor(null);
     }
 
     @Override
-    protected void processDefaultBackgroundColor() throws IOException {
+    protected void processDefaultBackgroundColor() {
         setBackgroundColor(null);
     }
-    
+
     @Override
-    protected void processEraseLine(int eraseOption) throws IOException {
+    protected void processEraseLine(int eraseOption) {
         emitter.emitInvisibleSequence();
     }
 
     @Override
-    protected void processCursorDown(int count) throws IOException {
+    protected void processCursorDown(int count) {
         emitter.emitInvisibleSequence();
     }
 
     @Override
-    protected void processCursorUp(int count) throws IOException {
+    protected void processCursorUp(int count) {
         emitter.emitInvisibleSequence();
     }
 
     @Override
-    protected void processCursorLeft(int count) throws IOException {
+    protected void processCursorLeft(int count) {
         emitter.emitInvisibleSequence();
     }
 
     @Override
-    protected void processCursorUpLine(int count) throws IOException {
+    protected void processCursorUpLine(int count) {
         emitter.emitInvisibleSequence();
     }
 
     @Override
-    protected void processRestoreCursorPosition() throws IOException {
+    protected void processRestoreCursorPosition() {
         emitter.emitInvisibleSequence();
     }
 
     @Override
-    protected void processSaveCursorPosition() throws IOException {
+    protected void processSaveCursorPosition() {
         emitter.emitInvisibleSequence();
     }
 
     @Override
-    protected void processScrollDown(int optionInt) throws IOException {
+    protected void processScrollDown(int optionInt) {
         emitter.emitInvisibleSequence();
     }
 
     @Override
-    protected void processScrollUp(int optionInt) throws IOException {
+    protected void processScrollUp(int optionInt) {
         emitter.emitInvisibleSequence();
     }
 
     @Override
-    protected void processEraseScreen(int eraseOption) throws IOException {
+    protected void processEraseScreen(int eraseOption) {
         emitter.emitInvisibleSequence();
     }
 
     @Override
-    protected void processCursorTo(int row, int col) throws IOException {
+    protected void processCursorTo(int row, int col) {
         emitter.emitInvisibleSequence();
     }
 
     @Override
-    protected void processCursorToColumn(int x) throws IOException {
+    protected void processCursorToColumn(int x) {
         emitter.emitInvisibleSequence();
     }
 
     @Override
-    protected void processCursorDownLine(int count) throws IOException {
+    protected void processCursorDownLine(int count) {
         emitter.emitInvisibleSequence();
     }
 
     @Override
-    protected void processCursorRight(int count) throws IOException {
+    protected void processCursorRight(int count) {
         emitter.emitInvisibleSequence();
     }
 

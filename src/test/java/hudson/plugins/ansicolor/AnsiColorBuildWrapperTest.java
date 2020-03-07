@@ -48,7 +48,6 @@ public class AnsiColorBuildWrapperTest {
         SU("S", 1),
         SD("T", 1),
         HVP("f", 2),
-        SGR("m", 1),
         AUXON("5i", 0),
         AUXOFF("4i", 0),
         DSR("6n", 0),
@@ -356,7 +355,6 @@ public class AnsiColorBuildWrapperTest {
             }
             throw new IllegalArgumentException("Not supported amount of params");
         }).collect(Collectors.toList());
-
         final String txt1 = "Test various sequences end";
         final Consumer<PrintStream> inputProvider = stream -> {
             stream.println(txt0);
@@ -395,9 +393,38 @@ public class AnsiColorBuildWrapperTest {
                 "<span style=\"color: #00FF00;\">" + msg1 + "</span>",
                 "<span style=\"color: #00FF00;\"><b>" + msg2 + "</b></span>",
                 "<span style=\"color: #00FF00;\">" + msg3 + "</span>",
-                "<span style=\"color: #00FF00;\">" + msg4 + "</span>"
+                "<span style=\"color: #00FF00;\">" + msg4 + "</span>",
+                msg5
             ),
             Arrays.asList(sgrReset, sgrLightGreen, sgrLightGreenRegular, sgrBold, sgrNormal),
+            inputProvider
+        );
+    }
+
+    @Test
+    public void canRenderSgrFaintIntensity() {
+        final String sgrReset = sgr(0);
+        final String msg0 = "lightblue and also faint";
+        final String sgrLightBlueFaint = sgr(94, 2);
+        final String msg1 = "lightblue and";
+        final String msg2 = "also faint";
+        final String sgrLightBlue = sgr(94);
+        final String sgrFaint = sgr(2);
+        final String msg3 = "normal ordinary text";
+        final String sgrNormal = sgr(22);
+
+        final Consumer<PrintStream> inputProvider = stream -> {
+            stream.println(sgrLightBlueFaint + msg0 + sgrReset);
+            stream.println(sgrLightBlue + msg1 + sgrFaint + msg2 + sgrReset);
+            stream.println(sgrLightBlue + sgrFaint + sgrNormal + msg3 + sgrReset);
+        };
+        assertCorrectOutput(
+            Arrays.asList(
+                "<span style=\"color: #4682B4;\"><span style=\"font-weight: lighter;\">" + msg0 + "</span></span>",
+                "<span style=\"color: #4682B4;\">" + msg1 + "<span style=\"font-weight: lighter;\">" + msg2 + "</span></span>",
+                msg3
+            ),
+            Arrays.asList(sgrReset, sgrLightBlueFaint, sgrLightBlue, sgrFaint, sgrNormal),
             inputProvider
         );
     }
@@ -419,7 +446,7 @@ public class AnsiColorBuildWrapperTest {
     }
 
     private static String sgr(int... sgrParam) {
-        return ESC + "[" + Arrays.stream(sgrParam).boxed().map(String::valueOf).collect(Collectors.joining(";")) + CSI.SGR.code;
+        return ESC + "[" + Arrays.stream(sgrParam).boxed().map(String::valueOf).collect(Collectors.joining(";")) + "m";
     }
 
     private void assertCorrectOutput(Collection<String> expectedOutput, Collection<String> notExpectedOutput, Consumer<PrintStream> inputProvider) {
