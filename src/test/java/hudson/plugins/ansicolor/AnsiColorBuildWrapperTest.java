@@ -48,6 +48,7 @@ public class AnsiColorBuildWrapperTest {
         SU("S", 1),
         SD("T", 1),
         HVP("f", 2),
+        SGR("m", 1),
         AUXON("5i", 0),
         AUXOFF("4i", 0),
         DSR("6n", 0),
@@ -62,23 +63,6 @@ public class AnsiColorBuildWrapperTest {
             this.paramsAmount = paramsAmount;
         }
     }
-
-    private static String csi(CSI csi) {
-        return csi("", csi);
-    }
-
-    private static String csi(int n, CSI csi) {
-        return csi(String.valueOf(n), csi);
-    }
-
-    private static String csi(int n, int m, CSI csi) {
-        return csi(n + ";" + m, csi);
-    }
-
-    private static String csi(String nm, CSI csi) {
-        return ESC + "[" + nm + csi.code;
-    }
-
 
     @Test
     public void testGetColorMapNameNull() {
@@ -106,7 +90,7 @@ public class AnsiColorBuildWrapperTest {
     public LoggerRule logging = new LoggerRule().recordPackage(ConsoleNote.class, Level.FINE).record(ColorConsoleAnnotator.class, Level.FINER);
 
     @Test
-    public void maven() throws Exception {
+    public void maven() {
         story.then(r -> {
             FreeStyleProject p = r.createFreeStyleProject();
             p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
@@ -144,7 +128,7 @@ public class AnsiColorBuildWrapperTest {
     }
 
     @Test
-    public void testMultilineEscapeSequence() throws Exception {
+    public void testMultilineEscapeSequence() {
         story.then(r -> {
             FreeStyleProject p = r.createFreeStyleProject();
             p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
@@ -175,7 +159,7 @@ public class AnsiColorBuildWrapperTest {
     }
 
     @Test
-    public void testDefaultForegroundBackground() throws Exception {
+    public void testDefaultForegroundBackground() {
         story.then(r -> {
             FreeStyleProject p = r.createFreeStyleProject();
             // The VGA ColorMap sets default foreground and background colors.
@@ -210,7 +194,7 @@ public class AnsiColorBuildWrapperTest {
 
     @Issue("JENKINS-54133")
     @Test
-    public void testWorkflowWrap() throws Exception {
+    public void testWorkflowWrap() {
         story.addStep(new Statement() {
 
             @Override
@@ -240,7 +224,7 @@ public class AnsiColorBuildWrapperTest {
     }
 
     @Test
-    public void testNonAscii() throws Exception {
+    public void testNonAscii() {
         story.then(r -> {
             FreeStyleProject p = r.createFreeStyleProject();
             p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
@@ -271,7 +255,7 @@ public class AnsiColorBuildWrapperTest {
 
     @Issue("JENKINS-55139")
     @Test
-    public void testTerraform() throws Exception {
+    public void testTerraform() {
         story.then(r -> {
             FreeStyleProject p = r.createFreeStyleProject();
             p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
@@ -304,7 +288,7 @@ public class AnsiColorBuildWrapperTest {
 
     @Issue("JENKINS-55139")
     @Test
-    public void testRedundantResets() throws Exception {
+    public void testRedundantResets() {
         story.then(r -> {
             FreeStyleProject p = r.createFreeStyleProject();
             p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
@@ -381,6 +365,61 @@ public class AnsiColorBuildWrapperTest {
         };
 
         assertCorrectOutput(Arrays.asList(txt0, txt1), csiSequences, inputProvider);
+    }
+
+    @Issue("172")
+    @Test
+    public void canRenderSgrNormalIntensity() {
+        final String sgrReset = sgr(0);
+        final String msg0 = "lightgreen and reset sgr ";
+        final String sgrLightGreen = sgr(92);
+        final String msg1 = "lightgreen and combined reset sgr ";
+        final String sgrLightGreenRegular = sgr(92, 22);
+        final String msg2 = "lightgreen bold ";
+        final String msg3 = "lightgreen normal";
+        final String sgrBold = sgr(1);
+        final String sgrNormal = sgr(22);
+        final String msg4 = "lightgreen and separate reset sgr ";
+        final String msg5 = "this text should just be normal ";
+
+        final Consumer<PrintStream> inputProvider = stream -> {
+            stream.println(sgrLightGreen + msg0 + sgrReset);
+            stream.println(sgrLightGreenRegular + msg1 + sgrReset);
+            stream.println(sgrLightGreen + sgrBold + msg2 + sgrLightGreen + sgrNormal + msg3 + sgrReset);
+            stream.println(sgrLightGreen + sgrNormal + msg4 + sgrReset);
+            stream.println(sgrNormal + msg5 + sgrReset);
+        };
+        assertCorrectOutput(
+            Arrays.asList(
+                "<span style=\"color: #00FF00;\">" + msg0 + "</span>",
+                "<span style=\"color: #00FF00;\">" + msg1 + "</span>",
+                "<span style=\"color: #00FF00;\"><b>" + msg2 + "</b></span>",
+                "<span style=\"color: #00FF00;\">" + msg3 + "</span>",
+                "<span style=\"color: #00FF00;\">" + msg4 + "</span>"
+            ),
+            Arrays.asList(sgrReset, sgrLightGreen, sgrLightGreenRegular, sgrBold, sgrNormal),
+            inputProvider
+        );
+    }
+
+    private static String csi(CSI csi) {
+        return csi("", csi);
+    }
+
+    private static String csi(int n, CSI csi) {
+        return csi(String.valueOf(n), csi);
+    }
+
+    private static String csi(int n, int m, CSI csi) {
+        return csi(n + ";" + m, csi);
+    }
+
+    private static String csi(String nm, CSI csi) {
+        return ESC + "[" + nm + csi.code;
+    }
+
+    private static String sgr(int... sgrParam) {
+        return ESC + "[" + Arrays.stream(sgrParam).boxed().map(String::valueOf).collect(Collectors.joining(";")) + CSI.SGR.code;
     }
 
     private void assertCorrectOutput(Collection<String> expectedOutput, Collection<String> notExpectedOutput, Consumer<PrintStream> inputProvider) {
