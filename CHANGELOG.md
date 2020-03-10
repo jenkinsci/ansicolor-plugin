@@ -1,6 +1,7 @@
 0.6.4 (Next)
 ============
 
+* [#173](https://github.com/jenkinsci/ansicolor-plugin/pull/173): Fix for SGR Normal intensity not handled correctly - [@tszmytka](https://github.com/tszmytka).
 * Your contribution here.
 
 0.6.3 (02/24/2020)

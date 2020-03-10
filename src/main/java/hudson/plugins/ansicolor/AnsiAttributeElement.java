@@ -12,12 +12,11 @@ import java.io.Serializable;
  * How the HTML is actually emitted depends on the specified {@link AnsiAttributeElement.Emitter}. For Jenkins, the Emitter creates {@link hudson.console.ConsoleNote}s as part of the stream, but for
  * other software or testing the HTML may be emitted otherwise.
  */
-
 class AnsiAttributeElement implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum AnsiAttrType {
-        DEFAULT, BOLD, ITALIC, UNDERLINE, STRIKEOUT, FRAMED, OVERLINE, FG, BG, FGBG
+        DEFAULT, BOLD, FAINT, ITALIC, UNDERLINE, STRIKEOUT, FRAMED, OVERLINE, FG, BG, FGBG
     }
 
     AnsiAttrType ansiAttrType;
@@ -87,6 +86,10 @@ class AnsiAttributeElement implements Serializable {
 
     public static AnsiAttributeElement bold() {
         return new AnsiAttributeElement(AnsiAttributeElement.AnsiAttrType.BOLD, "b", "");
+    }
+
+    public static AnsiAttributeElement faint() {
+        return new AnsiAttributeElement(AnsiAttributeElement.AnsiAttrType.FAINT, "span", "style=\"font-weight: lighter;\"");
     }
 
     public static AnsiAttributeElement italic() {
