@@ -21,6 +21,7 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -425,6 +426,22 @@ public class AnsiColorBuildWrapperTest {
                 msg3
             ),
             Arrays.asList(sgrReset, sgrLightBlueFaint, sgrLightBlue, sgrFaint, sgrNormal),
+            inputProvider
+        );
+    }
+
+    @Issue("158")
+    @Test
+    public void canHandleSgrsWithMultipleOptions() {
+        final String input = "\u001B[33mbanana_1  |\u001B[0m 19:59:14.353\u001B[0;38m [debug] Lager installed handler {lager_file_backend,\"banana.log\"} into lager_event\u001B[0m\n";
+
+        final Consumer<PrintStream> inputProvider = stream -> {
+            stream.println(input);
+        };
+
+        assertCorrectOutput(
+            Collections.singletonList("<span style=\"color: #CDCD00;\">banana_1  |</span> 19:59:14.353 [debug] Lager installed handler {lager_file_backend,\"banana.log\"} into lager_event"),
+            Collections.singletonList(ESC),
             inputProvider
         );
     }
