@@ -1,6 +1,9 @@
 # Jenkins ANSI Color Plugin
 
-[![Build Status](https://travis-ci.org/jenkinsci/ansicolor-plugin.svg)](https://travis-ci.org/jenkinsci/ansicolor-plugin)
+[![Travis Build Status](https://travis-ci.org/jenkinsci/ansicolor-plugin.svg)](https://travis-ci.org/jenkinsci/ansicolor-plugin)
+[![Jenkins Build Status](https://ci.jenkins.io/buildStatus/icon?job=Plugins%2Fansicolor-plugin%2Fmaster)](https://ci.jenkins.io/job/Plugins/job/ansicolor-plugin/job/master/)
+[![Jenkins Plugins](https://img.shields.io/jenkins/plugin/v/ansicolor)](https://plugins.jenkins.io/ansicolor/)
+[![Jenkins Plugin installs](https://img.shields.io/jenkins/plugin/i/ansicolor)](https://plugins.jenkins.io/ansicolor/)
 
 This plugin adds support for standard ANSI escape sequences, including color, to Console Output.
 
@@ -9,8 +12,15 @@ and has [a page](https://wiki.jenkins-ci.org/display/JENKINS/AnsiColor+Plugin) o
 
 # Install
 
+#### Using Plugin Manager
+
 ![install](images/ansicolor-install.png "Install AnsiColor")
 
+#### Using Jenkins CLI client
+
+```
+java -jar jenkins-cli.jar install-plugin ansicolor
+```
 # Enable
 
 ![enable](images/ansicolor-enable.png "Enable AnsiColor")
