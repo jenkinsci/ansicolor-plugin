@@ -22,20 +22,45 @@
  * THE SOFTWARE.
  */
 
-package hudson.plugins.ansicolor;
+package hudson.plugins.ansicolor.command.action;
 
 import hudson.model.InvisibleAction;
+import hudson.plugins.ansicolor.AnsiColorMap;
+
+import java.util.UUID;
 
 /**
- * Marker for the fact that a build used colorization.
- * Note that the specific log span(s) are ignored.
+ * Action for issuing commands to ColorConsoleAnnotator
  */
-final class ColorizedAction extends InvisibleAction {
+public class ColorizedAction extends InvisibleAction {
 
-    final String colorMapName;
+    private final UUID id;
 
-    ColorizedAction(String colorMapName) {
-        this.colorMapName = colorMapName;
+    private final String colorMapName;
+
+    private final Command command;
+
+    public enum Command {
+        START,
+        STOP,
+        CONTINUE
     }
 
+    public ColorizedAction(String colorMapName, Command command) {
+        id = UUID.randomUUID();
+        this.colorMapName = colorMapName == null || colorMapName.isEmpty() ? AnsiColorMap.DefaultName : colorMapName;
+        this.command = command;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public String getColorMapName() {
+        return colorMapName;
+    }
+
+    public Command getCommand() {
+        return command;
+    }
 }
