@@ -76,7 +76,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
 
     @Override
     public ConsoleAnnotator<Object> annotate(@Nonnull Object context, @Nonnull MarkupText text) {
-        final ColorizedAction colorizedAction = ActionNote.parseAction(text, runOf(context));
+        final ColorizedAction colorizedAction = ColorizedAction.parseAction(text, runOf(context));
         switch (colorizedAction.getCommand()) {
             case START:
                 colorMapName = colorizedAction.getColorMapName();

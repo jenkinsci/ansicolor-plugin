@@ -24,15 +24,20 @@
 
 package hudson.plugins.ansicolor.command.action;
 
+import hudson.MarkupText;
 import hudson.model.InvisibleAction;
+import hudson.model.Run;
 import hudson.plugins.ansicolor.AnsiColorMap;
 
 import java.util.UUID;
+
+import static hudson.plugins.ansicolor.command.action.ActionNote.TAG_ACTION_BEGIN;
 
 /**
  * Action for issuing commands to ColorConsoleAnnotator
  */
 public class ColorizedAction extends InvisibleAction {
+    private static final ColorizedAction CONTINUE = new ColorizedAction("", Command.CONTINUE);
 
     private final UUID id;
 
@@ -62,5 +67,17 @@ public class ColorizedAction extends InvisibleAction {
 
     public Command getCommand() {
         return command;
+    }
+
+    public static ColorizedAction parseAction(MarkupText text, Run<?, ?> run) {
+        final String line = text.toString(false);
+        final int actionIdOffset = line.indexOf(TAG_ACTION_BEGIN);
+        if (actionIdOffset != -1) {
+            final int from = actionIdOffset + TAG_ACTION_BEGIN.length() + 1;
+            final int to = line.indexOf("\"", from);
+            final String id = line.substring(from, to);
+            return run.getActions(ColorizedAction.class).stream().filter(a -> id.equals(a.getId().toString())).findAny().orElse(CONTINUE);
+        }
+        return CONTINUE;
     }
 }
