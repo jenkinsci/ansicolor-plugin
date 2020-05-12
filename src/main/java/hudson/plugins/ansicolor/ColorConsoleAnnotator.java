@@ -67,7 +67,6 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
 
     private ColorConsoleAnnotator(String defaultColorMapName) {
         this.defaultColorMapName = defaultColorMapName;
-        LOGGER.log(Level.FINE, "creating annotator with colorMapName={0} openTags={1}", new Object[]{colorMapName, openTags});
     }
 
     @Override
