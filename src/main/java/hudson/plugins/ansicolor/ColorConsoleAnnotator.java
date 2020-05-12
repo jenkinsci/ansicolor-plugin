@@ -30,7 +30,6 @@ import hudson.console.ConsoleAnnotator;
 import hudson.console.ConsoleAnnotatorFactory;
 import hudson.model.Queue;
 import hudson.model.Run;
-import hudson.plugins.ansicolor.command.action.ActionNote;
 import hudson.plugins.ansicolor.command.action.ColorizedAction;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.output.CountingOutputStream;
@@ -58,20 +57,17 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
 
     private static final Factory FACTORY = new Factory();
 
+    private final String defaultColorMapName;
+
     @CheckForNull
     private String colorMapName;
 
     @Nonnull
-    private List<AnsiAttributeElement> openTags;
+    private List<AnsiAttributeElement> openTags = Collections.emptyList();
 
-    private ColorConsoleAnnotator(String colorMapName, @Nonnull List<AnsiAttributeElement> openTags) {
-        this.colorMapName = colorMapName;
-        this.openTags = openTags;
+    private ColorConsoleAnnotator(String defaultColorMapName) {
+        this.defaultColorMapName = defaultColorMapName;
         LOGGER.log(Level.FINE, "creating annotator with colorMapName={0} openTags={1}", new Object[]{colorMapName, openTags});
-    }
-
-    ColorConsoleAnnotator() {
-        this(null, Collections.emptyList());
     }
 
     @Override
@@ -83,9 +79,11 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                 break;
             case STOP:
                 return FACTORY.newInstance(context);
-        }
-        if (colorMapName == null) {
-            colorMapName = Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getGlobalColorMapName();
+            default:
+                if (colorMapName == null) {
+                    colorMapName = defaultColorMapName;
+                }
+                break;
         }
         if (colorMapName == null) {
             return this;
@@ -213,7 +211,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
 
         @Override
         public ConsoleAnnotator<Object> newInstance(Object context) {
-            return new ColorConsoleAnnotator();
+            return new ColorConsoleAnnotator(Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getGlobalColorMapName());
         }
     }
 }
