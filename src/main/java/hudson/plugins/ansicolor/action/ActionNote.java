@@ -1,4 +1,4 @@
-package hudson.plugins.ansicolor.command.action;
+package hudson.plugins.ansicolor.action;
 
 import hudson.MarkupText;
 import hudson.console.ConsoleAnnotator;
@@ -11,7 +11,7 @@ import hudson.model.Run;
 public class ActionNote extends ConsoleNote<Run<?, ?>> {
     static final String TAG_ACTION_BEGIN = "<div data-ansicolor-action=";
     private static final String TAG_ACTION_ID_TEMPLATE = "\"%s\"";
-    private static final String TAG_ACTION_END = "></div>";
+    static final String TAG_ACTION_END = "></div>";
 
     private final String actionId;
 

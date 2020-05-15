@@ -30,7 +30,7 @@ import hudson.console.ConsoleAnnotator;
 import hudson.console.ConsoleAnnotatorFactory;
 import hudson.model.Queue;
 import hudson.model.Run;
-import hudson.plugins.ansicolor.command.action.ColorizedAction;
+import hudson.plugins.ansicolor.action.ColorizedAction;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.NullOutputStream;

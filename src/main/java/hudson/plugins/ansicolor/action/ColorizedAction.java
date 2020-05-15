@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package hudson.plugins.ansicolor.command.action;
+package hudson.plugins.ansicolor.action;
 
 import hudson.MarkupText;
 import hudson.model.InvisibleAction;
@@ -31,13 +31,13 @@ import hudson.plugins.ansicolor.AnsiColorMap;
 
 import java.util.UUID;
 
-import static hudson.plugins.ansicolor.command.action.ActionNote.TAG_ACTION_BEGIN;
+import static hudson.plugins.ansicolor.action.ActionNote.TAG_ACTION_BEGIN;
 
 /**
  * Action for issuing commands to ColorConsoleAnnotator
  */
 public class ColorizedAction extends InvisibleAction {
-    private static final ColorizedAction CONTINUE = new ColorizedAction("", Command.CONTINUE);
+    static final ColorizedAction CONTINUE = new ColorizedAction("", Command.CONTINUE);
 
     private final UUID id;
 
