@@ -30,6 +30,8 @@ import hudson.Launcher;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
+import hudson.plugins.ansicolor.action.ActionNote;
+import hudson.plugins.ansicolor.action.ColorizedAction;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.FormValidation;
@@ -78,9 +80,10 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
     }
 
     @Override
-    public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener,
-            EnvVars initialEnvironment) throws IOException, InterruptedException {
-        build.replaceAction(new ColorizedAction(colorMapName));
+    public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+        final ColorizedAction action = new ColorizedAction(colorMapName, ColorizedAction.Command.START);
+        build.replaceAction(action);
+        listener.annotate(new ActionNote(action));
     }
 
     /**

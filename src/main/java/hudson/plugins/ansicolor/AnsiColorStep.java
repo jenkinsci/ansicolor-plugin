@@ -1,25 +1,22 @@
 package hudson.plugins.ansicolor;
 
 import hudson.Extension;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.plugins.ansicolor.AnsiColorBuildWrapper.DescriptorImpl;
+import hudson.plugins.ansicolor.action.ActionNote;
+import hudson.plugins.ansicolor.action.ColorizedAction;
 import hudson.util.ListBoxModel;
-
-import java.util.Collections;
-
-
 import jenkins.model.Jenkins;
-
-import org.jenkinsci.plugins.workflow.steps.AbstractStepExecutionImpl;
-import org.jenkinsci.plugins.workflow.steps.BodyExecutionCallback;
-import org.jenkinsci.plugins.workflow.steps.EnvironmentExpander;
-import org.jenkinsci.plugins.workflow.steps.StepContext;
+import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import hudson.model.Run;
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
-import org.jenkinsci.plugins.workflow.steps.Step;
-import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
-import org.jenkinsci.plugins.workflow.steps.StepExecution;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Custom pipeline step that can be used without a node and build wrapper.
@@ -45,7 +42,7 @@ public class AnsiColorStep extends Step {
     }
 
     private static DescriptorImpl getWrapperDescriptor() {
-        return Jenkins.getActiveInstance().getDescriptorByType(DescriptorImpl.class);
+        return Jenkins.get().getDescriptorByType(DescriptorImpl.class);
     }
 
     @Override
@@ -73,15 +70,14 @@ public class AnsiColorStep extends Step {
         @Override
         public boolean start() throws Exception {
             StepContext context = getContext();
-            context.get(Run.class).replaceAction(new ColorizedAction(colorMapName));
             EnvironmentExpander currentEnvironment = context.get(EnvironmentExpander.class);
             EnvironmentExpander terminalEnvironment = EnvironmentExpander.constant(Collections.singletonMap("TERM", colorMapName));
             context.newBodyInvoker()
-                   .withContext(EnvironmentExpander.merge(currentEnvironment, terminalEnvironment))
-                                                   .withCallback(BodyExecutionCallback.wrap(context)).start();
+                .withContext(EnvironmentExpander.merge(currentEnvironment, terminalEnvironment))
+                .withCallback(new AnsiColorExecution(colorMapName))
+                .start();
             return false;
         }
-
     }
 
     /**
@@ -90,6 +86,7 @@ public class AnsiColorStep extends Step {
     @Extension(optional = true)
     public static class StepDescriptorImpl extends StepDescriptor {
 
+        @Nonnull
         @Override
         public String getDisplayName() {
             return Messages.DisplayName();
@@ -119,6 +116,46 @@ public class AnsiColorStep extends Step {
         public Set<? extends Class<?>> getRequiredContext() {
             return Collections.singleton(Run.class);
         }
+    }
 
+    private static class AnsiColorExecution extends BodyExecutionCallback {
+        private static final Logger LOGGER = Logger.getLogger(AnsiColorExecution.class.getName());
+
+        private final String colorMapName;
+
+        public AnsiColorExecution(String colorMapName) {
+            this.colorMapName = colorMapName;
+        }
+
+        @Override
+        public void onStart(StepContext context) {
+            issueAction(context, new ColorizedAction(colorMapName, ColorizedAction.Command.START));
+            super.onStart(context);
+        }
+
+        @Override
+        public void onSuccess(StepContext context, Object result) {
+            issueAction(context, new ColorizedAction(colorMapName, ColorizedAction.Command.STOP));
+            context.onSuccess(result);
+        }
+
+        @Override
+        public void onFailure(StepContext context, Throwable t) {
+            issueAction(context, new ColorizedAction(colorMapName, ColorizedAction.Command.STOP));
+            context.onFailure(t);
+        }
+
+        private void issueAction(StepContext context, ColorizedAction action) {
+            try {
+                final TaskListener taskListener = context.get(TaskListener.class);
+                final Run<?, ?> run = context.get(Run.class);
+                if (taskListener != null && run != null) {
+                    run.addAction(action);
+                    taskListener.annotate(new ActionNote(action));
+                }
+            } catch (IOException | InterruptedException e) {
+                LOGGER.log(Level.WARNING, "Could not annotate. Ansicolor plugin will not work correctly.", e);
+            }
+        }
     }
 }

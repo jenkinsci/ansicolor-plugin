@@ -26,24 +26,25 @@ package hudson.plugins.ansicolor;
 
 import hudson.Extension;
 import hudson.MarkupText;
-import hudson.Util;
 import hudson.console.ConsoleAnnotator;
 import hudson.console.ConsoleAnnotatorFactory;
 import hudson.model.Queue;
 import hudson.model.Run;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import hudson.plugins.ansicolor.action.ColorizedAction;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Applies ANSI coloration to log files where requested.
@@ -54,43 +55,53 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
 
     private static final long serialVersionUID = 1;
 
-    private final @CheckForNull String colorMapName;
-    private final @Nonnull List<AnsiAttributeElement> openTags;
+    private static final Factory FACTORY = new Factory();
 
-    private ColorConsoleAnnotator(String colorMapName, @Nonnull List<AnsiAttributeElement> openTags) {
-        this.colorMapName = colorMapName;
-        this.openTags = openTags;
-        LOGGER.log(Level.FINE, "creating annotator with colorMapName={0} openTags={1}", new Object[] { colorMapName, openTags });
-    }
+    private final String defaultColorMapName;
 
-    ColorConsoleAnnotator() {
-        this(null, Collections.emptyList());
+    @CheckForNull
+    private String colorMapName;
+
+    @Nonnull
+    private List<AnsiAttributeElement> openTags = Collections.emptyList();
+
+    private ColorConsoleAnnotator(String defaultColorMapName) {
+        this.defaultColorMapName = defaultColorMapName;
     }
 
     @Override
-    public ConsoleAnnotator<Object> annotate(@Nonnull Object context, MarkupText text) {
-        String actualColorMapName;
-        if (colorMapName == null) {
-            actualColorMapName = colorMapNameFor(context);
-            if (actualColorMapName == null) {
-                return this;
-            }
-        } else {
-            actualColorMapName = colorMapName;
+    public ConsoleAnnotator<Object> annotate(@Nonnull Object context, @Nonnull MarkupText text) {
+        final ColorizedAction colorizedAction = ColorizedAction.parseAction(text, runOf(context));
+        switch (colorizedAction.getCommand()) {
+            case START:
+                colorMapName = colorizedAction.getColorMapName();
+                break;
+            case STOP:
+                return FACTORY.newInstance(context);
+            default:
+                if (colorMapName == null) {
+                    colorMapName = defaultColorMapName;
+                }
+                break;
         }
+        if (colorMapName == null) {
+            return this;
+        }
+
         String s = text.getText();
         List<AnsiAttributeElement> nextOpenTags = openTags;
-        AnsiColorMap colorMap = Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getColorMap(actualColorMapName);
+        AnsiColorMap colorMap = Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getColorMap(colorMapName);
         if (s.indexOf('\u001B') != -1 || !openTags.isEmpty() || colorMap.getDefaultBackground() != null || colorMap.getDefaultForeground() != null) {
             CountingOutputStream outgoing = new CountingOutputStream(new NullOutputStream());
             class EmitterImpl implements AnsiAttributeElement.Emitter {
                 CountingOutputStream incoming;
                 int adjustment;
                 int lastPoint = -1; // multiple HTML tags may be emitted for one control sequence
+
                 @Override
                 public void emitHtml(@Nonnull String html) {
                     final int inCount = getIncomingCount();
-                    LOGGER.log(Level.FINEST, "emitting {0} @{1}/{2}", new Object[] { html, inCount, s.length() });
+                    LOGGER.log(Level.FINEST, "emitting {0} @{1}/{2}", new Object[]{html, inCount, s.length()});
                     text.addMarkup(inCount, html);
                     hideIfNeeded(inCount, "");
                 }
@@ -115,7 +126,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                         // If openTags is not empty, but there are no escape sequences directly on this line, or if we
                         // are emitting closing tags when closing the stream, there is nothing to hide.
                         if (hide != 0) {
-                            LOGGER.log(Level.FINEST, "hiding {0} @{1}{2}", new Object[] { hide, outCount, msg});
+                            LOGGER.log(Level.FINEST, "hiding {0} @{1}{2}", new Object[]{hide, outCount, msg});
                             text.addMarkup(outCount, outCount + hide, "<!--", "-->");
                             adjustment += hide;
                         }
@@ -130,8 +141,10 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
             EmitterImpl emitter = new EmitterImpl();
             // We need to reopen tags that were still open at the end of the previous line so the stream's state is
             // correct in case those tags are closed in the middle of this line.
-            try (AnsiHtmlOutputStream ansiOs = new AnsiHtmlOutputStream(outgoing, colorMap, emitter, openTags);
-                    CountingOutputStream incoming = new CountingOutputStream(ansiOs)) {
+            try (
+                AnsiHtmlOutputStream ansiOs = new AnsiHtmlOutputStream(outgoing, colorMap, emitter, openTags);
+                CountingOutputStream incoming = new CountingOutputStream(ansiOs)
+            ) {
                 emitter.incoming = incoming;
                 /*
                  * We only use AnsiHtmlOutputStream for its calls to Emitter.emitHtml when it encounters ANSI escape
@@ -165,15 +178,15 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
             }
             LOGGER.finer(() -> "\"" + StringEscapeUtils.escapeJava(s) + "\" → \"" + StringEscapeUtils.escapeJava(text.toString(true)) + "\"");
         }
-        return openTags == nextOpenTags
-                ? this
-                : new ColorConsoleAnnotator(actualColorMapName, nextOpenTags);
+        openTags = nextOpenTags;
+        return this;
     }
 
-    private static @CheckForNull Run<?, ?> runOf(Object context) {
+    @CheckForNull
+    private static Run<?, ?> runOf(Object context) {
         LOGGER.log(Level.FINE, "context={0}", context);
         if (context instanceof Run) {
-            return (Run) context;
+            return (Run<?, ?>) context;
         } else if (Jenkins.get().getPlugin("workflow-api") != null && context instanceof FlowNode) {
             FlowNode node = (FlowNode) context;
             FlowExecutionOwner owner = node.getExecution().getOwner();
@@ -185,22 +198,11 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                     LOGGER.log(Level.WARNING, null, x);
                 }
                 if (exec instanceof Run) {
-                    return (Run) exec;
+                    return (Run<?, ?>) exec;
                 }
             }
         }
         return null;
-    }
-
-    private static @CheckForNull String colorMapNameFor(Object context) {
-        Run<?, ?> run = runOf(context);
-        if (run != null) {
-            ColorizedAction ca = run.getAction(ColorizedAction.class);
-            if (ca != null) {
-                return ca.colorMapName != null ? ca.colorMapName : AnsiColorMap.DefaultName;
-            }
-        }
-        return Util.fixEmpty(Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getGlobalColorMapName());
     }
 
     @Extension
@@ -208,9 +210,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
 
         @Override
         public ConsoleAnnotator<Object> newInstance(Object context) {
-            return new ColorConsoleAnnotator();
+            return new ColorConsoleAnnotator(Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getGlobalColorMapName());
         }
-
     }
-
 }
