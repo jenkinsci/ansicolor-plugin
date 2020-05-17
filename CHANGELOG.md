@@ -1,9 +1,10 @@
-0.6.4 (Next)
+0.7.0 (Next)
 ============
 
 * [#173](https://github.com/jenkinsci/ansicolor-plugin/pull/173): Fix for SGR Normal intensity not handled correctly - [@tszmytka](https://github.com/tszmytka).
 * [#176](https://github.com/jenkinsci/ansicolor-plugin/pull/176): Ensure extended color SGRs are recognized correctly - [@tszmytka](https://github.com/tszmytka).
 * [#156](https://github.com/jenkinsci/ansicolor-plugin/pull/156): Improve documentation - [@tszmytka](https://github.com/tszmytka).
+* [#181](https://github.com/jenkinsci/ansicolor-plugin/pull/181): Re-implement support for multiple ansiColor steps within one pipeline script - [@tszmytka](https://github.com/tszmytka).
 * Your contribution here.
 
 0.6.3 (02/24/2020)

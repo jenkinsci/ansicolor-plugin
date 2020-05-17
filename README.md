@@ -23,12 +23,28 @@ java -jar jenkins-cli.jar install-plugin ansicolor
 ```
 # Enable
 
-![enable](images/ansicolor-enable.png "Enable AnsiColor")
+## Pipeline
 
-## Using in pipeline workflows
-
-The build wrapper can be used to colorize the output of steps in a pipeline build (plugin formally known as workflows).
+The build wrapper can be used to colorize the output of all steps in a pipeline build (plugin formally known as workflows).
 The example below shows how to use it.
+
+```groovy
+pipeline {
+    agent any
+    options {
+        ansiColor('xterm')
+    }
+    stages {
+        stage('Build') {
+            steps {
+                sh 'something that outputs ansi colored stuff'
+            }
+        }
+    }
+}
+```
+
+or
 
 ```groovy
 wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {
@@ -36,11 +52,17 @@ wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {
 }
 ```
 
-Also, the following pipeline syntax can be used without allocating a node and a separate build wrapper.
+Also, the following pipeline syntax can be used without allocating a node or a separate build wrapper.
 
 ```groovy
 ansiColor('xterm') {
   echo 'something that outputs ansi colored stuff'
+}
+
+// multiple ansiColor steps within one pipeline are also supported
+echo 'this will be rendered as-is'
+ansiColor('vga') {
+  echo 'another ansi colored command'
 }
 ```
 
@@ -52,6 +74,10 @@ ansiColor('xterm') {
   // prints out TERM=xterm
 }
 ```
+
+## UI defined job
+
+![enable](images/ansicolor-enable.png "Enable AnsiColor")
 
 # Color!
 
