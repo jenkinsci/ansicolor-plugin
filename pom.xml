@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.1</version>
-    <relativePath />
+    <version>4.2</version>
+    <relativePath/>
   </parent>
 
   <artifactId>ansicolor</artifactId>
@@ -40,7 +41,7 @@
   </scm>
 
   <properties>
-    <revision>0.6.4</revision>
+    <revision>0.7.0</revision>
     <changelist>-SNAPSHOT</changelist>
     <jenkins.version>2.176.3</jenkins.version>
     <java.level>8</java.level>
@@ -48,9 +49,9 @@
 
   <dependencies>
     <dependency>
-     <groupId>org.jenkins-ci.plugins.workflow</groupId>
-     <artifactId>workflow-step-api</artifactId>
-     <optional>true</optional>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-step-api</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>

@@ -23,15 +23,16 @@
  */
 package hudson.plugins.ansicolor;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
 import hudson.console.ConsoleNote;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class AnsiHtmlOutputStreamTest {
 
@@ -617,15 +618,15 @@ public class AnsiHtmlOutputStreamTest {
         AnsiHtmlOutputStream ansi = new AnsiHtmlOutputStream(bos, colorMap, new AnsiAttributeElement.Emitter() {
             public void emitHtml(@Nonnull String html) {
                 try {
-                    bos.write(html.getBytes("UTF-8"));
+                    bos.write(html.getBytes(UTF_8));
                 } catch (IOException e) {
                     throw new RuntimeException("error emitting HTML", e);
                 }
             }
         });
-        ansi.write(text.getBytes("UTF-8"));
+        ansi.write(text.getBytes(UTF_8));
         ansi.close();
-        return bos.toString("UTF-8");
+        return bos.toString(UTF_8.displayName());
     }
 
     private String annotate(String text) throws IOException {
