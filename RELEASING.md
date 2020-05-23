@@ -35,12 +35,16 @@ mvn test
 
 Check that the last build succeeded in [Travis CI](https://travis-ci.org/jenkinsci/ansicolor-plugin).
 
-Ensure that the version in [pom.xml](pom.xml) is correct and ends with `-SNAPSHOT`.
+Ensure that the version in [pom.xml](pom.xml) is correct and effectively ends with `-SNAPSHOT`.
 
 ``` xml
 <artifactId>ansicolor</artifactId>
+<version>${revision}${changelist}</version>
 <packaging>hpi</packaging>
-<version>0.4.1-SNAPSHOT</version>
+<properties>
+  <revision>0.7.0</revision>
+  <changelist>-SNAPSHOT</changelist>
+</properties>
 ```
 
 Change "Next Release" in [CHANGELOG.md](CHANGELOG.md) to the new version.
