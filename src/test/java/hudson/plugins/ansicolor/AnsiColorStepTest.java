@@ -60,7 +60,7 @@ public class AnsiColorStepTest {
                     , true));
                 WorkflowRun run = story.j.assertBuildStatusSuccess(p.scheduleBuild2(0));
                 StringWriter writer = new StringWriter();
-                p.getLastBuild().getLogText().writeHtmlTo(0L, writer);
+                assertTrue(p.getLastBuild().getLogText().writeHtmlTo(0L, writer) > 0);
                 String html = writer.toString();
                 story.j.assertLogContains("TERM=xterm", run);
                 assertTrue(

@@ -27,8 +27,10 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class AnsiColorBuildWrapperTest {
     private static final String ESC = "\033";
@@ -114,7 +116,7 @@ public class AnsiColorBuildWrapperTest {
             });
             FreeStyleBuild b = r.buildAndAssertSuccess(p);
             StringWriter writer = new StringWriter();
-            b.getLogText().writeHtmlTo(0L, writer);
+            assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
             String html = writer.toString();
             System.out.print(html);
             assertThat(
@@ -143,7 +145,7 @@ public class AnsiColorBuildWrapperTest {
             });
             FreeStyleBuild b = r.buildAndAssertSuccess(p);
             StringWriter writer = new StringWriter();
-            b.getLogText().writeHtmlTo(0L, writer);
+            assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
             String html = writer.toString();
             System.out.print(html);
             String nl = System.lineSeparator();
@@ -175,7 +177,7 @@ public class AnsiColorBuildWrapperTest {
             });
             FreeStyleBuild b = r.buildAndAssertSuccess(p);
             StringWriter writer = new StringWriter();
-            b.getLogText().writeHtmlTo(0L, writer);
+            assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
             String html = writer.toString();
             System.out.print(html);
             String nl = System.lineSeparator();
@@ -210,10 +212,11 @@ public class AnsiColorBuildWrapperTest {
                         + "    )\n"
                         + "  }\n"
                         + "}"
+                    , false
                 ));
                 story.j.assertBuildStatusSuccess(p.scheduleBuild2(0));
                 StringWriter writer = new StringWriter();
-                p.getLastBuild().getLogText().writeHtmlTo(0L, writer);
+                assertTrue(p.getLastBuild().getLogText().writeHtmlTo(0L, writer) > 0);
                 String html = writer.toString();
                 assertTrue(
                     "Failed to match color attribute in following HTML log output:\n" + html,
@@ -240,7 +243,7 @@ public class AnsiColorBuildWrapperTest {
             });
             FreeStyleBuild b = r.buildAndAssertSuccess(p);
             StringWriter writer = new StringWriter();
-            b.getLogText().writeHtmlTo(0L, writer);
+            assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
             String html = writer.toString();
             assertThat(
                 html.replaceAll("<!--.+?-->", ""),
@@ -272,7 +275,7 @@ public class AnsiColorBuildWrapperTest {
             });
             FreeStyleBuild b = r.buildAndAssertSuccess(p);
             StringWriter writer = new StringWriter();
-            b.getLogText().writeHtmlTo(0L, writer);
+            assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
             String html = writer.toString();
             System.out.print(html);
             assertThat(
@@ -301,7 +304,7 @@ public class AnsiColorBuildWrapperTest {
             });
             FreeStyleBuild b = r.buildAndAssertSuccess(p);
             StringWriter writer = new StringWriter();
-            b.getLogText().writeHtmlTo(0L, writer);
+            assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
             String html = writer.toString();
             System.out.print(html);
             assertThat(
@@ -435,9 +438,7 @@ public class AnsiColorBuildWrapperTest {
     public void canHandleSgrsWithMultipleOptions() {
         final String input = "\u001B[33mbanana_1  |\u001B[0m 19:59:14.353\u001B[0;38m [debug] Lager installed handler {lager_file_backend,\"banana.log\"} into lager_event\u001B[0m\n";
 
-        final Consumer<PrintStream> inputProvider = stream -> {
-            stream.println(input);
-        };
+        final Consumer<PrintStream> inputProvider = stream -> stream.println(input);
 
         assertCorrectOutput(
             Collections.singletonList("<span style=\"color: #CDCD00;\">banana_1  |</span> 19:59:14.353 [debug] Lager installed handler {lager_file_backend,\"banana.log\"} into lager_event"),
@@ -486,7 +487,7 @@ public class AnsiColorBuildWrapperTest {
         });
         final FreeStyleBuild b = rule.buildAndAssertSuccess(p);
         final StringWriter writer = new StringWriter();
-        b.getLogText().writeHtmlTo(0L, writer);
+        assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
         return writer.toString();
     }
 }
