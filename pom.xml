@@ -15,7 +15,7 @@
 
   <name>AnsiColor</name>
   <description>Adds ANSI coloring to the Console Output</description>
-  <url>https://wiki.jenkins.io/display/JENKINS/AnsiColor+Plugin</url>
+  <url>https://github.com/jenkinsci/ansicolor-plugin</url>
   <licenses>
     <license>
       <name>The MIT License</name>
