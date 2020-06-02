@@ -314,7 +314,10 @@ public class AnsiOutputStream extends FilterOutputStream {
                                 processSetForegroundColor(value - 90, true);
                             } else if (100 <= value && value <= 107) {
                                 processSetBackgroundColor(value - 100, true);
-                            } else if ((value == 38 || value == 48) && count == 1) {
+                            } else if ((value == 38 || value == 48)) {
+                                if (!optionsIterator.hasNext()) {
+                                    continue;
+                                }
                                 // extended color like `esc[38;5;<index>m` or `esc[38;2;<r>;<g>;<b>m`
                                 int arg2or5 = getNextOptionInt(optionsIterator);
                                 if (arg2or5 == 2) {

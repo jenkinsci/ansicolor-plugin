@@ -437,11 +437,24 @@ public class AnsiColorBuildWrapperTest {
     @Test
     public void canHandleSgrsWithMultipleOptions() {
         final String input = "\u001B[33mbanana_1  |\u001B[0m 19:59:14.353\u001B[0;38m [debug] Lager installed handler {lager_file_backend,\"banana.log\"} into lager_event\u001B[0m\n";
-
         final Consumer<PrintStream> inputProvider = stream -> stream.println(input);
-
         assertCorrectOutput(
             Collections.singletonList("<span style=\"color: #CDCD00;\">banana_1  |</span> 19:59:14.353 [debug] Lager installed handler {lager_file_backend,\"banana.log\"} into lager_event"),
+            Collections.singletonList(ESC),
+            inputProvider
+        );
+    }
+
+    @Issue("186")
+    @Test
+    public void canHandleSgrsWithRgbColors() {
+        final String input = "\u001B[1;38;5;4m[fe1.k8sf.atom.us-west-2 ]\u001B[0m\n\u001B[1;38;5;13m[fe1b.k8sf.atom.us-east-2]\u001B[0m";
+        final Consumer<PrintStream> inputProvider = stream -> stream.println(input);
+        assertCorrectOutput(
+            Arrays.asList(
+                "<b><span style=\"color: #1E90FF;\">[fe1.k8sf.atom.us-west-2 ]</span></b>",
+                "<b><span style=\"color: #FF00FF;\">[fe1b.k8sf.atom.us-east-2]</span></b>"
+            ),
             Collections.singletonList(ESC),
             inputProvider
         );
