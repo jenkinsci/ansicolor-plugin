@@ -37,7 +37,9 @@ import static hudson.plugins.ansicolor.action.ActionNote.TAG_ACTION_BEGIN;
  * Action for issuing commands to ColorConsoleAnnotator
  */
 public class ColorizedAction extends InvisibleAction {
+    private static final String TAG_PIPELINE_INTERNAL = "<span class=\"pipeline-new-node\"";
     static final ColorizedAction CONTINUE = new ColorizedAction("", Command.CONTINUE);
+    static final ColorizedAction IGNORE = new ColorizedAction("", Command.IGNORE);
 
     private final UUID id;
 
@@ -48,7 +50,8 @@ public class ColorizedAction extends InvisibleAction {
     public enum Command {
         START,
         STOP,
-        CONTINUE
+        CONTINUE,
+        IGNORE
     }
 
     public ColorizedAction(String colorMapName, Command command) {
@@ -78,6 +81,6 @@ public class ColorizedAction extends InvisibleAction {
             final String id = line.substring(from, to);
             return run.getActions(ColorizedAction.class).stream().filter(a -> id.equals(a.getId().toString())).findAny().orElse(CONTINUE);
         }
-        return CONTINUE;
+        return line.contains(TAG_PIPELINE_INTERNAL) ? IGNORE : CONTINUE;
     }
 }

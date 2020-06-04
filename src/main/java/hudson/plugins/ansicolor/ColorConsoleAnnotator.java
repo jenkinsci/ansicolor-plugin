@@ -78,6 +78,8 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                 break;
             case STOP:
                 return FACTORY.newInstance(context);
+            case IGNORE:
+                return this;
             default:
                 if (colorMapName == null) {
                     colorMapName = defaultColorMapName;
