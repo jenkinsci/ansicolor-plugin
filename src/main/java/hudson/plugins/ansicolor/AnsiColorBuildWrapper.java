@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2011 Daniel Doubrovkine
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,29 +27,27 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.plugins.ansicolor.action.ActionNote;
 import hudson.plugins.ansicolor.action.ColorizedAction;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import javax.servlet.ServletException;
-
 import jenkins.tasks.SimpleBuildWrapper;
 import net.sf.json.JSONObject;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Build wrapper that decorates the build's logger to filter output with {@link AnsiHtmlOutputStream}.
@@ -102,7 +100,7 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
         }
 
         private AnsiColorMap[] withDefaults(AnsiColorMap[] colorMaps) {
-            Map<String, AnsiColorMap> maps = new LinkedHashMap<String, AnsiColorMap>();
+            Map<String, AnsiColorMap> maps = new LinkedHashMap<>();
             addAll(AnsiColorMap.defaultColorMaps(), maps);
             addAll(colorMaps, maps);
             return maps.values().toArray(new AnsiColorMap[1]);
@@ -117,9 +115,37 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
         @Override
         public boolean configure(final StaplerRequest req, final JSONObject formData) throws FormException {
             try {
-                setColorMaps(req.bindJSONToList(AnsiColorMap.class,
-                        req.getSubmittedForm().get("colorMap")).toArray(new AnsiColorMap[1]));
-                setGlobalColorMapName(req.getSubmittedForm().getString("globalColorMapName"));
+                final List<AnsiColorMap> colorMaps = req.bindJSONToList(AnsiColorMap.class, req.getSubmittedForm().get("colorMap"));
+                for (AnsiColorMap colorMap : colorMaps) {
+                    validateFieldName(colorMap.getName());
+                    validateFieldColorLiteral(colorMap.getBlack(), "black");
+                    validateFieldColorLiteral(colorMap.getBlackB(), "blackB");
+                    validateFieldColorLiteral(colorMap.getRed(), "red");
+                    validateFieldColorLiteral(colorMap.getRedB(), "redB");
+                    validateFieldColorLiteral(colorMap.getGreen(), "green");
+                    validateFieldColorLiteral(colorMap.getGreenB(), "greenB");
+                    validateFieldColorLiteral(colorMap.getYellow(), "yellow");
+                    validateFieldColorLiteral(colorMap.getYellowB(), "yellowB");
+                    validateFieldColorLiteral(colorMap.getBlue(), "blue");
+                    validateFieldColorLiteral(colorMap.getBlueB(), "blueB");
+                    validateFieldColorLiteral(colorMap.getMagenta(), "magenta");
+                    validateFieldColorLiteral(colorMap.getMagentaB(), "magentaB");
+                    validateFieldColorLiteral(colorMap.getCyan(), "cyan");
+                    validateFieldColorLiteral(colorMap.getCyanB(), "cyanB");
+                    validateFieldColorLiteral(colorMap.getWhite(), "white");
+                    validateFieldColorLiteral(colorMap.getWhiteB(), "whiteB");
+                }
+                final String globalColorMapName = req.getSubmittedForm().getString("globalColorMapName").trim();
+                final FormValidation validation = doCheckGlobalColorMapName(globalColorMapName);
+                if (validation.kind != FormValidation.Kind.OK) {
+                    throw new FormException(validation.getMessage(), "globalColorMapName");
+                }
+
+                if (!globalColorMapName.isEmpty() && colorMaps.stream().noneMatch(cm -> cm.getName().equals(globalColorMapName))) {
+                    throw new FormException("Global color map name must match one of the color maps", "globalColorMapName");
+                }
+                setColorMaps(colorMaps.toArray(new AnsiColorMap[0]));
+                setGlobalColorMapName(globalColorMapName.isEmpty() ? null : globalColorMapName);
                 save();
                 return true;
             } catch (ServletException e) {
@@ -127,9 +153,101 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
             }
         }
 
+        private void validateFieldName(String fieldValue) throws FormException {
+            final FormValidation validation = doCheckName(fieldValue);
+            if (validation.kind != FormValidation.Kind.OK) {
+                throw new FormException(validation.getMessage(), "name");
+            }
+        }
+
+        private void validateFieldColorLiteral(String fieldValue, String fieldName) throws FormException {
+            final FormValidation globalColorMapNameValidation = validateColorLiteral(fieldValue);
+            if (globalColorMapNameValidation.kind != FormValidation.Kind.OK) {
+                throw new FormException(globalColorMapNameValidation.getMessage(), fieldName);
+            }
+        }
+
+        public FormValidation doCheckGlobalColorMapName(@QueryParameter String value) {
+            return value.isEmpty() ? FormValidation.ok() : validateColorMapName(value);
+        }
+
         @SuppressWarnings("unused")
         public FormValidation doCheckName(@QueryParameter final String value) {
-            return (value.trim().length() == 0) ? FormValidation.error("Name cannot be empty.") : FormValidation.ok();
+            return validateColorMapName(value);
+        }
+
+        private FormValidation validateColorMapName(String name) {
+            final int nameLength = name.trim().length();
+            return (nameLength < 1 || nameLength > 256) ? FormValidation.error("Color map name length must be between 1 and 256 chars.") : FormValidation.ok();
+        }
+
+        public FormValidation doCheckBlack(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckBlackB(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckRed(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckRedB(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckGreen(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckGreenB(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckYellow(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckYellowB(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckBlue(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckBlueB(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckMagenta(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckMagentaB(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckCyan(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckCyanB(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckWhite(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        public FormValidation doCheckWhiteB(@QueryParameter String value) {
+            return validateColorLiteral(value);
+        }
+
+        private FormValidation validateColorLiteral(String name) {
+            final int nameLength = name.trim().length();
+            return (nameLength < 1 || nameLength > 64) ? FormValidation.error("Color literal length must be between 1 and 64 chars.") : FormValidation.ok();
         }
 
         public String getGlobalColorMapName() {
