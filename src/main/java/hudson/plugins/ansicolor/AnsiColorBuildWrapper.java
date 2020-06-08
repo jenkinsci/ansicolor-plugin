@@ -45,9 +45,11 @@ import org.kohsuke.stapler.StaplerRequest;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Build wrapper that decorates the build's logger to filter output with {@link AnsiHtmlOutputStream}.
@@ -118,22 +120,26 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
                 final List<AnsiColorMap> colorMaps = req.bindJSONToList(AnsiColorMap.class, req.getSubmittedForm().get("colorMap"));
                 for (AnsiColorMap colorMap : colorMaps) {
                     validateFieldName(colorMap.getName());
-                    validateFieldColorLiteral(colorMap.getBlack(), "black");
-                    validateFieldColorLiteral(colorMap.getBlackB(), "blackB");
-                    validateFieldColorLiteral(colorMap.getRed(), "red");
-                    validateFieldColorLiteral(colorMap.getRedB(), "redB");
-                    validateFieldColorLiteral(colorMap.getGreen(), "green");
-                    validateFieldColorLiteral(colorMap.getGreenB(), "greenB");
-                    validateFieldColorLiteral(colorMap.getYellow(), "yellow");
-                    validateFieldColorLiteral(colorMap.getYellowB(), "yellowB");
-                    validateFieldColorLiteral(colorMap.getBlue(), "blue");
-                    validateFieldColorLiteral(colorMap.getBlueB(), "blueB");
-                    validateFieldColorLiteral(colorMap.getMagenta(), "magenta");
-                    validateFieldColorLiteral(colorMap.getMagentaB(), "magentaB");
-                    validateFieldColorLiteral(colorMap.getCyan(), "cyan");
-                    validateFieldColorLiteral(colorMap.getCyanB(), "cyanB");
-                    validateFieldColorLiteral(colorMap.getWhite(), "white");
-                    validateFieldColorLiteral(colorMap.getWhiteB(), "whiteB");
+                    final HashMap<String, Supplier<String>> validatedFields = new HashMap<>();
+                    validatedFields.put("black", colorMap::getBlack);
+                    validatedFields.put("blackB", colorMap::getBlackB);
+                    validatedFields.put("red", colorMap::getRed);
+                    validatedFields.put("redB", colorMap::getRedB);
+                    validatedFields.put("green", colorMap::getGreen);
+                    validatedFields.put("greenB", colorMap::getGreenB);
+                    validatedFields.put("yellow", colorMap::getYellow);
+                    validatedFields.put("yellowB", colorMap::getYellowB);
+                    validatedFields.put("blue", colorMap::getBlue);
+                    validatedFields.put("blueB", colorMap::getBlueB);
+                    validatedFields.put("magenta", colorMap::getMagenta);
+                    validatedFields.put("magentaB", colorMap::getMagentaB);
+                    validatedFields.put("cyan", colorMap::getCyan);
+                    validatedFields.put("cyanB", colorMap::getCyanB);
+                    validatedFields.put("white", colorMap::getWhite);
+                    validatedFields.put("whiteB", colorMap::getWhiteB);
+                    for (Map.Entry<String, Supplier<String>> e : validatedFields.entrySet()) {
+                        validateFieldColorLiteral(e.getKey(), e.getValue().get());
+                    }
                 }
                 final String globalColorMapName = req.getSubmittedForm().getString("globalColorMapName").trim();
                 final FormValidation validation = doCheckGlobalColorMapName(globalColorMapName);
@@ -160,7 +166,7 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
             }
         }
 
-        private void validateFieldColorLiteral(String fieldValue, String fieldName) throws FormException {
+        private void validateFieldColorLiteral(String fieldName, String fieldValue) throws FormException {
             final FormValidation globalColorMapNameValidation = validateColorLiteral(fieldValue);
             if (globalColorMapNameValidation.kind != FormValidation.Kind.OK) {
                 throw new FormException(globalColorMapNameValidation.getMessage(), fieldName);
