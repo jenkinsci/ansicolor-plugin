@@ -46,7 +46,7 @@ public class AnsiColorStepTest {
     public LoggerRule logging = new LoggerRule().record(ColorConsoleAnnotator.class, Level.FINER);
 
     @Test
-    public void testPipelineStep() throws Exception {
+    public void testPipelineStep() {
         story.addStep(new Statement() {
 
             @Override
