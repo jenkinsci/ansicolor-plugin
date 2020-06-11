@@ -70,7 +70,6 @@ public class ColorizedActionTest {
     public void willReturnCommandIgnoreOnPipelineInternalLine() {
         final MarkupText markupText = new MarkupText("Some internal line");
         markupText.addMarkup(0, "<span class=\"pipeline-new-node\">");
-        System.out.println(markupText.toString(false));
         final ColorizedAction colorizedAction = ColorizedAction.parseAction(markupText, buildRun);
         assertEquals(ColorizedAction.Command.IGNORE, colorizedAction.getCommand());
     }
