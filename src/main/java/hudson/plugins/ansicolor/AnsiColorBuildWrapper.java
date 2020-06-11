@@ -120,7 +120,7 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
                 final List<AnsiColorMap> colorMaps = req.bindJSONToList(AnsiColorMap.class, req.getSubmittedForm().get("colorMap"));
                 for (AnsiColorMap colorMap : colorMaps) {
                     validateFieldName(colorMap.getName());
-                    final HashMap<String, Supplier<String>> validatedFields = new HashMap<>();
+                    final Map<String, Supplier<String>> validatedFields = new HashMap<>();
                     validatedFields.put("black", colorMap::getBlack);
                     validatedFields.put("blackB", colorMap::getBlackB);
                     validatedFields.put("red", colorMap::getRed);
