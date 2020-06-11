@@ -49,7 +49,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 /**
  * Build wrapper that decorates the build's logger to filter output with {@link AnsiHtmlOutputStream}.
@@ -92,9 +92,28 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
     @Extension
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
 
+        private static final Map<String, Function<AnsiColorMap, String>> VALIDATED_FIELDS = new HashMap<>();
         private AnsiColorMap[] colorMaps = new AnsiColorMap[0];
-
         private String globalColorMapName;
+
+        static {
+            VALIDATED_FIELDS.put("black", AnsiColorMap::getBlack);
+            VALIDATED_FIELDS.put("blackB", AnsiColorMap::getBlackB);
+            VALIDATED_FIELDS.put("red", AnsiColorMap::getRed);
+            VALIDATED_FIELDS.put("redB", AnsiColorMap::getRedB);
+            VALIDATED_FIELDS.put("green", AnsiColorMap::getGreen);
+            VALIDATED_FIELDS.put("greenB", AnsiColorMap::getGreenB);
+            VALIDATED_FIELDS.put("yellow", AnsiColorMap::getYellow);
+            VALIDATED_FIELDS.put("yellowB", AnsiColorMap::getYellowB);
+            VALIDATED_FIELDS.put("blue", AnsiColorMap::getBlue);
+            VALIDATED_FIELDS.put("blueB", AnsiColorMap::getBlueB);
+            VALIDATED_FIELDS.put("magenta", AnsiColorMap::getMagenta);
+            VALIDATED_FIELDS.put("magentaB", AnsiColorMap::getMagentaB);
+            VALIDATED_FIELDS.put("cyan", AnsiColorMap::getCyan);
+            VALIDATED_FIELDS.put("cyanB", AnsiColorMap::getCyanB);
+            VALIDATED_FIELDS.put("white", AnsiColorMap::getWhite);
+            VALIDATED_FIELDS.put("whiteB", AnsiColorMap::getWhiteB);
+        }
 
         public DescriptorImpl() {
             super(AnsiColorBuildWrapper.class);
@@ -114,32 +133,14 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
             }
         }
 
+
         @Override
         public boolean configure(final StaplerRequest req, final JSONObject formData) throws FormException {
             try {
                 final List<AnsiColorMap> colorMaps = req.bindJSONToList(AnsiColorMap.class, req.getSubmittedForm().get("colorMap"));
                 for (AnsiColorMap colorMap : colorMaps) {
                     validateFieldName(colorMap.getName());
-                    final Map<String, Supplier<String>> validatedFields = new HashMap<>();
-                    validatedFields.put("black", colorMap::getBlack);
-                    validatedFields.put("blackB", colorMap::getBlackB);
-                    validatedFields.put("red", colorMap::getRed);
-                    validatedFields.put("redB", colorMap::getRedB);
-                    validatedFields.put("green", colorMap::getGreen);
-                    validatedFields.put("greenB", colorMap::getGreenB);
-                    validatedFields.put("yellow", colorMap::getYellow);
-                    validatedFields.put("yellowB", colorMap::getYellowB);
-                    validatedFields.put("blue", colorMap::getBlue);
-                    validatedFields.put("blueB", colorMap::getBlueB);
-                    validatedFields.put("magenta", colorMap::getMagenta);
-                    validatedFields.put("magentaB", colorMap::getMagentaB);
-                    validatedFields.put("cyan", colorMap::getCyan);
-                    validatedFields.put("cyanB", colorMap::getCyanB);
-                    validatedFields.put("white", colorMap::getWhite);
-                    validatedFields.put("whiteB", colorMap::getWhiteB);
-                    for (Map.Entry<String, Supplier<String>> e : validatedFields.entrySet()) {
-                        validateFieldColorLiteral(e.getKey(), e.getValue().get());
-                    }
+                    validateFields(colorMap);
                 }
                 final String globalColorMapName = req.getSubmittedForm().getString("globalColorMapName").trim();
                 final FormValidation validation = doCheckGlobalColorMapName(globalColorMapName);
@@ -170,6 +171,12 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
             final FormValidation globalColorMapNameValidation = validateColorLiteral(fieldValue);
             if (globalColorMapNameValidation.kind != FormValidation.Kind.OK) {
                 throw new FormException(globalColorMapNameValidation.getMessage(), fieldName);
+            }
+        }
+
+        private void validateFields(AnsiColorMap ansiColorMap) throws FormException {
+            for (Map.Entry<String, Function<AnsiColorMap, String>> e : VALIDATED_FIELDS.entrySet()) {
+                validateFieldColorLiteral(e.getKey(), e.getValue().apply(ansiColorMap));
             }
         }
 
