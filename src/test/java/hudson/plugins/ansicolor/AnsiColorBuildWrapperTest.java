@@ -3,34 +3,33 @@ package hudson.plugins.ansicolor;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.console.ConsoleNote;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
+import hudson.model.*;
+import joptsimple.internal.Strings;
+import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
-import org.junit.Assume;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.runner.RunWith;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.*;
+import org.kohsuke.stapler.StaplerRequest;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 public class AnsiColorBuildWrapperTest {
     private static final String ESC = "\033";
@@ -502,5 +501,337 @@ public class AnsiColorBuildWrapperTest {
         final StringWriter writer = new StringWriter();
         assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
         return writer.toString();
+    }
+
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static final class DescriptorImplTest {
+        private AnsiColorBuildWrapper.DescriptorImpl descriptor;
+
+        @Mock
+        private StaplerRequest staplerRequest;
+
+        @Rule
+        public JenkinsRule jenkinsRule = new JenkinsRule();
+
+
+        @Before
+        public void setUp() throws Exception {
+            descriptor = new AnsiColorBuildWrapper.DescriptorImpl();
+        }
+
+        @Test
+        public void canValidateCorrectInputData() throws Exception {
+            final List<AnsiColorMap> ansiColorMaps = Arrays.asList(AnsiColorMap.XTerm, AnsiColorMap.CSS);
+            final String globalMapName = "xterm";
+            final String colorMap = "{'abc' : 123}";
+            final HashMap<String, String> formData = new HashMap<>();
+            formData.put("colorMap", colorMap);
+            formData.put("globalColorMapName", "   " + globalMapName + " ");
+            final JSONObject form = JSONObject.fromObject(formData);
+            when(staplerRequest.getSubmittedForm()).thenReturn(form);
+            when(staplerRequest.bindJSONToList(eq(AnsiColorMap.class), eq(colorMap))).thenReturn(ansiColorMaps);
+
+            assertTrue(descriptor.configure(staplerRequest, form));
+            final List<AnsiColorMap> savedMaps = Arrays.asList(descriptor.getColorMaps());
+            ansiColorMaps.forEach(map -> assertTrue("Expected map no there: " + map, savedMaps.contains(map)));
+            assertEquals(globalMapName, descriptor.getGlobalColorMapName());
+        }
+
+        @Test
+        public void emptyGlobalColorNameWontBeStored() throws Exception {
+            final HashMap<String, String> formData = new HashMap<>();
+            final String colorMap = "{'abc' : 123}";
+            formData.put("colorMap", colorMap);
+            formData.put("globalColorMapName", "");
+            final JSONObject form = JSONObject.fromObject(formData);
+            when(staplerRequest.getSubmittedForm()).thenReturn(form);
+            when(staplerRequest.bindJSONToList(eq(AnsiColorMap.class), eq(colorMap))).thenReturn(Collections.emptyList());
+
+            assertTrue(descriptor.configure(staplerRequest, form));
+            assertNull(descriptor.getGlobalColorMapName());
+        }
+
+        @Test(expected = Descriptor.FormException.class)
+        public void wontAllowGlobalColorNameTooLong() throws Exception {
+            final HashMap<String, String> formData = new HashMap<>();
+            final String colorMap = "{'abc' : 123}";
+            formData.put("colorMap", colorMap);
+            formData.put("globalColorMapName", Strings.repeat('x', 257));
+            final JSONObject form = JSONObject.fromObject(formData);
+            when(staplerRequest.getSubmittedForm()).thenReturn(form);
+            when(staplerRequest.bindJSONToList(eq(AnsiColorMap.class), eq(colorMap))).thenReturn(Collections.emptyList());
+
+            descriptor.configure(staplerRequest, form);
+        }
+
+        @Test
+        public void wontAllowColorNameTooLong() throws Exception {
+            final String tooLong = Strings.repeat('x', 257);
+            assertAllColorMapsInvalid(new AnsiColorMap[]{
+                new AnsiColorMap(
+                    tooLong,
+                    "#C4A000", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                )
+            });
+        }
+
+        @Test(expected = Descriptor.FormException.class)
+        public void wontAllowGlobalColorNameNotMatchingOneColorMap() throws Exception {
+            final List<AnsiColorMap> ansiColorMaps = Arrays.asList(AnsiColorMap.XTerm, AnsiColorMap.VGA);
+            final HashMap<String, String> formData = new HashMap<>();
+            final String colorMap = "{'abc' : 123}";
+            formData.put("colorMap", colorMap);
+            formData.put("globalColorMapName", "NotExistingColorMap");
+            final JSONObject form = JSONObject.fromObject(formData);
+            when(staplerRequest.getSubmittedForm()).thenReturn(form);
+            when(staplerRequest.bindJSONToList(eq(AnsiColorMap.class), eq(colorMap))).thenReturn(ansiColorMaps);
+
+            descriptor.configure(staplerRequest, form);
+        }
+
+
+        @Test
+        public void wontAllowColorLiteralEmpty() throws Exception {
+            final AnsiColorMap[] colorMapsEmptyColors = {
+                new AnsiColorMap(
+                    "test-map",
+                    "", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "", "#75507B", "#06989A", "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "", "#06989A", "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "", "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "#CC0000", "", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "#CC0000", "#4E9A06", "", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "#CC0000", "#4E9A06", "#C4A000", "", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "",
+                    AnsiColorMap.Color.WHITE.ordinal(), AnsiColorMap.Color.BLACK.ordinal()
+                )
+            };
+            assertAllColorMapsInvalid(colorMapsEmptyColors);
+        }
+
+        @Test
+        public void wontAllowColorLiteralTooLong() throws ServletException {
+            final String tooLong = Strings.repeat('a', 65);
+            final AnsiColorMap[] colorMapsTooLongColors = {
+                new AnsiColorMap(
+                    "test-map",
+                    tooLong, "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", tooLong, "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", tooLong, "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", tooLong, "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", tooLong, "#75507B", "#06989A", "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", tooLong, "#06989A", "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", tooLong, "#D3D7CF",
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", tooLong,
+                    "#2E3436", "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    tooLong, "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "#CC0000", tooLong, "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "#CC0000", "#4E9A06", tooLong, "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "#CC0000", "#4E9A06", "#C4A000", tooLong, "#3465A4", "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", tooLong, "#75507B", "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", tooLong, "#06989A", "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", tooLong, "#D3D7CF",
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                ),
+                new AnsiColorMap(
+                    "test-map",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", "#2E3436",
+                    "#CC0000", "#4E9A06", "#C4A000", "#3465A4", "#75507B", "#06989A", "#D3D7CF", tooLong,
+                    AnsiColorMap.Color.WHITE.ordinal(),
+                    AnsiColorMap.Color.BLACK.ordinal()
+                )
+            };
+
+            assertAllColorMapsInvalid(colorMapsTooLongColors);
+        }
+
+        private void assertAllColorMapsInvalid(AnsiColorMap[] invalidColorMaps) throws ServletException {
+            for (AnsiColorMap invalidColorMap : invalidColorMaps) {
+                try {
+                    final List<AnsiColorMap> ansiColorMaps = Arrays.asList(AnsiColorMap.XTerm, invalidColorMap);
+                    final HashMap<String, String> formData = new HashMap<>();
+                    final String colorMap = "{'abc' : 123}";
+                    formData.put("colorMap", colorMap);
+                    final JSONObject form = JSONObject.fromObject(formData);
+                    when(staplerRequest.getSubmittedForm()).thenReturn(form);
+                    when(staplerRequest.bindJSONToList(eq(AnsiColorMap.class), eq(colorMap))).thenReturn(ansiColorMaps);
+                    descriptor.configure(staplerRequest, form);
+                    fail("Invalid color map has not triggered exception: " + invalidColorMap);
+                } catch (Descriptor.FormException ignore) {
+                }
+            }
+        }
     }
 }
