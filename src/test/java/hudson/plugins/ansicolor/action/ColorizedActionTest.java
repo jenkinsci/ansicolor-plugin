@@ -60,9 +60,17 @@ public class ColorizedActionTest {
     }
 
     @Test
-    public void willReturnDefaultIfLogAnnotationPointsToNonexistingAction() {
+    public void willReturnDefaultIfLogAnnotationPointsToNonexistentAction() {
         final MarkupText markupText = new MarkupText("Log line");
         markupText.addMarkup(0, TAG_ACTION_BEGIN + "\"identifier_not_in_actions\"" + TAG_ACTION_END);
         assertEquals(CONTINUE, ColorizedAction.parseAction(markupText, buildRun));
+    }
+
+    @Test
+    public void willReturnCommandIgnoreOnPipelineInternalLine() {
+        final MarkupText markupText = new MarkupText("Some internal line");
+        markupText.addMarkup(0, "<span class=\"pipeline-new-node\">");
+        final ColorizedAction colorizedAction = ColorizedAction.parseAction(markupText, buildRun);
+        assertEquals(ColorizedAction.Command.IGNORE, colorizedAction.getCommand());
     }
 }

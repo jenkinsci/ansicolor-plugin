@@ -46,7 +46,7 @@ public class AnsiColorStepTest {
     public LoggerRule logging = new LoggerRule().record(ColorConsoleAnnotator.class, Level.FINER);
 
     @Test
-    public void testPipelineStep() throws Exception {
+    public void testPipelineStep() {
         story.addStep(new Statement() {
 
             @Override
@@ -106,6 +106,31 @@ public class AnsiColorStepTest {
                 "<span style=\"color: #00AA00;\">after step two</span>",
                 "\033[32mstep three\033[0m",
                 "<span style=\"color: #00AA00;\">after step three</span>"
+            ),
+            script
+        );
+    }
+
+    @Issue("JENKINS-61598")
+    @Test
+    public void willNotLeakFormattingToMetadataLines() {
+        final String script = "ansiColor('xterm') {\n" +
+            "    echo '\033[33mYellow words, white background.'\n" +
+            "    echo '\033[35mMagenta words, white background.'\n" +
+            "}";
+        String nl = System.lineSeparator();
+        assertOutputOnRunningPipeline(
+            Arrays.asList(
+                "<span style=\"color: #CDCD00;\">Yellow words, white background." + nl + "</span>",
+                "[Pipeline] echo",
+                "<span style=\"color: #CD00CD;\">Magenta words, white background." + nl + "</span>",
+                "[Pipeline] }"
+            ),
+            Arrays.asList(
+                "\033[33mYellow words, white background.",
+                "<span style=\"color: #CDCD00;\">[Pipeline] echo",
+                "\033[35mMagenta words, white background.",
+                "<span style=\"color: #CD00CD;\">[Pipeline] }" + nl + "</span>"
             ),
             script
         );

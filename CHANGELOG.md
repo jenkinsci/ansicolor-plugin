@@ -1,6 +1,7 @@
 0.7.1 (Next)
 ============
 
+* [#190](https://github.com/jenkinsci/ansicolor-plugin/pull/190): Don't leak formatting to metadata console lines - [@tszmytka](https://github.com/tszmytka).
 * Your contribution here.
 
 0.7.0 (05/23/2020)
