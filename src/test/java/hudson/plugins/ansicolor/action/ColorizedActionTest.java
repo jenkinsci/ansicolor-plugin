@@ -66,9 +66,9 @@ public class ColorizedActionTest {
     }
 
     @Test
-    public void willTriggerStartIfThereIsExactlyOneStartActionEvenWithoutCorrespondingAnnotation() {
+    public void willNotTriggerStartIfThereIsExactlyOneStartActionAndNoCorrespondingAnnotation() {
         final MarkupText markupText = new MarkupText("Log line");
-        assertEquals(ACTION_0, ColorizedAction.parseAction(markupText, buildRunSingleStart));
+        assertEquals(CONTINUE, ColorizedAction.parseAction(markupText, buildRunSingleStart));
     }
 
     @Test
