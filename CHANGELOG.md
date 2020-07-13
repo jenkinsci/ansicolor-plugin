@@ -1,12 +1,16 @@
-0.7.1 (Next)
+0.7.2 (Next)
+============
+
+* Your contribution here.
+
+
+0.7.1 (07/13/2020)
 ============
 
 * [#188](https://github.com/jenkinsci/ansicolor-plugin/pull/188): Allow rendering more complex sgrs - [@tszmytka](https://github.com/tszmytka).
 * [#190](https://github.com/jenkinsci/ansicolor-plugin/pull/190): Don't leak formatting to metadata console lines - [@tszmytka](https://github.com/tszmytka).
 * [#195](https://github.com/jenkinsci/ansicolor-plugin/pull/195): Running on agent - [@tszmytka](https://github.com/tszmytka).
 * [#196](https://github.com/jenkinsci/ansicolor-plugin/pull/196): Interaction with timestamper - [@tszmytka](https://github.com/tszmytka).
-
-* Your contribution here.
 
 0.7.0 (05/23/2020)
 ============
