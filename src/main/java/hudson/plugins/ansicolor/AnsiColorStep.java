@@ -8,6 +8,7 @@ import hudson.plugins.ansicolor.action.ActionNote;
 import hudson.plugins.ansicolor.action.ColorizedAction;
 import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.workflow.log.TaskListenerDecorator;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -152,9 +153,16 @@ public class AnsiColorStep extends Step {
                 if (taskListener != null && run != null) {
                     run.addAction(action);
                     taskListener.annotate(new ActionNote(action));
+                    ensureRendering(taskListener, context.get(TaskListenerDecorator.class));
                 }
             } catch (IOException | InterruptedException e) {
                 LOGGER.log(Level.WARNING, "Could not annotate. Ansicolor plugin will not work correctly.", e);
+            }
+        }
+
+        private void ensureRendering(TaskListener taskListener, TaskListenerDecorator taskListenerDecorator) {
+            if (taskListenerDecorator != null && taskListenerDecorator.getClass().getName().contains("hudson.plugins.timestamper.pipeline.GlobalDecorator")) {
+                taskListener.getLogger().println();
             }
         }
     }

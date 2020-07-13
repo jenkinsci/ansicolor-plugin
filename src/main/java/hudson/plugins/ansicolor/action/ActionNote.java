@@ -9,7 +9,7 @@ import hudson.model.Run;
  * Marker note accompanying a ColorizedAction showing where an action needs to take place
  */
 public class ActionNote extends ConsoleNote<Run<?, ?>> {
-    static final String TAG_ACTION_BEGIN = "<div data-ansicolor-action=";
+    static final String TAG_ACTION_BEGIN = "<div style=\"display:none\" data-ansicolor-action=";
     private static final String TAG_ACTION_ID_TEMPLATE = "\"%s\"";
     static final String TAG_ACTION_END = "></div>";
 
