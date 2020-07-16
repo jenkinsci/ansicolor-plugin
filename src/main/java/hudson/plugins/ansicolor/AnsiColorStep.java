@@ -1,6 +1,7 @@
 package hudson.plugins.ansicolor;
 
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.plugins.ansicolor.AnsiColorBuildWrapper.DescriptorImpl;
@@ -124,6 +125,8 @@ public class AnsiColorStep extends Step {
 
         private final String colorMapName;
 
+        private Boolean needsPrintln;
+
         public AnsiColorExecution(String colorMapName) {
             this.colorMapName = colorMapName;
         }
@@ -153,15 +156,23 @@ public class AnsiColorStep extends Step {
                 if (taskListener != null && run != null) {
                     run.addAction(action);
                     taskListener.annotate(new ActionNote(action));
-                    ensureRendering(taskListener, context.get(TaskListenerDecorator.class));
+                    ensureRendering(taskListener);
                 }
             } catch (IOException | InterruptedException e) {
                 LOGGER.log(Level.WARNING, "Could not annotate. Ansicolor plugin will not work correctly.", e);
             }
         }
 
-        private void ensureRendering(TaskListener taskListener, TaskListenerDecorator taskListenerDecorator) {
-            if (taskListenerDecorator != null && taskListenerDecorator.getClass().getName().contains("hudson.plugins.timestamper.pipeline.GlobalDecorator")) {
+        private boolean needsPrintln() {
+            if (needsPrintln == null) {
+                needsPrintln = ExtensionList.lookup(TaskListenerDecorator.Factory.class).stream()
+                    .anyMatch(f -> f.getClass().getName().contains("hudson.plugins.timestamper.pipeline.GlobalDecorator"));
+            }
+            return needsPrintln;
+        }
+
+        private void ensureRendering(TaskListener taskListener) {
+            if (needsPrintln()) {
                 taskListener.getLogger().println();
             }
         }
