@@ -24,7 +24,7 @@ public class LogInjector {
                 BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(logFile));
                 FileOutputStream outputStream = new FileOutputStream(logTmp);
             ) {
-                final long injectionPoint = logFile.length() - injectionFromEnd * 1024;
+                final long injectionPoint = logFile.length() - injectionFromEnd * 1024L;
                 final byte[] buf = new byte[BUFFER_SIZE];
                 int read;
                 int totalRead = 0;
