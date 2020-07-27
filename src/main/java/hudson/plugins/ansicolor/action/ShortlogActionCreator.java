@@ -9,6 +9,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -17,11 +18,13 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class ShortlogActionCreator {
     private static final Logger LOGGER = Logger.getLogger(ShortlogActionCreator.class.getName());
     private static final int CONSOLE_TAIL_DEFAULT = 150;
     private static final int BUFFER_SIZE = 16 * 1024;
-    private static final byte[] EOL = System.lineSeparator().getBytes();
+    private static final byte[] EOL = System.lineSeparator().getBytes(UTF_8);
 
     private final LineIdentifier lineIdentifier;
 
@@ -44,7 +47,7 @@ public class ShortlogActionCreator {
             int read;
             int totalRead = 0;
             String currentStartAction = "";
-            byte[] partialLine = new byte[]{};
+            String partialLine = "";
             while ((read = inputStream.read(buf)) != -1) {
                 final String newAction = findActionInBuffer(serializedActions, buf);
                 if (!newAction.isEmpty()) {
@@ -54,10 +57,10 @@ public class ShortlogActionCreator {
                     final int startInBuff = shortlogStart > totalRead ? (int) (shortlogStart - totalRead) : 0;
                     final int eolPos = indexOfEol(buf, startInBuff);
                     if (eolPos != -1) {
-                        return new ActionContext(currentStartAction, new String(partialLine) + new String(buf, startInBuff, eolPos - startInBuff + EOL.length));
+                        return new ActionContext(currentStartAction, partialLine + new String(buf, startInBuff, eolPos - startInBuff + EOL.length, UTF_8));
                     } else {
                         // line extends to the next buffer
-                        partialLine = Arrays.copyOfRange(buf, startInBuff, buf.length - 1);
+                        partialLine = new String(Arrays.copyOfRange(buf, startInBuff, buf.length - 1), UTF_8);
                     }
                 }
                 totalRead += read;
@@ -72,7 +75,7 @@ public class ShortlogActionCreator {
         int preamblePos = 0;
         while (preamblePos < buf.length && (preamblePos = ConsoleNote.findPreamble(buf, preamblePos, buf.length - preamblePos)) != -1) {
             final int begin = preamblePos;
-            final Optional<String> startAction = serializedActions.stream().filter(sa -> buf.length - begin > sa.length() && sa.equals(new String(buf, begin, sa.length()))).findFirst();
+            final Optional<String> startAction = serializedActions.stream().filter(sa -> buf.length - begin > sa.length() && sa.equals(new String(buf, begin, sa.length(), UTF_8))).findFirst();
             if (startAction.isPresent()) {
                 return startAction.get();
             }
