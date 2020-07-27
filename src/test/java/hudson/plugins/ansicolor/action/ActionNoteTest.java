@@ -30,7 +30,7 @@ public class ActionNoteTest {
 
     @Before
     public void setUp() throws Exception {
-        when(colorizedAction.getId()).thenReturn(UUID);
+        when(colorizedAction.getId()).thenReturn(UUID.toString());
         actionNote = new ActionNote(colorizedAction);
     }
 
