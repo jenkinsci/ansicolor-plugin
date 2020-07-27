@@ -31,6 +31,7 @@ import hudson.console.ConsoleAnnotatorFactory;
 import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.plugins.ansicolor.action.ColorizedAction;
+import hudson.plugins.ansicolor.action.LineIdentifier;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
@@ -59,25 +60,38 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
 
     private final String defaultColorMapName;
 
+    private final LineIdentifier lineIdentifier;
+
     @CheckForNull
     private String colorMapName;
 
     @Nonnull
     private List<AnsiAttributeElement> openTags = Collections.emptyList();
 
-    private ColorConsoleAnnotator(String defaultColorMapName) {
+    private long lineNo;
+
+    private ColorConsoleAnnotator(String defaultColorMapName, LineIdentifier lineIdentifier, long startLineNo) {
         this.defaultColorMapName = defaultColorMapName;
+        this.lineIdentifier = lineIdentifier;
+        this.lineNo = startLineNo;
     }
 
     @Override
     public ConsoleAnnotator<Object> annotate(@Nonnull Object context, @Nonnull MarkupText text) {
-        final ColorizedAction colorizedAction = ColorizedAction.parseAction(text, runOf(context));
+        lineNo++;
+        Run<?, ?> run = runOf(context);
+        if (run == null) {
+            return this;
+        }
+        final ColorizedAction colorizedAction = lineNo == 1
+            ? ColorizedAction.parseAction(text.getText(), lineNo, run, lineIdentifier)
+            : ColorizedAction.parseAction(text, run);
         switch (colorizedAction.getCommand()) {
             case START:
                 colorMapName = colorizedAction.getColorMapName();
                 break;
             case STOP:
-                return FACTORY.newInstance(context);
+                return FACTORY.newInstance(context, lineNo);
             case IGNORE:
                 return this;
             default:
@@ -212,7 +226,11 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
 
         @Override
         public ConsoleAnnotator<Object> newInstance(Object context) {
-            return new ColorConsoleAnnotator(Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getGlobalColorMapName());
+            return newInstance(context, 0);
+        }
+
+        private ConsoleAnnotator<Object> newInstance(Object context, long startLineNo) {
+            return new ColorConsoleAnnotator(Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getGlobalColorMapName(), new LineIdentifier(), startLineNo);
         }
     }
 }

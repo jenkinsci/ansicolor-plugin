@@ -16,7 +16,7 @@ public class ActionNote extends ConsoleNote<Run<?, ?>> {
     private final String actionId;
 
     public ActionNote(ColorizedAction action) {
-        actionId = action.getId().toString();
+        actionId = action.getId();
     }
 
     @Override
