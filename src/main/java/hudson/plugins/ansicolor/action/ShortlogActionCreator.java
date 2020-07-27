@@ -9,7 +9,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -43,27 +42,29 @@ public class ShortlogActionCreator {
     private ActionContext findStartActionAt(File logFile, Collection<String> serializedActions, int bytesFromEnd) {
         try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(logFile))) {
             final long shortlogStart = logFile.length() - bytesFromEnd * 1024L;
-            final byte[] buf = new byte[BUFFER_SIZE];
-            int read;
-            int totalRead = 0;
-            String currentStartAction = "";
-            String partialLine = "";
-            while ((read = inputStream.read(buf)) != -1) {
-                final String newAction = findActionInBuffer(serializedActions, buf);
-                if (!newAction.isEmpty()) {
-                    currentStartAction = newAction;
-                }
-                if (totalRead + read >= shortlogStart) {
-                    final int startInBuff = shortlogStart > totalRead ? (int) (shortlogStart - totalRead) : 0;
-                    final int eolPos = indexOfEol(buf, startInBuff);
-                    if (eolPos != -1) {
-                        return new ActionContext(currentStartAction, partialLine + new String(buf, startInBuff, eolPos - startInBuff + EOL.length, UTF_8));
-                    } else {
-                        // line extends to the next buffer
-                        partialLine = new String(Arrays.copyOfRange(buf, startInBuff, buf.length - 1), UTF_8);
+            if (shortlogStart > 0) {
+                final byte[] buf = new byte[BUFFER_SIZE];
+                int read;
+                int totalRead = 0;
+                String currentStartAction = "";
+                String partialLine = "";
+                while ((read = inputStream.read(buf)) != -1) {
+                    final String newAction = findActionInBuffer(serializedActions, buf);
+                    if (!newAction.isEmpty()) {
+                        currentStartAction = newAction;
                     }
+                    if (totalRead + read >= shortlogStart) {
+                        final int startInBuff = shortlogStart > totalRead ? (int) (shortlogStart - totalRead) : 0;
+                        final int eolPos = indexOfEol(buf, startInBuff);
+                        if (eolPos != -1) {
+                            return new ActionContext(currentStartAction, partialLine + new String(buf, startInBuff, eolPos - startInBuff + EOL.length, UTF_8));
+                        } else {
+                            // line extends to the next buffer
+                            partialLine = new String(Arrays.copyOfRange(buf, startInBuff, buf.length - 1), UTF_8);
+                        }
+                    }
+                    totalRead += read;
                 }
-                totalRead += read;
             }
         } catch (IOException e) {
             LOGGER.warning("Cannot search log for actions: " + e.getMessage());
