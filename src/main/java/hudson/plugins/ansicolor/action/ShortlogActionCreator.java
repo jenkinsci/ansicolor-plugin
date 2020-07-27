@@ -9,7 +9,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -52,10 +51,8 @@ public class ShortlogActionCreator {
                     currentStartAction = newAction;
                 }
                 if (totalRead + read >= shortlogStart) {
-//                    final String s = System.lineSeparator();
-//                    final byte nl = (byte) '\n';
                     final int startInBuff = shortlogStart > totalRead ? (int) (shortlogStart - totalRead) : 0;
-                    final int eolPos = indexOfEol(buf, /*nl,*/ startInBuff);
+                    final int eolPos = indexOfEol(buf, startInBuff);
                     if (eolPos != -1) {
                         return new ActionContext(currentStartAction, new String(partialLine) + new String(buf, startInBuff, eolPos - startInBuff + EOL.length));
                     } else {
@@ -68,47 +65,6 @@ public class ShortlogActionCreator {
         } catch (IOException e) {
             LOGGER.warning("Cannot search log for actions: " + e.getMessage());
         }
-
-/*        try (
-            CountingInputStream inputStream = new CountingInputStream(new FileInputStream(logFile));
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream), BUFFER_SIZE);
-        ) {
-            String currentStartAction = "";
-            final long shortlogStart = logFile.length() - bytesFromEnd * 1024L;
-            int posInBuff = 0;
-            int i = 0;
-            if (shortlogStart > 0) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    if (line.contains(ConsoleNote.PREAMBLE_STR)) {
-                        final Optional<String> startAction = serializedActions.stream().filter(line::contains).findFirst();
-                        if (startAction.isPresent()) {
-                            currentStartAction = startAction.get();
-                        }
-                    }
-                    final long readBytes = inputStream.getByteCount();
-                    if (readBytes >= shortlogStart) {
-                        i++;
-                        final String logLine = line + "\n";
-                        posInBuff += logLine.length();
-
-//                        final byte[] lineBytes = line.getBytes();
-//                        posInBuff += lineBytes.length + 1; // System.lineSeparator().length();
-
-                        // !line does NOT have to start at (readBytes - BUFFER_SIZE)!
-
-                        final long shortlogStartBuff = shortlogStart - (readBytes - BUFFER_SIZE);
-                        if (posInBuff >= shortlogStartBuff) {
-                            return new ActionContext(currentStartAction, logLine.substring((int) (posInBuff - shortlogStartBuff - 21)));
-
-//                            return new ActionContext(currentStartAction, new String(Arrays.copyOfRange(lineBytes, (int) (readBytes - shortlogStart), lineBytes.length-1)));
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.warning("Cannot search log for actions: " + e.getMessage());
-        }*/
         return new ActionContext();
     }
 
@@ -125,15 +81,11 @@ public class ShortlogActionCreator {
         return "";
     }
 
-
-    private int indexOfEol(byte[] buf, /*byte needle,*/ int after) {
+    private int indexOfEol(byte[] buf, int after) {
         for (int i = after; i < buf.length; i++) {
             if (Arrays.equals(Arrays.copyOfRange(buf, i, i + EOL.length), EOL)) {
                 return i;
             }
-//            if (buf[i] == needle) {
-//                return i;
-//            }
         }
         return -1;
     }
