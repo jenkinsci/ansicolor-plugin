@@ -23,12 +23,13 @@ public class ShortlogActionCreator {
     private static final Logger LOGGER = Logger.getLogger(ShortlogActionCreator.class.getName());
     private static final int CONSOLE_TAIL_DEFAULT = 150;
     private static final int BUFFER_SIZE = 16 * 1024;
-    private static final byte[] EOL = System.lineSeparator().getBytes(UTF_8);
 
     private final LineIdentifier lineIdentifier;
+    private final byte[] eol;
 
-    public ShortlogActionCreator(LineIdentifier lineIdentifier) {
+    public ShortlogActionCreator(LineIdentifier lineIdentifier, String eol) {
         this.lineIdentifier = lineIdentifier;
+        this.eol = eol.getBytes(UTF_8);
     }
 
     public ColorizedAction createActionForShortlog(File logFile, Map<String, ColorizedAction> startActions, int beginFromEnd) {
@@ -57,7 +58,7 @@ public class ShortlogActionCreator {
                         final int startInBuff = shortlogStart > totalRead ? (int) (shortlogStart - totalRead) : 0;
                         final int eolPos = indexOfEol(buf, startInBuff);
                         if (eolPos != -1) {
-                            return new ActionContext(currentStartAction, partialLine + new String(buf, startInBuff, eolPos - startInBuff + EOL.length, UTF_8));
+                            return new ActionContext(currentStartAction, partialLine + new String(buf, startInBuff, eolPos - startInBuff + eol.length, UTF_8));
                         } else {
                             // line extends to the next buffer
                             partialLine = new String(Arrays.copyOfRange(buf, startInBuff, buf.length - 1), UTF_8);
@@ -87,7 +88,7 @@ public class ShortlogActionCreator {
 
     private int indexOfEol(byte[] buf, int after) {
         for (int i = after; i < buf.length; i++) {
-            if (Arrays.equals(Arrays.copyOfRange(buf, i, i + EOL.length), EOL)) {
+            if (Arrays.equals(Arrays.copyOfRange(buf, i, i + eol.length), eol)) {
                 return i;
             }
         }
@@ -112,7 +113,7 @@ public class ShortlogActionCreator {
             if (!startActions.isEmpty()) {
                 final File logFile = new File(run.getRootDir(), "log");
                 if (logFile.isFile()) {
-                    final ShortlogActionCreator shortlogActionCreator = new ShortlogActionCreator(new LineIdentifier());
+                    final ShortlogActionCreator shortlogActionCreator = new ShortlogActionCreator(new LineIdentifier(), System.lineSeparator());
                     final String consoleTail = System.getProperty("hudson.consoleTailKB");
                     final ColorizedAction action = shortlogActionCreator.createActionForShortlog(logFile, startActions, consoleTail != null ? Integer.parseInt(consoleTail) : CONSOLE_TAIL_DEFAULT);
                     if (action != null) {
