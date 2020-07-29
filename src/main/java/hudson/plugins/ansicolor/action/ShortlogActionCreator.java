@@ -11,8 +11,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -32,33 +32,36 @@ public class ShortlogActionCreator {
         this.eol = eol.getBytes(UTF_8);
     }
 
-    public ColorizedAction createActionForShortlog(File logFile, Map<String, ColorizedAction> startActions, int beginFromEnd) {
-        final ActionContext shortlogStartAction = findStartActionAt(logFile, startActions.keySet(), beginFromEnd);
-        if (!shortlogStartAction.isEmpty()) {
-            return new ColorizedAction(lineIdentifier.hash(ConsoleNote.removeNotes(shortlogStartAction.line), 1), startActions.get(shortlogStartAction.serializedAction));
+    public ColorizedAction createActionForShortlog(File logFile, Map<String, ColorizedAction> actions, int shortlogLimit) {
+        final ActionContext lastAction = findLastActionBefore(logFile, actions.keySet(), shortlogLimit);
+        if (!lastAction.isEmpty()) {
+            final ColorizedAction colorizedAction = actions.get(lastAction.serializedAction);
+            if (ColorizedAction.Command.START.equals(colorizedAction.getCommand())) {
+                return new ColorizedAction(lineIdentifier.hash(ConsoleNote.removeNotes(lastAction.line), 1), colorizedAction);
+            }
         }
         return null;
     }
 
-    private ActionContext findStartActionAt(File logFile, Collection<String> serializedActions, int bytesFromEnd) {
+    private ActionContext findLastActionBefore(File logFile, Collection<String> serializedActions, int shortlogLimit) {
         try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(logFile))) {
-            final long shortlogStart = logFile.length() - bytesFromEnd * 1024L;
+            final long shortlogStart = logFile.length() - shortlogLimit * 1024L;
             if (shortlogStart > 0) {
                 final byte[] buf = new byte[BUFFER_SIZE];
                 int read;
                 int totalRead = 0;
-                String currentStartAction = "";
+                String lastAction = "";
                 String partialLine = "";
                 while ((read = inputStream.read(buf)) != -1) {
-                    final String newAction = findActionInBuffer(serializedActions, buf);
-                    if (!newAction.isEmpty()) {
-                        currentStartAction = newAction;
+                    final int startInBuff = shortlogStart > totalRead ? (int) (shortlogStart - totalRead) : 0;
+                    final String action = findLastAction(serializedActions, buf, startInBuff);
+                    if (!action.isEmpty()) {
+                        lastAction = action;
                     }
                     if (totalRead + read >= shortlogStart) {
-                        final int startInBuff = shortlogStart > totalRead ? (int) (shortlogStart - totalRead) : 0;
                         final int eolPos = indexOfEol(buf, startInBuff);
-                        if (eolPos != -1) {
-                            return new ActionContext(currentStartAction, partialLine + new String(buf, startInBuff, eolPos - startInBuff + eol.length, UTF_8));
+                        if (eolPos != -1 && !lastAction.isEmpty()) {
+                            return new ActionContext(lastAction, partialLine + new String(buf, startInBuff, eolPos - startInBuff + eol.length, UTF_8));
                         } else {
                             // line extends to the next buffer
                             partialLine = new String(Arrays.copyOfRange(buf, startInBuff, buf.length - 1), UTF_8);
@@ -73,17 +76,15 @@ public class ShortlogActionCreator {
         return new ActionContext();
     }
 
-    private String findActionInBuffer(Collection<String> serializedActions, byte[] buf) {
+    private String findLastAction(Collection<String> serializedActions, byte[] buf, int maxPos) {
+        String lastAction = "";
         int preamblePos = 0;
-        while (preamblePos < buf.length && (preamblePos = ConsoleNote.findPreamble(buf, preamblePos, buf.length - preamblePos)) != -1) {
+        while (preamblePos < maxPos && (preamblePos = ConsoleNote.findPreamble(buf, preamblePos, buf.length - preamblePos)) != -1) {
             final int begin = preamblePos;
-            final Optional<String> startAction = serializedActions.stream().filter(sa -> buf.length - begin > sa.length() && sa.equals(new String(buf, begin, sa.length(), UTF_8))).findFirst();
-            if (startAction.isPresent()) {
-                return startAction.get();
-            }
+            lastAction = serializedActions.stream().filter(sa -> buf.length - begin > sa.length() && sa.equals(new String(buf, begin, sa.length(), UTF_8))).findFirst().orElse(lastAction);
             preamblePos++;
         }
-        return "";
+        return lastAction;
     }
 
     private int indexOfEol(byte[] buf, int after) {
@@ -100,8 +101,9 @@ public class ShortlogActionCreator {
         @Override
         public void onFinalized(Run<?, ?> run) {
             super.onFinalized(run);
-            Map<String, ColorizedAction> startActions = run.getActions(ColorizedAction.class).stream()
-                .filter(a -> a.getCommand().equals(ColorizedAction.Command.START))
+            final List<ColorizedAction.Command> commands = Arrays.asList(ColorizedAction.Command.START, ColorizedAction.Command.STOP);
+            Map<String, ColorizedAction> actions = run.getActions(ColorizedAction.class).stream()
+                .filter(a -> commands.contains(a.getCommand()))
                 .collect(Collectors.toMap(a -> {
                     try {
                         return new ActionNote(a).encode();
@@ -110,12 +112,12 @@ public class ShortlogActionCreator {
                     }
                     return "";
                 }, Function.identity()));
-            if (!startActions.isEmpty()) {
+            if (!actions.isEmpty()) {
                 final File logFile = new File(run.getRootDir(), "log");
                 if (logFile.isFile()) {
                     final ShortlogActionCreator shortlogActionCreator = new ShortlogActionCreator(new LineIdentifier(), System.lineSeparator());
                     final String consoleTail = System.getProperty("hudson.consoleTailKB");
-                    final ColorizedAction action = shortlogActionCreator.createActionForShortlog(logFile, startActions, consoleTail != null ? Integer.parseInt(consoleTail) : CONSOLE_TAIL_DEFAULT);
+                    final ColorizedAction action = shortlogActionCreator.createActionForShortlog(logFile, actions, consoleTail != null ? Integer.parseInt(consoleTail) : CONSOLE_TAIL_DEFAULT);
                     if (action != null) {
                         run.addAction(action);
                     }
