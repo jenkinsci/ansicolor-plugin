@@ -64,7 +64,7 @@ public class ShortlogActionCreator {
                             return new ActionContext(lastAction, partialLine + new String(buf, startInBuff, eolPos - startInBuff + eol.length, UTF_8));
                         } else {
                             // line extends to the next buffer
-                            partialLine = new String(Arrays.copyOfRange(buf, startInBuff, buf.length - 1), UTF_8);
+                            partialLine = new String(Arrays.copyOfRange(buf, startInBuff, buf.length), UTF_8);
                         }
                     }
                     totalRead += read;

@@ -28,21 +28,20 @@ public class ShortlogActionCreatorTest {
 
     @Test
     public void canCreateActionForShortlog() {
-        final String eol = "\n";
-        canCreateActionForShortlog(shortlogActionCreator, eol, "testlog.log");
+        canCreateActionForShortlog(shortlogActionCreator, "[Pipeline] echo\n", "testlog.log");
     }
 
     @Test
     public void canCreateActionForShortlogForWindows() {
         final String eol = "\r\n";
-        canCreateActionForShortlog(new ShortlogActionCreator(lineIdentifier, eol), eol, "testlog-crlf.log");
+        canCreateActionForShortlog(new ShortlogActionCreator(lineIdentifier, eol), "[Pipeline] echo" + eol, "testlog-crlf.log");
     }
 
-    private void canCreateActionForShortlog(ShortlogActionCreator shortlogActionCreator, String eol, String logFile) {
+    private void canCreateActionForShortlog(ShortlogActionCreator shortlogActionCreator, String shortlogLine, String logFile) {
         final String lineHash = "mock-line-hash";
         final ColorizedAction colorizedAction = new ColorizedAction("xterm", ColorizedAction.Command.START);
         final String serializedNote = "<mock-serialized-note-start>";
-        when(lineIdentifier.hash(eq("[Pipeline] echo" + eol), eq(1L))).thenReturn(lineHash);
+        when(lineIdentifier.hash(eq(shortlogLine), eq(1L))).thenReturn(lineHash);
 
         final File file = new File(getClass().getResource(String.join("/", "", getClass().getName().replace('.', '/'), logFile)).getFile());
         final HashMap<String, ColorizedAction> startActions = new HashMap<>();
@@ -105,5 +104,11 @@ public class ShortlogActionCreatorTest {
 
         assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 3));
         verify(lineIdentifier, never()).hash(anyString(), anyLong());
+    }
+
+    @Test
+    public void canCreateActionForShortlogOnLogLineExceedingBufferSize() {
+        final String s = "[Pipeline]  echo a very very very long line,a very very very long line,a very very very long line,a very very very long line,a very very very long line";
+        canCreateActionForShortlog(shortlogActionCreator, s + "\n", "testlog-long.log");
     }
 }
