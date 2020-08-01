@@ -41,7 +41,7 @@ public class ColorizedAction extends InvisibleAction {
     static final ColorizedAction CONTINUE = new ColorizedAction("", Command.CONTINUE);
     static final ColorizedAction IGNORE = new ColorizedAction("", Command.IGNORE);
 
-    private final UUID id;
+    private final String id;
 
     private final String colorMapName;
 
@@ -55,12 +55,18 @@ public class ColorizedAction extends InvisibleAction {
     }
 
     public ColorizedAction(String colorMapName, Command command) {
-        id = UUID.randomUUID();
+        id = UUID.randomUUID().toString();
         this.colorMapName = colorMapName == null || colorMapName.isEmpty() ? AnsiColorMap.DefaultName : colorMapName;
         this.command = command;
     }
 
-    public UUID getId() {
+    public ColorizedAction(String id, ColorizedAction other) {
+        this.id = id;
+        colorMapName = other.colorMapName;
+        command = other.command;
+    }
+
+    public String getId() {
         return id;
     }
 
@@ -79,8 +85,12 @@ public class ColorizedAction extends InvisibleAction {
             final int from = actionIdOffset + TAG_ACTION_BEGIN.length() + 1;
             final int to = line.indexOf("\"", from);
             final String id = line.substring(from, to);
-            return run.getActions(ColorizedAction.class).stream().filter(a -> id.equals(a.getId().toString())).findAny().orElse(CONTINUE);
+            return run.getActions(ColorizedAction.class).stream().filter(a -> id.equals(a.getId())).findAny().orElse(CONTINUE);
         }
         return line.contains(TAG_PIPELINE_INTERNAL) ? IGNORE : CONTINUE;
+    }
+
+    public static ColorizedAction parseAction(String lineContent, long lineNo, Run<?, ?> run, LineIdentifier lineIdentifier) {
+        return run.getActions(ColorizedAction.class).stream().filter(a -> lineIdentifier.isEqual(lineContent, lineNo, a.id)).findAny().orElse(CONTINUE);
     }
 }
