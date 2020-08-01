@@ -1,9 +1,8 @@
-0.7.2 (Next)
+0.7.2 (08/01/2020)
 ============
 
 * [#197](https://github.com/jenkinsci/ansicolor-plugin/pull/197): Recognize timestamper's GlobalDecorator from extension list  - [@tszmytka](https://github.com/tszmytka).
 * [#185](https://github.com/jenkinsci/ansicolor-plugin/pull/185): Render escape codes correctly in shortlog - [@tszmytka](https://github.com/tszmytka).
-* Your contribution here.
 
 
 0.7.1 (07/13/2020)
