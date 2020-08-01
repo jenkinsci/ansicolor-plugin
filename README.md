@@ -92,7 +92,7 @@ Example output:
 ## In global settings
 
 This option is the most suitable when you already have a large amount of jobs and you would like to enable `ansicolor` functionality for all of them in one go.
-In order to use it you need to specify >>Global color map for all builds<< on the Global configuration page available under:
+In order to use it you need to specify _Global color map for all builds_ on the Global configuration page available under:
 ```
 Jenkins -> Manage Jenkins -> Configure System
 ```

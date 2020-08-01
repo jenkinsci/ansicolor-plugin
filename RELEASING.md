@@ -1,11 +1,12 @@
 Releasing AnsiColor
 ===================
 
-There're no particular rules about when to release AnsiColor. Release bug fixes frequently, features not so frequently and breaking API changes rarely.
+There's no particular rules about when to release AnsiColor. Release bug fixes frequently, features not so frequently and breaking API changes rarely.
 
 ### Access
 
-Make sure you have a [Jenkins-CI account](https://jenkins-ci.org/account) configured in `~/.m2/settings.xml`. You can get the encrypted password from [here](https://repo.jenkins-ci.org/webapp/#/profile) - enter your password and click `Unlock`.
+Make sure you have a [Jenkins-CI account](https://jenkins-ci.org/account) configured in `~/.m2/settings.xml`. You can get the encrypted password
+from [here](https://repo.jenkins-ci.org/webapp/#/profile) - enter your password and click `Unlock`.
 
 ```xml
 <settings>
@@ -22,8 +23,9 @@ Make sure you have a [Jenkins-CI account](https://jenkins-ci.org/account) config
  </settings>
 ```
 
-You must have r/w permissions to [github.com/jenkinsci/ansicolor-plugin](https://github.com/jenkinsci/ansicolor-plugin) under the same username
-and you need to be listed as developer in [jenkins plugin-ansicolor.yml](https://github.com/jenkins-infra/repository-permissions-updater/blob/master/permissions/plugin-ansicolor.yml) (see also [jenkins #258](https://github.com/jenkins-infra/repository-permissions-updater/pull/258)).
+You must have r/w permissions to [github.com/jenkinsci/ansicolor-plugin](https://github.com/jenkinsci/ansicolor-plugin) under the same user name
+and you need to be listed as a developer in [jenkins plugin-ansicolor.yml](https://github.com/jenkins-infra/repository-permissions-updater/blob/master/permissions/plugin-ansicolor.yml)
+(see also [jenkins #258](https://github.com/jenkins-infra/repository-permissions-updater/pull/258)).
 
 ### Release
 
@@ -33,11 +35,13 @@ Run tests, check that all tests succeed locally.
 mvn test
 ```
 
-Check that the last build succeeded in [Travis CI](https://travis-ci.org/jenkinsci/ansicolor-plugin).
+Check that the last build succeeded in:
+ - [Travis CI](https://travis-ci.org/jenkinsci/ansicolor-plugin)
+ - [Jenkins](https://ci.jenkins.io/blue/organizations/jenkins/Plugins%2Fansicolor-plugin/activity)
 
 Ensure that the version in [pom.xml](pom.xml) is correct and effectively ends with `-SNAPSHOT`.
 
-``` xml
+```xml
 <artifactId>ansicolor</artifactId>
 <version>${revision}${changelist}</version>
 <packaging>hpi</packaging>
