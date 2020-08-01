@@ -23,10 +23,14 @@ java -jar jenkins-cli.jar install-plugin ansicolor
 ```
 # Enable
 
-## Pipeline
+## In a Pipeline
 
-The build wrapper can be used to colorize the output of all steps in a pipeline build (plugin formally known as workflows).
-The example below shows how to use it.
+There are 2 ways to explicitly enable `ansicolor` functionality in a pipeline: as a build wrapper - the cleanest and most preferable one
+or as a pipeline step - good for quick checks when you only need part of the output colored.
+
+### Build wrapper
+
+Can be used to colorize the *whole* output of a pipeline build. Here an example rendering a colorful message.
 
 ```groovy
 pipeline {
@@ -37,32 +41,27 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'something that outputs ansi colored stuff'
+                echo '\033[34mHello\033[0m \033[33mcolorful\033[0m \033[35mworld!\033[0m'
             }
         }
     }
 }
 ```
 
-or
+### Pipeline step
+
+With the following syntax you can use the plugin without allocating a node or a separate build wrapper.
 
 ```groovy
-wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {
-  sh 'something that outputs ansi colored stuff'
-}
-```
-
-Also, the following pipeline syntax can be used without allocating a node or a separate build wrapper.
-
-```groovy
-ansiColor('xterm') {
-  echo 'something that outputs ansi colored stuff'
+ansiColor('css') {
+  sh "ls -al"
 }
 
-// multiple ansiColor steps within one pipeline are also supported
 echo 'this will be rendered as-is'
+// multiple ansiColor steps within one pipeline are also supported
+
 ansiColor('vga') {
-  echo 'another ansi colored command'
+  echo '\033[42m\033[97mWhite letters, green background\033[0m'
 }
 ```
 
@@ -75,17 +74,29 @@ ansiColor('xterm') {
 }
 ```
 
-## UI defined job
+## In a traditional job
+
+Traditional, Jenkins UI defined jobs can also take advantage of `ansicolor` by enabling under "Build Environment" settings.
 
 ![enable](images/ansicolor-enable.png "Enable AnsiColor")
 
-# Color!
+Example output:
 
 ![color](images/ansicolor.png "Color with AnsiColor")
 
 # Customize
 
 ![color](images/ansicolor-config.png "Customize colors used by AnsiColor")
+
+
+## In global settings
+
+This option is the most suitable when you already have a large amount of jobs and you would like to enable `ansicolor` functionality for all of them in one go.
+In order to use it you need to specify >>Global color map for all builds<< on the Global configuration page available under:
+```
+Jenkins -> Manage Jenkins -> Configure System
+```
+
 
 # Misc
 
