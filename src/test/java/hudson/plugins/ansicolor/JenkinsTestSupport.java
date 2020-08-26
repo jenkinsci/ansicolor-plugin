@@ -31,7 +31,7 @@ public class JenkinsTestSupport {
 
             @Override
             public void evaluate() throws Throwable {
-                final WorkflowJob project = jenkinsRule.j.jenkins.createProject(WorkflowJob.class, "p");
+                final WorkflowJob project = jenkinsRule.j.jenkins.createProject(WorkflowJob.class, "test-project-" + JenkinsTestSupport.this.getClass().getSimpleName());
                 project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
                 jenkinsRule.j.assertBuildStatusSuccess(project.scheduleBuild2(0));
                 StringWriter writer = new StringWriter();

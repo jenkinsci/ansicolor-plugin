@@ -15,6 +15,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Level;
@@ -123,6 +124,11 @@ public class AnsiColorStep extends Step {
     private static class AnsiColorExecution extends BodyExecutionCallback {
         private static final Logger LOGGER = Logger.getLogger(AnsiColorExecution.class.getName());
 
+        private static final String[] DISTURBING_DECORATORS = new String[]{
+            "timestamper.pipeline.GlobalDecorator",
+            "kubernetes.pipeline.SecretsMasker"
+        };
+
         private final String colorMapName;
 
         private Boolean needsPrintln;
@@ -165,8 +171,8 @@ public class AnsiColorStep extends Step {
 
         private boolean needsPrintln() {
             if (needsPrintln == null) {
-                needsPrintln = ExtensionList.lookup(TaskListenerDecorator.Factory.class).stream()
-                    .anyMatch(f -> f.getClass().getName().contains("hudson.plugins.timestamper.pipeline.GlobalDecorator"));
+                needsPrintln = ExtensionList.lookup(TaskListenerDecorator.Factory.class).stream().map(f -> f.getClass().getName())
+                    .anyMatch(n -> Arrays.stream(DISTURBING_DECORATORS).anyMatch(n::contains));
             }
             return needsPrintln;
         }
