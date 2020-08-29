@@ -49,16 +49,13 @@ public class ColorizedAction extends InvisibleAction {
     private final Command command;
 
     public enum Command {
-        /**
-         *
-         */
         START,
         STOP,
         CONTINUE,
         IGNORE,
 
         /**
-         * Currently running execution
+         * The running job's current action containing current color map name
          */
         CURRENT
     }

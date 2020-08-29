@@ -160,12 +160,10 @@ public class AnsiColorStep extends Step {
                     ensureRendering(taskListener);
                     final ColorizedAction currentAction = new ColorizedAction(action.getColorMapName(), ColorizedAction.Command.CURRENT);
                     if (action.getCommand().equals(ColorizedAction.Command.START)) {
-                        run.addOrReplaceAction(currentAction);
+                        run.addAction(currentAction);
                     } else {
                         run.removeAction(currentAction);
                     }
-                    run.getId();
-
                 }
             } catch (IOException | InterruptedException e) {
                 LOGGER.log(Level.WARNING, "Could not annotate. Ansicolor plugin will not work correctly.", e);
