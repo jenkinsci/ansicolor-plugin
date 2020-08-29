@@ -72,6 +72,7 @@ public class AnsiColorStep extends Step {
         @Override
         public boolean start() throws Exception {
             StepContext context = getContext();
+
             EnvironmentExpander currentEnvironment = context.get(EnvironmentExpander.class);
             EnvironmentExpander terminalEnvironment = EnvironmentExpander.constant(Collections.singletonMap("TERM", colorMapName));
             context.newBodyInvoker()
@@ -157,6 +158,14 @@ public class AnsiColorStep extends Step {
                     run.addAction(action);
                     taskListener.annotate(new ActionNote(action));
                     ensureRendering(taskListener);
+                    final ColorizedAction currentAction = new ColorizedAction(action.getColorMapName(), ColorizedAction.Command.CURRENT);
+                    if (action.getCommand().equals(ColorizedAction.Command.START)) {
+                        run.addOrReplaceAction(currentAction);
+                    } else {
+                        run.removeAction(currentAction);
+                    }
+                    run.getId();
+
                 }
             } catch (IOException | InterruptedException e) {
                 LOGGER.log(Level.WARNING, "Could not annotate. Ansicolor plugin will not work correctly.", e);

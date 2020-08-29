@@ -29,6 +29,7 @@ import hudson.model.InvisibleAction;
 import hudson.model.Run;
 import hudson.plugins.ansicolor.AnsiColorMap;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static hudson.plugins.ansicolor.action.ActionNote.TAG_ACTION_BEGIN;
@@ -48,10 +49,18 @@ public class ColorizedAction extends InvisibleAction {
     private final Command command;
 
     public enum Command {
+        /**
+         *
+         */
         START,
         STOP,
         CONTINUE,
-        IGNORE
+        IGNORE,
+
+        /**
+         * Currently running execution
+         */
+        CURRENT
     }
 
     public ColorizedAction(String colorMapName, Command command) {
@@ -87,7 +96,18 @@ public class ColorizedAction extends InvisibleAction {
             final String id = line.substring(from, to);
             return run.getActions(ColorizedAction.class).stream().filter(a -> id.equals(a.getId())).findAny().orElse(CONTINUE);
         }
-        return line.contains(TAG_PIPELINE_INTERNAL) ? IGNORE : CONTINUE;
+        if (line.contains(TAG_PIPELINE_INTERNAL)) {
+            return IGNORE;
+        }
+        if (run.isBuilding()) {
+            Optional<ColorizedAction> currentAction = run.getActions(ColorizedAction.class).stream()
+                .filter(a -> Command.CURRENT.equals(a.getCommand()))
+                .findFirst();
+            if (currentAction.isPresent()) {
+                return currentAction.get();
+            }
+        }
+        return CONTINUE;
     }
 
     public static ColorizedAction parseAction(String lineContent, long lineNo, Run<?, ?> run, LineIdentifier lineIdentifier) {
