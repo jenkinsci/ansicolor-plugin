@@ -98,6 +98,12 @@
       <artifactId>awaitility</artifactId>
       <version>4.0.3</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
   </dependencies>
