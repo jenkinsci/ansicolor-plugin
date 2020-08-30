@@ -147,14 +147,16 @@ public class AnsiColorStepTest {
             public void evaluate() throws Throwable {
                 final String a1k = JenkinsTestSupport.repeat("a", 1024);
                 final String script = "ansiColor('xterm') {\n" +
-                    JenkinsTestSupport.repeat("echo '\033[32m" + a1k + "\033[0m'\n", 150) +
+                    "for (i = 0; i < 1000; i++) {" +
+                    "echo '\033[32m" + a1k + "\033[0m'\n" +
+                    "}" +
                     "}";
                 final WorkflowJob project = story.j.jenkins.createProject(WorkflowJob.class, "canRenderLongOutputWhileBuildStillRunning");
                 project.setDefinition(new CpsFlowDefinition(script, true));
                 QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);
                 assertNotNull(runFuture);
                 final WorkflowRun lastBuild = runFuture.waitForStart();
-                await().pollDelay(Duration.ofSeconds(10)).pollInterval(Duration.ofSeconds(5)).atMost(Duration.ofSeconds(60)).until(() -> {
+                await().pollInterval(Duration.ofSeconds(5)).atMost(Duration.ofSeconds(150)).until(() -> {
                     StringWriter writer = new StringWriter();
                     final int skipInitialStartAction = 3000;
                     assertTrue(lastBuild.getLogText().writeHtmlTo(skipInitialStartAction, writer) > 0);

@@ -1,6 +1,7 @@
 0.7.3 (Next)
 ============
 
+* [#202](https://github.com/jenkinsci/ansicolor-plugin/pull/202): Render logs correctly for long running jobs which generate lots of output - [@tszmytka](https://github.com/tszmytka).
 * Your contribution here.
 
 
