@@ -64,6 +64,7 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
 
     /**
      * Create a new {@link AnsiColorBuildWrapper}.
+     * @param colorMapName Name of the color map to use
      */
     @DataBoundConstructor
     public AnsiColorBuildWrapper(String colorMapName) {

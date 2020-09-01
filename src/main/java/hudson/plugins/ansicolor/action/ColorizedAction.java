@@ -29,7 +29,9 @@ import hudson.model.InvisibleAction;
 import hudson.model.Run;
 import hudson.plugins.ansicolor.AnsiColorMap;
 
+import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import static hudson.plugins.ansicolor.action.ActionNote.TAG_ACTION_BEGIN;
 
@@ -37,6 +39,7 @@ import static hudson.plugins.ansicolor.action.ActionNote.TAG_ACTION_BEGIN;
  * Action for issuing commands to ColorConsoleAnnotator
  */
 public class ColorizedAction extends InvisibleAction {
+    private static final Logger LOGGER = Logger.getLogger(ColorizedAction.class.getName());
     private static final String TAG_PIPELINE_INTERNAL = "<span class=\"pipeline-new-node\"";
     static final ColorizedAction CONTINUE = new ColorizedAction("", Command.CONTINUE);
     static final ColorizedAction IGNORE = new ColorizedAction("", Command.IGNORE);
@@ -51,7 +54,12 @@ public class ColorizedAction extends InvisibleAction {
         START,
         STOP,
         CONTINUE,
-        IGNORE
+        IGNORE,
+
+        /**
+         * The running job's current action containing current color map name
+         */
+        CURRENT
     }
 
     public ColorizedAction(String colorMapName, Command command) {
@@ -87,7 +95,20 @@ public class ColorizedAction extends InvisibleAction {
             final String id = line.substring(from, to);
             return run.getActions(ColorizedAction.class).stream().filter(a -> id.equals(a.getId())).findAny().orElse(CONTINUE);
         }
-        return line.contains(TAG_PIPELINE_INTERNAL) ? IGNORE : CONTINUE;
+        if (line.contains(TAG_PIPELINE_INTERNAL)) {
+            return IGNORE;
+        }
+        final boolean isBuilding = run.isBuilding();
+        LOGGER.fine("Run is building: " + isBuilding);
+        if (isBuilding) {
+            Optional<ColorizedAction> currentAction = run.getActions(ColorizedAction.class).stream()
+                .filter(a -> Command.CURRENT.equals(a.getCommand()))
+                .findFirst();
+            if (currentAction.isPresent()) {
+                return currentAction.get();
+            }
+        }
+        return CONTINUE;
     }
 
     public static ColorizedAction parseAction(String lineContent, long lineNo, Run<?, ?> run, LineIdentifier lineIdentifier) {

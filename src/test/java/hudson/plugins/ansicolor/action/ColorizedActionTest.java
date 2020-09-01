@@ -25,6 +25,7 @@ public class ColorizedActionTest {
     private static final ColorizedAction ACTION_2 = new ColorizedAction("map0", ColorizedAction.Command.STOP);
     private static final ColorizedAction ACTION_3 = new ColorizedAction("map3", ColorizedAction.Command.START);
     private static final ColorizedAction ACTION_4 = new ColorizedAction("map3", ColorizedAction.Command.STOP);
+    private static final ColorizedAction ACTION_5 = new ColorizedAction("map0", ColorizedAction.Command.CURRENT);
 
     private ColorizedAction colorizedAction;
 
@@ -33,6 +34,9 @@ public class ColorizedActionTest {
 
     @Mock
     private FreeStyleBuild buildRunMultipleStarts;
+
+    @Mock
+    private FreeStyleBuild buildRunOneCurrent;
 
     @Before
     public void setUp() throws Exception {
@@ -48,6 +52,11 @@ public class ColorizedActionTest {
             ACTION_3,
             ACTION_4
         ));
+        when(buildRunOneCurrent.getActions(eq(ColorizedAction.class))).thenReturn(Arrays.asList(
+            ACTION_0,
+            ACTION_5
+        ));
+
         colorizedAction = new ColorizedAction("vga", ColorizedAction.Command.START);
     }
 
@@ -112,5 +121,26 @@ public class ColorizedActionTest {
         markupText.addMarkup(0, "<span class=\"pipeline-new-node\">");
         final ColorizedAction colorizedAction = ColorizedAction.parseAction(markupText, buildRunMultipleStarts);
         assertEquals(ColorizedAction.Command.IGNORE, colorizedAction.getCommand());
+    }
+
+    @Test
+    public void canParseActionCurrentWhileBuildRunning() {
+        when(buildRunOneCurrent.isBuilding()).thenReturn(true);
+        final MarkupText markupText = new MarkupText("Log line");
+        assertEquals(ACTION_5, ColorizedAction.parseAction(markupText, buildRunOneCurrent));
+    }
+
+    @Test
+    public void wontParseActionCurrentWhileBuildNotRunning() {
+        when(buildRunOneCurrent.isBuilding()).thenReturn(false);
+        final MarkupText markupText = new MarkupText("Log line");
+        assertEquals(CONTINUE, ColorizedAction.parseAction(markupText, buildRunOneCurrent));
+    }
+
+    @Test
+    public void wontParseActionCurrentWhileBuildRunningButNoCurrentAction() {
+        when(buildRunSingleStart.isBuilding()).thenReturn(true);
+        final MarkupText markupText = new MarkupText("Log line");
+        assertEquals(CONTINUE, ColorizedAction.parseAction(markupText, buildRunSingleStart));
     }
 }

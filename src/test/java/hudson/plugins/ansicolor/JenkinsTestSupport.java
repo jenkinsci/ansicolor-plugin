@@ -45,7 +45,7 @@ public class JenkinsTestSupport {
         });
     }
 
-    protected static String repeat(String s, int times) {
+    public static String repeat(String s, int times) {
         return IntStream.range(0, times).mapToObj(i -> s).collect(Collectors.joining());
     }
 }
