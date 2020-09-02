@@ -1,5 +1,6 @@
 package hudson.plugins.ansicolor;
 
+import hudson.model.queue.QueueTaskFuture;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -13,13 +14,14 @@ import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
 import java.io.StringWriter;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.*;
 
 public class AnsiColorStepTest {
 
@@ -134,6 +136,35 @@ public class AnsiColorStepTest {
             ),
             script
         );
+    }
+
+    @Issue("200")
+    @Test
+    public void canRenderLongOutputWhileBuildStillRunning() {
+        story.addStep(new Statement() {
+
+            @Override
+            public void evaluate() throws Throwable {
+                final String a1k = JenkinsTestSupport.repeat("a", 1024);
+                final String script = "ansiColor('xterm') {\n" +
+                    "for (i = 0; i < 1000; i++) {" +
+                    "echo '\033[32m" + a1k + "\033[0m'\n" +
+                    "}" +
+                    "}";
+                final WorkflowJob project = story.j.jenkins.createProject(WorkflowJob.class, "canRenderLongOutputWhileBuildStillRunning");
+                project.setDefinition(new CpsFlowDefinition(script, true));
+                QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);
+                assertNotNull(runFuture);
+                final WorkflowRun lastBuild = runFuture.waitForStart();
+                await().pollInterval(Duration.ofSeconds(5)).atMost(Duration.ofSeconds(150)).until(() -> {
+                    StringWriter writer = new StringWriter();
+                    final int skipInitialStartAction = 3000;
+                    assertTrue(lastBuild.getLogText().writeHtmlTo(skipInitialStartAction, writer) > 0);
+                    final String html = writer.toString().replaceAll("<!--.+?-->", "");
+                    return !runFuture.isDone() && html.contains("<span style=\"color: #00CD00;\">" + a1k + "</span>") && !html.contains("\033[32m");
+                });
+            }
+        });
     }
 
     private void assertOutputOnRunningPipeline(Collection<String> expectedOutput, Collection<String> notExpectedOutput, String pipelineScript) {

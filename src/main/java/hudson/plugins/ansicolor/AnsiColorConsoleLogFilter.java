@@ -24,7 +24,7 @@ public final class AnsiColorConsoleLogFilter extends ConsoleLogFilter implements
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger LOG = Logger.getLogger(AnsiColorConsoleLogFilter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AnsiColorConsoleLogFilter.class.getName());
 
     private AnsiColorMap colorMap;
     private final Map<String, byte[]> notes;
@@ -46,14 +46,14 @@ public final class AnsiColorConsoleLogFilter extends ConsoleLogFilter implements
         pregenerateNote(AnsiAttributeElement.framed());
         pregenerateNote(AnsiAttributeElement.overline());
         // TODO other cases, and other methods
-        LOG.log(Level.FINE, "Notes pregenerated for {0}", notes.keySet());
+        LOGGER.log(Level.FINE, "Notes pregenerated for {0}", notes.keySet());
     }
-    
+
     private void pregenerateNote(AnsiAttributeElement element) {
         element.emitOpen(html -> pregenerateNote(html));
         element.emitClose(html -> pregenerateNote(html));
     }
-    
+
     private void pregenerateNote(String html) {
         if (!notes.containsKey(html)) {
             JenkinsJVM.checkJenkinsJVM();
@@ -91,7 +91,7 @@ public final class AnsiColorConsoleLogFilter extends ConsoleLogFilter implements
                         new SimpleHtmlNote(html).encodeTo(logger);
                     }
                 } catch (IOException e) {
-                    LOG.log(Level.WARNING, "Failed to add HTML markup '" + html + "'", e);
+                    LOGGER.log(Level.WARNING, "Failed to add HTML markup '" + html + "'", e);
                 }
             }
         });
