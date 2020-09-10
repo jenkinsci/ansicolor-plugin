@@ -1,9 +1,14 @@
 package hudson.plugins.ansicolor;
 
+import hudson.ExtensionList;
 import hudson.model.queue.QueueTaskFuture;
+import hudson.plugins.ansicolor.mock.kubernetes.pipeline.SecretsMasker;
+import hudson.plugins.ansicolor.mock.timestamper.pipeline.GlobalDecorator;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.log.TaskListenerDecorator;
+import org.jenkinsci.plugins.workflow.steps.DynamicContext;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,7 +17,11 @@ import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.mockito.Mockito;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Duration;
 import java.util.Arrays;
@@ -167,6 +176,18 @@ public class AnsiColorStepTest {
         });
     }
 
+    @Test
+    public void willPrintAdditionalNlOnKubernetesPlugin() {
+        ExtensionList.lookup(DynamicContext.Typed.class).add(0, new SecretsMasker());
+        assertNlsOnRunningPipeline();
+    }
+
+    @Test
+    public void willPrintAdditionalNlOnTimestamperPlugin() {
+        ExtensionList.lookup(TaskListenerDecorator.Factory.class).add(0, new GlobalDecorator());
+        assertNlsOnRunningPipeline();
+    }
+
     private void assertOutputOnRunningPipeline(Collection<String> expectedOutput, Collection<String> notExpectedOutput, String pipelineScript) {
         story.addStep(new Statement() {
 
@@ -180,6 +201,29 @@ public class AnsiColorStepTest {
                 final String html = writer.toString().replaceAll("<!--.+?-->", "");
                 assertThat(html).contains(expectedOutput);
                 assertThat(html).doesNotContain(notExpectedOutput);
+            }
+        });
+    }
+
+    private void assertNlsOnRunningPipeline() {
+        story.addStep(new Statement() {
+
+            @Override
+            public void evaluate() throws Throwable {
+                final String script = "ansiColor('xterm') {\n" +
+                    "echo '\033[34mHello\033[0m \033[33mcolorful\033[0m \033[35mworld!\033[0m'" +
+                    "}";
+                final WorkflowJob project = story.j.jenkins.createProject(WorkflowJob.class, "willPrintAdditionalNlOnKubernetesPlugin");
+                project.setDefinition(new CpsFlowDefinition(script, true));
+                story.j.assertBuildStatusSuccess(project.scheduleBuild2(0));
+                StringWriter writer = new StringWriter();
+                assertTrue(project.getLastBuild().getLogText().writeHtmlTo(0, writer) > 0);
+                final String html = writer.toString().replaceAll("<!--.+?-->", "")
+                    .replaceAll("</span>", "")
+                    .replaceAll("<span.+?>", "")
+                    .replaceAll("<div.+?/div>", "");
+                final String nl = System.lineSeparator();
+                assertThat(html).contains("ansiColor" + nl + "[Pipeline] {" + nl + nl).contains("[Pipeline] }" + nl + nl + "[Pipeline] // ansiColor");
             }
         });
     }
