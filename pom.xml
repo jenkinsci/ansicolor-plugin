@@ -96,14 +96,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>timestamper</artifactId>
-      <version>1.11.3</version>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jenkins-ci.plugins.workflow</groupId>
-          <artifactId>workflow-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.awaitility</groupId>
