@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.4</version>
+    <version>4.7</version>
     <relativePath />
   </parent>
 
@@ -90,7 +90,7 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.16.1</version>
+      <version>3.17.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -116,8 +116,8 @@
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.164.x</artifactId>
-        <version>5</version>
+        <artifactId>bom-2.204.x</artifactId>
+        <version>11</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
