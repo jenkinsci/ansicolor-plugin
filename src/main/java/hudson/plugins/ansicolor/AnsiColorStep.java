@@ -15,8 +15,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -124,9 +123,16 @@ public class AnsiColorStep extends Step {
     private static class AnsiColorExecution extends BodyExecutionCallback {
         private static final Logger LOGGER = Logger.getLogger(AnsiColorExecution.class.getName());
 
+        private static final Map<Class<?>, String[]> EXTENSIONS_NL = new HashMap<>();
+
         private final String colorMapName;
 
         private Boolean needsPrintln;
+
+        static {
+            EXTENSIONS_NL.put(DynamicContext.Typed.class, new String[]{"kubernetes.pipeline.SecretsMasker"});
+            EXTENSIONS_NL.put(TaskListenerDecorator.Factory.class, new String[]{"timestamper.pipeline.GlobalDecorator"});
+        }
 
         public AnsiColorExecution(String colorMapName) {
             this.colorMapName = colorMapName;
@@ -172,8 +178,9 @@ public class AnsiColorStep extends Step {
 
         private boolean needsPrintln() {
             if (needsPrintln == null) {
-                needsPrintln = ExtensionList.lookup(TaskListenerDecorator.Factory.class).stream()
-                    .anyMatch(f -> f.getClass().getName().contains("hudson.plugins.timestamper.pipeline.GlobalDecorator"));
+                needsPrintln = EXTENSIONS_NL.entrySet().stream().anyMatch(e ->
+                    ExtensionList.lookup(e.getKey()).stream().map(ext -> ext.getClass().getName()).anyMatch(n -> Arrays.stream(e.getValue()).anyMatch(n::contains))
+                );
             }
             return needsPrintln;
         }

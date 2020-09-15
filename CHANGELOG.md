@@ -2,6 +2,7 @@
 ============
 
 * [#202](https://github.com/jenkinsci/ansicolor-plugin/pull/202): Render logs correctly for long running jobs which generate lots of output - [@tszmytka](https://github.com/tszmytka).
+* [#203](https://github.com/jenkinsci/ansicolor-plugin/pull/203): Interaction with kubernetes plugin - [@tszmytka](https://github.com/tszmytka).
 * Your contribution here.
 
 
