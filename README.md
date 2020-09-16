@@ -30,7 +30,7 @@ or as a pipeline step - good for quick checks when you only need part of the out
 
 ### Build wrapper
 
-Can be used to colorize the *whole* output of a pipeline build. Here an example rendering a colorful message.
+Can be used to colorize the *whole* output of a pipeline build. Here is an example rendering a colorful message.
 
 ```groovy
 pipeline {
