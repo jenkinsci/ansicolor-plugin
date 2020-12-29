@@ -1,13 +1,30 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-<f:section title="ANSI Color">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:d="jelly:define" xmlns:local="local">
+    <d:taglib uri="local">
+        <d:tag name="blockWrapper">
+            <j:choose>
+                <j:when test="${divBasedFormLayout}">
+                    <div>
+                        <d:invokeBody/>
+                    </div>
+                </j:when>
+                <j:otherwise>
+                    <table style="width:100%">
+                        <d:invokeBody/>
+                    </table>
+                </j:otherwise>
+            </j:choose>
+        </d:tag>
+    </d:taglib>
+
+    <f:section title="ANSI Color">
 	<f:entry title="${%Global color map for all builds}" field="globalColorMapName">
 		<f:textbox/>
 	</f:entry>
 	<f:advanced>
 	<f:entry title="Custom color maps">
 		<f:repeatable var="colorMap" items="${descriptor.colorMaps}" add="Add color map">
-			<table width="100%">
+			<local:blockWrapper>
 				<f:entry title="Name" field="name">
 					<f:textbox value="${colorMap.name}"/>
 				</f:entry>
@@ -54,7 +71,7 @@
 						<f:repeatableDeleteButton value="Delete"/>
 					</div>
 				</f:entry>
-			</table>
+            </local:blockWrapper>
 		</f:repeatable>
 	</f:entry>
 	</f:advanced>
