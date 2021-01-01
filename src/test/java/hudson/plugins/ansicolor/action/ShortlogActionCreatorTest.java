@@ -2,6 +2,7 @@ package hudson.plugins.ansicolor.action;
 
 import hudson.console.ConsoleNote;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -50,7 +51,7 @@ public class ShortlogActionCreatorTest {
         startActions.put(ConsoleNote.PREAMBLE_STR + serializedNote, colorizedAction);
         startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-stop>", new ColorizedAction("xterm", ColorizedAction.Command.STOP));
         startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-start1>", new ColorizedAction("gnome-terminal", ColorizedAction.Command.START));
-        final ColorizedAction shortlogAction = shortlogActionCreator.createActionForShortlog(file, startActions, 3);
+        final ColorizedAction shortlogAction = shortlogActionCreator.createActionForShortlog(file, startActions, 3, false);
         assertEquals(colorizedAction.getColorMapName(), shortlogAction.getColorMapName());
         assertEquals(colorizedAction.getCommand(), shortlogAction.getCommand());
         assertNotEquals(colorizedAction.getId(), shortlogAction.getId());
@@ -65,14 +66,14 @@ public class ShortlogActionCreatorTest {
         final HashMap<String, ColorizedAction> startActions = new HashMap<>();
         startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-start0>", new ColorizedAction("css", ColorizedAction.Command.START));
         startActions.put(ConsoleNote.PREAMBLE_STR + serializedNote, colorizedAction);
-        assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 256));
+        assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 256, false));
         verify(lineIdentifier, never()).hash(anyString(), anyLong());
     }
 
     @Test
     public void wontCreateActionIfBuildHasNoStartActions() {
         final File file = new File(getClass().getResource(String.join("/", "", getClass().getName().replace('.', '/'), "testlog.log")).getFile());
-        assertNull(shortlogActionCreator.createActionForShortlog(file, new HashMap<>(), 3));
+        assertNull(shortlogActionCreator.createActionForShortlog(file, new HashMap<>(), 3, false));
         verify(lineIdentifier, never()).hash(anyString(), anyLong());
     }
 
@@ -82,7 +83,7 @@ public class ShortlogActionCreatorTest {
         startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-start0>", new ColorizedAction("css", ColorizedAction.Command.START));
         startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-stop0>", new ColorizedAction("css", ColorizedAction.Command.STOP));
         final File file = new File(getClass().getResource(String.join("/", "", getClass().getName().replace('.', '/'), "testlog-no-notes.log")).getFile());
-        assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 3));
+        assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 3, false));
         verify(lineIdentifier, never()).hash(anyString(), anyLong());
     }
 
@@ -91,7 +92,7 @@ public class ShortlogActionCreatorTest {
         final HashMap<String, ColorizedAction> startActions = new HashMap<>();
         startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-start0>", new ColorizedAction("css", ColorizedAction.Command.START));
         final File file = new File("non-existing.log");
-        assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 3));
+        assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 3, false));
         verify(lineIdentifier, never()).hash(anyString(), anyLong());
     }
 
@@ -102,7 +103,7 @@ public class ShortlogActionCreatorTest {
         startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-start>", new ColorizedAction("css", ColorizedAction.Command.START));
         startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-stop>", new ColorizedAction("css", ColorizedAction.Command.STOP));
 
-        assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 3));
+        assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 3, false));
         verify(lineIdentifier, never()).hash(anyString(), anyLong());
     }
 
@@ -110,5 +111,11 @@ public class ShortlogActionCreatorTest {
     public void canCreateActionForShortlogOnLogLineExceedingBufferSize() {
         final String s = "[Pipeline]  echo a very very very long line,a very very very long line,a very very very long line,a very very very long line,a very very very long line";
         canCreateActionForShortlog(shortlogActionCreator, s + "\n", "testlog-long.log");
+    }
+
+    @Test
+    @Ignore
+    public void canCreateActionForShortlogPreJenkins2261() {
+        // todo
     }
 }

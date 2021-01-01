@@ -4,15 +4,14 @@ import hudson.Extension;
 import hudson.console.ConsoleNote;
 import hudson.model.Run;
 import hudson.model.listeners.RunListener;
+import hudson.util.VersionNumber;
+import jenkins.model.Jenkins;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -32,8 +31,8 @@ public class ShortlogActionCreator {
         this.eol = eol.getBytes(UTF_8);
     }
 
-    public ColorizedAction createActionForShortlog(File logFile, Map<String, ColorizedAction> actions, int shortlogLimit) {
-        final ActionContext lastAction = findLastActionBefore(logFile, actions.keySet(), shortlogLimit);
+    public ColorizedAction createActionForShortlog(File logFile, Map<String, ColorizedAction> actions, int shortlogLimit, boolean keepLinesWhole) {
+        final ActionContext lastAction = findLastActionBefore(logFile, actions.keySet(), shortlogLimit, keepLinesWhole);
         if (!lastAction.isEmpty()) {
             final ColorizedAction colorizedAction = actions.get(lastAction.serializedAction);
             if (ColorizedAction.Command.START.equals(colorizedAction.getCommand())) {
@@ -43,7 +42,7 @@ public class ShortlogActionCreator {
         return null;
     }
 
-    private ActionContext findLastActionBefore(File logFile, Collection<String> serializedActions, int shortlogLimit) {
+    private ActionContext findLastActionBefore(File logFile, Collection<String> serializedActions, int shortlogLimit, boolean keepLinesWhole) {
         try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(logFile))) {
             final long shortlogStart = logFile.length() - shortlogLimit * 1024L;
             if (shortlogStart > 0) {
@@ -60,11 +59,14 @@ public class ShortlogActionCreator {
                     }
                     if (totalRead + read >= shortlogStart) {
                         final int eolPos = indexOfEol(buf, startInBuff);
-                        if (eolPos != -1 && !lastAction.isEmpty()) {
-                            return new ActionContext(lastAction, partialLine + new String(buf, startInBuff, eolPos - startInBuff + eol.length, UTF_8));
+                        final int[] beginLength = calculateBeginLength(buf, startInBuff, eolPos, keepLinesWhole);
+                        final int begin = beginLength[0];
+                        final int length = beginLength[1];
+                        if (length != -1 && !lastAction.isEmpty()) {
+                            return new ActionContext(lastAction, partialLine + new String(buf, begin, length, UTF_8));
                         } else {
                             // line extends to the next buffer
-                            partialLine = new String(Arrays.copyOfRange(buf, startInBuff, buf.length), UTF_8);
+                            partialLine = new String(Arrays.copyOfRange(buf, begin, buf.length), UTF_8);
                         }
                     }
                     totalRead += read;
@@ -88,12 +90,21 @@ public class ShortlogActionCreator {
     }
 
     private int indexOfEol(byte[] buf, int after) {
-        for (int i = after; i < buf.length; i++) {
+        for (int i = after + 1; i < buf.length; i++) {
             if (Arrays.equals(Arrays.copyOfRange(buf, i, i + eol.length), eol)) {
                 return i;
             }
         }
         return -1;
+    }
+
+    private int[] calculateBeginLength(byte[] buf, int startInBuff, int eolPos, boolean keepLinesWhole) {
+        if (keepLinesWhole) {
+            final int endEolPos = indexOfEol(buf, eolPos);
+            final int begin = eolPos + eol.length;
+            return new int[]{begin, endEolPos != -1 ? endEolPos - begin + eol.length : -1};
+        }
+        return new int[]{startInBuff, eolPos != -1 ? eolPos - startInBuff + eol.length : -1};
     }
 
     @Extension
@@ -116,8 +127,14 @@ public class ShortlogActionCreator {
                 final File logFile = new File(run.getRootDir(), "log");
                 if (logFile.isFile()) {
                     final ShortlogActionCreator shortlogActionCreator = new ShortlogActionCreator(new LineIdentifier(), System.lineSeparator());
+                    final VersionNumber keepLinesWholeVersion = new VersionNumber("2.260");
                     final String consoleTail = System.getProperty("hudson.consoleTailKB");
-                    final ColorizedAction action = shortlogActionCreator.createActionForShortlog(logFile, actions, consoleTail != null ? Integer.parseInt(consoleTail) : CONSOLE_TAIL_DEFAULT);
+                    final ColorizedAction action = shortlogActionCreator.createActionForShortlog(
+                        logFile,
+                        actions,
+                        consoleTail != null ? Integer.parseInt(consoleTail) : CONSOLE_TAIL_DEFAULT,
+                        Optional.ofNullable(Jenkins.getVersion()).orElse(keepLinesWholeVersion).isNewerThan(keepLinesWholeVersion)
+                    );
                     if (action != null) {
                         run.addAction(action);
                     }
