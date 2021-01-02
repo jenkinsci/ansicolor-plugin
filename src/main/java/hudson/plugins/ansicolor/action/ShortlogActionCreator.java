@@ -59,7 +59,7 @@ public class ShortlogActionCreator {
                     }
                     if (totalRead + read >= shortlogStart) {
                         final int eolPos = indexOfEol(buf, startInBuff);
-                        final int[] beginLength = calculateBeginLength(buf, startInBuff, eolPos, keepLinesWhole);
+                        final int[] beginLength = calculateBeginLength(buf, startInBuff, eolPos, partialLine.isEmpty() && keepLinesWhole);
                         final int begin = beginLength[0];
                         final int length = beginLength[1];
                         if (length != -1 && !lastAction.isEmpty()) {
@@ -100,9 +100,8 @@ public class ShortlogActionCreator {
 
     private int[] calculateBeginLength(byte[] buf, int startInBuff, int eolPos, boolean keepLinesWhole) {
         if (keepLinesWhole) {
-            final int endEolPos = indexOfEol(buf, eolPos);
-            final int begin = eolPos + eol.length;
-            return new int[]{begin, endEolPos != -1 ? endEolPos - begin + eol.length : -1};
+            final int begin = eolPos != -1? eolPos + eol.length: startInBuff;
+            return new int[]{begin, eolPos != -1 ? indexOfEol(buf, eolPos) - begin + eol.length : -1};
         }
         return new int[]{startInBuff, eolPos != -1 ? eolPos - startInBuff + eol.length : -1};
     }
