@@ -1,6 +1,8 @@
 0.7.4 (Next)
 ============
 
+* [#213](https://github.com/jenkinsci/ansicolor-plugin/pull/213): Remove tabular markup on new Jenkins core - [@timja](https://github.com/timja).
+* [#214](https://github.com/jenkinsci/ansicolor-plugin/pull/214): Render logs correctly also in Jenkins versions greater than 2.260 - [@tszmytka](https://github.com/tszmytka).
 * Your contribution here.
 
 
