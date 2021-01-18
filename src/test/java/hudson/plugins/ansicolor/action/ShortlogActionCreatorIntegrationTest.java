@@ -4,6 +4,8 @@ import hudson.plugins.ansicolor.JenkinsTestSupport;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ShortlogActionCreatorIntegrationTest extends JenkinsTestSupport {
     private static final String AS_1K = repeat("a", 1024);
@@ -20,7 +22,7 @@ public class ShortlogActionCreatorIntegrationTest extends JenkinsTestSupport {
     }
 
     @Test
-    public void canAnotateLongLogOutputInShortlogMultipleSteps() {
+    public void canAnnotateLongLogOutputInShortlogMultipleStepsLinesWholeFalse() {
         final String script = "echo '\033[32mBeginning\033[0m'\n" +
             "ansiColor('vga') {\n" +
             repeat("    echo '\033[32m" + AS_1K + "\033[0m'\n", 10) +
@@ -34,6 +36,8 @@ public class ShortlogActionCreatorIntegrationTest extends JenkinsTestSupport {
             "}\n" +
             "echo 'End'";
 
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(ShortlogActionCreator.PROP_LINES_WHOLE, "false");
         assertOutputOnRunningPipeline(
             Arrays.asList(
                 "<span style=\"color: #00CD00;\">" + BS_1K + "</span>",
@@ -50,7 +54,46 @@ public class ShortlogActionCreatorIntegrationTest extends JenkinsTestSupport {
                 "\033[32m" + DS_1K + "\033[0m"
             ),
             script,
-            true
+            true,
+            properties
+        );
+    }
+
+    @Test
+    public void canAnnotateLongLogOutputInShortlogMultipleStepsLinesWholeTrue() {
+        final String script = "echo '\033[32mBeginning\033[0m'\n" +
+            "ansiColor('vga') {\n" +
+            repeat("    echo '\033[32m" + AS_1K + "\033[0m'\n", 10) +
+            "}\n" +
+            "ansiColor('xterm') {\n" +
+            repeat("    echo '\033[32m" + BS_1K + "\033[0m'\n", 30) +
+            "}\n" +
+            "ansiColor('css') {\n" +
+            repeat("    echo '\033[32m" + CS_1K + "\033[0m'\n", 50) +
+            repeat("    echo '\033[32m" + DS_1K + "\033[0m'\n", 50) +
+            "}\n" +
+            "echo 'End'";
+
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(ShortlogActionCreator.PROP_LINES_WHOLE, "true");
+        assertOutputOnRunningPipeline(
+            Arrays.asList(
+                "\033[32m" + BS_1K + "\033[0m",
+                "<span style=\"color: green;\">" + CS_1K + "</span>",
+                "<span style=\"color: green;\">" + DS_1K + "</span>",
+                "End"
+            ),
+            Arrays.asList(
+                "Beginning",
+                "<span style=\"color: #00AA00;\">a",
+                "\033[32m" + AS_1K + "\033[0m",
+                "<span style=\"color: #00CD00;\">" + BS_1K + "</span>",
+                "\033[32m" + CS_1K + "\033[0m",
+                "\033[32m" + DS_1K + "\033[0m"
+            ),
+            script,
+            true,
+            properties
         );
     }
 }

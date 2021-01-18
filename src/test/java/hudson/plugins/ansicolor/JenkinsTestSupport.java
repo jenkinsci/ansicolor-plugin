@@ -1,5 +1,6 @@
 package hudson.plugins.ansicolor;
 
+import hudson.plugins.ansicolor.action.ShortlogActionCreator;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -11,6 +12,7 @@ import java.io.File;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -27,10 +29,15 @@ public class JenkinsTestSupport {
     }
 
     protected void assertOutputOnRunningPipeline(Collection<String> expectedOutput, Collection<String> notExpectedOutput, String pipelineScript, boolean useShortLog) {
+        assertOutputOnRunningPipeline(expectedOutput, notExpectedOutput, pipelineScript, useShortLog, Collections.emptyMap());
+    }
+
+    protected void assertOutputOnRunningPipeline(Collection<String> expectedOutput, Collection<String> notExpectedOutput, String pipelineScript, boolean useShortLog, Map<String, String> properties) {
         jenkinsRule.addStep(new Statement() {
 
             @Override
             public void evaluate() throws Throwable {
+                properties.forEach(System::setProperty);
                 final WorkflowJob project = jenkinsRule.j.jenkins.createProject(WorkflowJob.class, "test-project-" + JenkinsTestSupport.this.getClass().getSimpleName());
                 project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
                 jenkinsRule.j.assertBuildStatusSuccess(project.scheduleBuild2(0));
@@ -38,6 +45,7 @@ public class JenkinsTestSupport {
                 final WorkflowRun lastBuild = project.getLastBuild();
                 final long start = useShortLog ? new File(lastBuild.getRootDir(), "log").length() - CONSOLE_TAIL_DEFAULT * 1024 : 0;
                 assertTrue(lastBuild.getLogText().writeHtmlTo(start, writer) > 0);
+                properties.keySet().forEach(System::clearProperty);
                 final String html = writer.toString().replaceAll("<!--.+?-->", "");
                 assertThat(html).contains(expectedOutput);
                 assertThat(html).doesNotContain(notExpectedOutput);
