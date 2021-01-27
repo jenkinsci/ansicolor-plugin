@@ -22,7 +22,7 @@ public class ShortlogActionCreator {
     private static final Logger LOGGER = Logger.getLogger(ShortlogActionCreator.class.getName());
     private static final int CONSOLE_TAIL_DEFAULT = 150;
     private static final int BUFFER_SIZE = 16 * 1024;
-    private static final VersionNumber LINES_WHOLE_SINCE_VERSION = new VersionNumber("2.260");
+    public static final VersionNumber LINES_WHOLE_SINCE_VERSION = new VersionNumber("2.260");
     static final String PROP_LINES_WHOLE = "jenkins.ansicolor.keepLinesWhole";
 
     private final LineIdentifier lineIdentifier;

@@ -1,11 +1,14 @@
 package hudson.plugins.ansicolor.action;
 
 import hudson.plugins.ansicolor.JenkinsTestSupport;
+import jenkins.model.Jenkins;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 public class ShortlogActionCreatorIntegrationTest extends JenkinsTestSupport {
     private static final String AS_1K = repeat("a", 1024);
@@ -14,11 +17,30 @@ public class ShortlogActionCreatorIntegrationTest extends JenkinsTestSupport {
     private static final String DS_1K = repeat("d", 1024);
 
     @Test
-    public void canAnotateLongLogOutputInShortlog() {
+    public void canAnnotateLongLogOutputInShortlogLinesWholeFalse() {
         final String script = "ansiColor('xterm') {\n" +
             repeat("echo '\033[32m" + AS_1K + "\033[0m'\n", 150) +
             "}";
-        assertOutputOnRunningPipeline("<span style=\"color: #00CD00;\">" + AS_1K + "</span>", "\033", script, true);
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(ShortlogActionCreator.PROP_LINES_WHOLE, "false");
+        BooleanSupplier brokenLinesJenkins = () -> Optional.ofNullable(Jenkins.getVersion())
+            .orElse(ShortlogActionCreator.LINES_WHOLE_SINCE_VERSION)
+            .isOlderThan(ShortlogActionCreator.LINES_WHOLE_SINCE_VERSION);
+        assertOutputOnRunningPipeline(brokenLinesJenkins, "<span style=\"color: #00CD00;\">" + AS_1K + "</span>", "\033", script, true, properties);
+    }
+
+    @Test
+    public void canAnnotateLongLogOutputInShortlogLinesWholeTrue() {
+        final String script = "ansiColor('xterm') {\n" +
+            repeat("echo '\033[32m" + AS_1K + "\033[0m'\n", 150) +
+            "echo 'Abc'\n" +
+            "}";
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(ShortlogActionCreator.PROP_LINES_WHOLE, "true");
+        BooleanSupplier wholeLinesJenkins = () -> Optional.ofNullable(Jenkins.getVersion())
+        .orElse(ShortlogActionCreator.LINES_WHOLE_SINCE_VERSION)
+        .isNewerThan(ShortlogActionCreator.LINES_WHOLE_SINCE_VERSION);
+        assertOutputOnRunningPipeline(wholeLinesJenkins, "<span style=\"color: #00CD00;\">" + AS_1K + "</span>", "\033", script, true, properties);
     }
 
     @Test
