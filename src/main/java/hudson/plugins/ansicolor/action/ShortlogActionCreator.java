@@ -22,6 +22,8 @@ public class ShortlogActionCreator {
     private static final Logger LOGGER = Logger.getLogger(ShortlogActionCreator.class.getName());
     private static final int CONSOLE_TAIL_DEFAULT = 150;
     private static final int BUFFER_SIZE = 16 * 1024;
+    public static final VersionNumber LINES_WHOLE_SINCE_VERSION = new VersionNumber("2.260");
+    static final String PROP_LINES_WHOLE = "jenkins.ansicolor.keepLinesWhole";
 
     private final LineIdentifier lineIdentifier;
     private final byte[] eol;
@@ -100,7 +102,7 @@ public class ShortlogActionCreator {
 
     private int[] calculateBeginLength(byte[] buf, int startInBuff, int eolPos, boolean keepLinesWhole) {
         if (keepLinesWhole) {
-            final int begin = eolPos != -1? eolPos + eol.length: startInBuff;
+            final int begin = eolPos != -1 ? eolPos + eol.length : startInBuff;
             return new int[]{begin, eolPos != -1 ? indexOfEol(buf, eolPos) - begin + eol.length : -1};
         }
         return new int[]{startInBuff, eolPos != -1 ? eolPos - startInBuff + eol.length : -1};
@@ -112,7 +114,7 @@ public class ShortlogActionCreator {
         public void onFinalized(Run<?, ?> run) {
             super.onFinalized(run);
             final List<ColorizedAction.Command> commands = Arrays.asList(ColorizedAction.Command.START, ColorizedAction.Command.STOP);
-            Map<String, ColorizedAction> actions = run.getActions(ColorizedAction.class).stream()
+            final Map<String, ColorizedAction> actions = run.getActions(ColorizedAction.class).stream()
                 .filter(a -> commands.contains(a.getCommand()))
                 .collect(Collectors.toMap(a -> {
                     try {
@@ -126,13 +128,15 @@ public class ShortlogActionCreator {
                 final File logFile = new File(run.getRootDir(), "log");
                 if (logFile.isFile()) {
                     final ShortlogActionCreator shortlogActionCreator = new ShortlogActionCreator(new LineIdentifier(), System.lineSeparator());
-                    final VersionNumber keepLinesWholeVersion = new VersionNumber("2.260");
                     final String consoleTail = System.getProperty("hudson.consoleTailKB");
+                    final boolean keepLinesWhole = Optional.ofNullable(System.getProperty(PROP_LINES_WHOLE))
+                        .map(Boolean::parseBoolean)
+                        .orElseGet(() -> Optional.ofNullable(Jenkins.getVersion()).orElse(LINES_WHOLE_SINCE_VERSION).isNewerThan(LINES_WHOLE_SINCE_VERSION));
                     final ColorizedAction action = shortlogActionCreator.createActionForShortlog(
                         logFile,
                         actions,
                         consoleTail != null ? Integer.parseInt(consoleTail) : CONSOLE_TAIL_DEFAULT,
-                        Optional.ofNullable(Jenkins.getVersion()).orElse(keepLinesWholeVersion).isNewerThan(keepLinesWholeVersion)
+                        keepLinesWhole
                     );
                     if (action != null) {
                         run.addAction(action);
