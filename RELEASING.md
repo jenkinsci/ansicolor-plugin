@@ -68,7 +68,7 @@ git commit -m "Preparing for release, 0.4.1"
 git push origin master
 ```
 
-Make sure that your working directory is clean (no uncommited changes).
+Make sure that your working directory is clean (no uncommitted changes).
 
 Make a release.
 

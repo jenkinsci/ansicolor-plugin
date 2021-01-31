@@ -1,7 +1,7 @@
-0.7.5 (Next)
+0.7.5 (01/31/2021)
 ============
 
-* Your contribution here.
+* [#217](https://github.com/jenkinsci/ansicolor-plugin/pull/217): Reflect functionality changes in tests - [@tszmytka](https://github.com/tszmytka).
 
 
 0.7.4 (01/16/2021)
