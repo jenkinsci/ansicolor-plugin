@@ -33,22 +33,6 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
 
 public class AnsiColorStepTest {
-
-    public AnsiColorStepTest() {
-    }
-
-    @Test
-    public void testGetColorMapNameNull() {
-        AnsiColorStep instance = new AnsiColorStep(null);
-        assertEquals("xterm", instance.getColorMapName());
-    }
-
-    @Test
-    public void testGetColorMapNameVga() {
-        AnsiColorStep instance = new AnsiColorStep("vga");
-        assertEquals("vga", instance.getColorMapName());
-    }
-
     @ClassRule
     public static BuildWatcher buildWatcher = new BuildWatcher();
     @Rule
