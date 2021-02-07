@@ -1,6 +1,7 @@
 0.7.6 (Next)
 ============
 
+* [#219](https://github.com/jenkinsci/ansicolor-plugin/pull/219): Set env var TERM also if a default color map is used - [@tszmytka](https://github.com/tszmytka).
 * Your contribution here.
 
 

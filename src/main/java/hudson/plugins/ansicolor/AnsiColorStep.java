@@ -31,15 +31,8 @@ public class AnsiColorStep extends Step {
      */
     @DataBoundConstructor
     public AnsiColorStep(final String colorMapName) {
-        this.colorMapName = colorMapName;
-    }
-
-    public String getColorMapName() {
-        return colorMapName == null ? AnsiColorMap.DefaultName : colorMapName;
-    }
-
-    public AnsiColorMap getColorMap() {
-        return getWrapperDescriptor().getColorMap(colorMapName);
+        this.colorMapName = Optional.ofNullable(colorMapName).orElseGet(() ->
+            Optional.ofNullable(Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getGlobalColorMapName()).orElse(AnsiColorMap.DefaultName));
     }
 
     private static DescriptorImpl getWrapperDescriptor() {

@@ -4,6 +4,7 @@ import hudson.ExtensionList;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.plugins.ansicolor.mock.kubernetes.pipeline.SecretsMasker;
 import hudson.plugins.ansicolor.mock.timestamper.pipeline.GlobalDecorator;
+import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -26,6 +27,7 @@ import java.io.StringWriter;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,22 +35,6 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
 
 public class AnsiColorStepTest {
-
-    public AnsiColorStepTest() {
-    }
-
-    @Test
-    public void testGetColorMapNameNull() {
-        AnsiColorStep instance = new AnsiColorStep(null);
-        assertEquals("xterm", instance.getColorMapName());
-    }
-
-    @Test
-    public void testGetColorMapNameVga() {
-        AnsiColorStep instance = new AnsiColorStep("vga");
-        assertEquals("vga", instance.getColorMapName());
-    }
-
     @ClassRule
     public static BuildWatcher buildWatcher = new BuildWatcher();
     @Rule
@@ -186,6 +172,60 @@ public class AnsiColorStepTest {
     public void willPrintAdditionalNlOnTimestamperPlugin() {
         ExtensionList.lookup(TaskListenerDecorator.Factory.class).add(0, new GlobalDecorator());
         assertNlsOnRunningPipeline();
+    }
+
+    @Issue("218")
+    @Test
+    public void canUseAndReportGlobalColorMapName() {
+        final String globalColorMapName = "vga";
+        final String script = "ansiColor {\n" +
+            "    echo '\033[33mYellow words, white background.\033[0m'\n" +
+            "    echo \"TERM=${env.TERM}\"\n" +
+            "}";
+        final List<String> expectedOutput = Arrays.asList(
+            "<span style=\"color: #AA5500;\">Yellow words, white background.</span>",
+            "TERM=" + globalColorMapName
+        );
+        final List<String> notExpectedOutput = Arrays.asList(
+            "\033[33mYellow words, white background.",
+            "TERM=null"
+        );
+        story.addStep(new Statement() {
+
+            @Override
+            public void evaluate() throws Throwable {
+                Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).setGlobalColorMapName(globalColorMapName);
+
+                final WorkflowJob project = story.j.jenkins.createProject(WorkflowJob.class, "p");
+                project.setDefinition(new CpsFlowDefinition(script, true));
+                story.j.assertBuildStatusSuccess(project.scheduleBuild2(0));
+                StringWriter writer = new StringWriter();
+                assertTrue(project.getLastBuild().getLogText().writeHtmlTo(0, writer) > 0);
+                final String html = writer.toString().replaceAll("<!--.+?-->", "");
+                assertThat(html).contains(expectedOutput);
+                assertThat(html).doesNotContain(notExpectedOutput);
+            }
+        });
+    }
+
+    @Issue("218")
+    @Test
+    public void canUseAndReportDefaultColorMapName() {
+        final String script = "ansiColor {\n" +
+            "    echo '\033[33mYellow words, white background.\033[0m'\n" +
+            "    echo \"TERM=${env.TERM}\"\n" +
+            "}";
+        assertOutputOnRunningPipeline(
+            Arrays.asList(
+                "<span style=\"color: #CDCD00;\">Yellow words, white background.</span>",
+                "TERM=xterm"
+            ),
+            Arrays.asList(
+                "\033[33mYellow words, white background.",
+                "TERM=null"
+            ),
+            script
+        );
     }
 
     private void assertOutputOnRunningPipeline(Collection<String> expectedOutput, Collection<String> notExpectedOutput, String pipelineScript) {
