@@ -89,6 +89,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
         switch (colorizedAction.getCommand()) {
             case START:
             case CURRENT:
+            case CONTINUE:
                 colorMapName = colorizedAction.getColorMapName();
                 break;
             case STOP:
