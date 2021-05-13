@@ -7,7 +7,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
- * Fake decorator pretending a timestamper-plugin component
+ * Fake decorator pretending to be a timestamper-plugin component
  */
 public class GlobalDecorator implements TaskListenerDecorator.Factory {
     @CheckForNull

@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 
 /**
- * Fake masker pretending a kubernetes-plugin component
+ * Fake masker pretending to be a kubernetes-plugin component
  */
 public class SecretsMasker extends DynamicContext.Typed<String> {
     @Nonnull

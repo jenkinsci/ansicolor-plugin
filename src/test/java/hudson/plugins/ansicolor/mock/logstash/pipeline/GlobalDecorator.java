@@ -7,7 +7,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
- * Fake decorator pretending a logstash-plugin component
+ * Fake decorator pretending to be a logstash-plugin component
  */
 public class GlobalDecorator implements TaskListenerDecorator.Factory {
     @CheckForNull
