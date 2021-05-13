@@ -18,11 +18,7 @@ import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
-import org.mockito.Mockito;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Duration;
 import java.util.Arrays;
@@ -32,7 +28,8 @@ import java.util.logging.Level;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class AnsiColorStepTest {
     @ClassRule
@@ -171,6 +168,13 @@ public class AnsiColorStepTest {
     @Test
     public void willPrintAdditionalNlOnTimestamperPlugin() {
         ExtensionList.lookup(TaskListenerDecorator.Factory.class).add(0, new GlobalDecorator());
+        assertNlsOnRunningPipeline();
+    }
+
+    @Issue("222")
+    @Test
+    public void willPrintAdditionalNlOnLogstashPlugin() {
+        ExtensionList.lookup(TaskListenerDecorator.Factory.class).add(0, new hudson.plugins.ansicolor.mock.logstash.pipeline.GlobalDecorator());
         assertNlsOnRunningPipeline();
     }
 
