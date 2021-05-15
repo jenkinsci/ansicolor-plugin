@@ -124,7 +124,10 @@ public class AnsiColorStep extends Step {
 
         static {
             EXTENSIONS_NL.put(DynamicContext.Typed.class, new String[]{"kubernetes.pipeline.SecretsMasker"});
-            EXTENSIONS_NL.put(TaskListenerDecorator.Factory.class, new String[]{"timestamper.pipeline.GlobalDecorator"});
+            EXTENSIONS_NL.put(TaskListenerDecorator.Factory.class, new String[]{
+                "timestamper.pipeline.GlobalDecorator",
+                "logstash.pipeline.GlobalDecorator",
+            });
         }
 
         public AnsiColorExecution(String colorMapName) {
