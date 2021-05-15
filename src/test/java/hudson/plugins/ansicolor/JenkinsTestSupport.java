@@ -20,9 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class JenkinsTestSupport {
+    private static final int CONSOLE_TAIL_DEFAULT = 150;
+
     @Rule
     public RestartableJenkinsRule jenkinsRule = new RestartableJenkinsRule();
-    private static final int CONSOLE_TAIL_DEFAULT = 150;
 
     protected void assertOutputOnRunningPipeline(
         BooleanSupplier assumption,
