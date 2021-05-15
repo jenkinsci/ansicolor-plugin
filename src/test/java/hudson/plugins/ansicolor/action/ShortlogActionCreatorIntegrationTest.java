@@ -40,8 +40,8 @@ public class ShortlogActionCreatorIntegrationTest extends JenkinsTestSupport {
         final Map<String, String> properties = new HashMap<>();
         properties.put(ShortlogActionCreator.PROP_LINES_WHOLE, "true");
         BooleanSupplier wholeLinesJenkins = () -> Optional.ofNullable(Jenkins.getVersion())
-        .orElse(ShortlogActionCreator.LINES_WHOLE_SINCE_VERSION)
-        .isNewerThan(ShortlogActionCreator.LINES_WHOLE_SINCE_VERSION);
+            .orElse(ShortlogActionCreator.LINES_WHOLE_SINCE_VERSION)
+            .isNewerThan(ShortlogActionCreator.LINES_WHOLE_SINCE_VERSION);
         assertOutputOnRunningPipeline(wholeLinesJenkins, "<span style=\"color: #00CD00;\">" + AS_1K + "</span>", "\033", script, true, properties);
     }
 
