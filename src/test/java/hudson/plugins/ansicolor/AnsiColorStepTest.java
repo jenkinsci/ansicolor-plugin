@@ -173,6 +173,13 @@ public class AnsiColorStepTest {
         assertNlsOnRunningPipeline();
     }
 
+    @Issue("222")
+    @Test
+    public void willPrintAdditionalNlOnLogstashPlugin() {
+        ExtensionList.lookup(TaskListenerDecorator.Factory.class).add(0, new hudson.plugins.ansicolor.mock.logstash.pipeline.GlobalDecorator());
+        assertNlsOnRunningPipeline();
+    }
+
     @Issue("223")
     @Test
     public void willPrintAdditionalNlOnPipelineMavenPlugin() {
