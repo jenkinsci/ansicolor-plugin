@@ -2,6 +2,7 @@
 ============
 
 * [#219](https://github.com/jenkinsci/ansicolor-plugin/pull/219): Set env var TERM also if a default color map is used - [@tszmytka](https://github.com/tszmytka).
+* [#226](https://github.com/jenkinsci/ansicolor-plugin/pull/226): Work around withMaven step not passing on log line metadata - [@tszmytka](https://github.com/tszmytka).
 * [#225](https://github.com/jenkinsci/ansicolor-plugin/pull/225): Work around logstash-plugin hiding some log lines from ansicolor - [@tszmytka](https://github.com/tszmytka).
 * Your contribution here.
 

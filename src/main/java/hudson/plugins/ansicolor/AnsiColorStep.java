@@ -128,6 +128,7 @@ public class AnsiColorStep extends Step {
                 "timestamper.pipeline.GlobalDecorator",
                 "logstash.pipeline.GlobalDecorator",
             });
+            EXTENSIONS_NL.put(StepDescriptor.class, new String[]{"plugins.pipeline.maven"});
         }
 
         public AnsiColorExecution(String colorMapName) {

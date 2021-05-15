@@ -3,6 +3,7 @@ package hudson.plugins.ansicolor;
 import hudson.ExtensionList;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.plugins.ansicolor.mock.kubernetes.pipeline.SecretsMasker;
+import hudson.plugins.ansicolor.mock.plugins.pipeline.maven.WithMavenStep;
 import hudson.plugins.ansicolor.mock.timestamper.pipeline.GlobalDecorator;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
@@ -10,6 +11,7 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.log.TaskListenerDecorator;
 import org.jenkinsci.plugins.workflow.steps.DynamicContext;
+import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -178,6 +180,13 @@ public class AnsiColorStepTest {
         assertNlsOnRunningPipeline();
     }
 
+    @Issue("223")
+    @Test
+    public void willPrintAdditionalNlOnPipelineMavenPlugin() {
+        ExtensionList.lookup(StepDescriptor.class).add(0, new WithMavenStep.DescriptorImpl());
+        assertNlsOnRunningPipeline();
+    }
+
     @Issue("218")
     @Test
     public void canUseAndReportGlobalColorMapName() {
@@ -257,7 +266,7 @@ public class AnsiColorStepTest {
                 final String script = "ansiColor('xterm') {\n" +
                     "echo '\033[34mHello\033[0m \033[33mcolorful\033[0m \033[35mworld!\033[0m'" +
                     "}";
-                final WorkflowJob project = story.j.jenkins.createProject(WorkflowJob.class, "willPrintAdditionalNlOnKubernetesPlugin");
+                final WorkflowJob project = story.j.jenkins.createProject(WorkflowJob.class, "willPrintAdditionalNl");
                 project.setDefinition(new CpsFlowDefinition(script, true));
                 story.j.assertBuildStatusSuccess(project.scheduleBuild2(0));
                 StringWriter writer = new StringWriter();
