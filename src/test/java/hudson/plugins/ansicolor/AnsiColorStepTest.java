@@ -3,6 +3,7 @@ package hudson.plugins.ansicolor;
 import hudson.ExtensionList;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.plugins.ansicolor.mock.kubernetes.pipeline.SecretsMasker;
+import hudson.plugins.ansicolor.mock.plugins.pipeline.maven.WithMavenStep;
 import hudson.plugins.ansicolor.mock.timestamper.pipeline.GlobalDecorator;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
@@ -10,6 +11,7 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.log.TaskListenerDecorator;
 import org.jenkinsci.plugins.workflow.steps.DynamicContext;
+import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -159,6 +161,20 @@ public class AnsiColorStepTest {
     @Test
     public void willPrintAdditionalNlOnTimestamperPlugin() {
         ExtensionList.lookup(TaskListenerDecorator.Factory.class).add(0, new GlobalDecorator());
+        assertNlsOnRunningPipeline();
+    }
+
+    @Issue("222")
+    @Test
+    public void willPrintAdditionalNlOnLogstashPlugin() {
+        ExtensionList.lookup(TaskListenerDecorator.Factory.class).add(0, new hudson.plugins.ansicolor.mock.logstash.pipeline.GlobalDecorator());
+        assertNlsOnRunningPipeline();
+    }
+
+    @Issue("223")
+    @Test
+    public void willPrintAdditionalNlOnPipelineMavenPlugin() {
+        ExtensionList.lookup(StepDescriptor.class).add(0, new WithMavenStep.DescriptorImpl());
         assertNlsOnRunningPipeline();
     }
 
