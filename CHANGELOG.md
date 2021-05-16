@@ -1,11 +1,10 @@
-0.7.6 (Next)
+1.0.0 (05/16/2021)
 ============
 
 * [#219](https://github.com/jenkinsci/ansicolor-plugin/pull/219): Set env var TERM also if a default color map is used - [@tszmytka](https://github.com/tszmytka).
 * [#226](https://github.com/jenkinsci/ansicolor-plugin/pull/226): Work around withMaven step not passing on log line metadata - [@tszmytka](https://github.com/tszmytka).
 * [#225](https://github.com/jenkinsci/ansicolor-plugin/pull/225): Work around logstash-plugin hiding some log lines from ansicolor - [@tszmytka](https://github.com/tszmytka).
 * [#227](https://github.com/jenkinsci/ansicolor-plugin/pull/227): Trigger tailed log output colorization also after Jenkins restart - [@tszmytka](https://github.com/tszmytka).
-* Your contribution here.
 
 
 0.7.5 (01/31/2021)
