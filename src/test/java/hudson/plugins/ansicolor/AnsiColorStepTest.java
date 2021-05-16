@@ -15,7 +15,6 @@ import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.LoggerRule;
@@ -37,33 +36,29 @@ public class AnsiColorStepTest {
     @ClassRule
     public static BuildWatcher buildWatcher = new BuildWatcher();
     @Rule
-    public RestartableJenkinsRule story = new RestartableJenkinsRule();
+    public RestartableJenkinsRule jenkinsRule = new RestartableJenkinsRule();
     @Rule
     public LoggerRule logging = new LoggerRule().record(ColorConsoleAnnotator.class, Level.FINER);
 
     @Test
     public void testPipelineStep() {
-        story.addStep(new Statement() {
-
-            @Override
-            public void evaluate() throws Throwable {
-                WorkflowJob p = story.j.jenkins.createProject(WorkflowJob.class, "p");
-                p.setDefinition(new CpsFlowDefinition(
-                    "ansiColor('xterm') {\n"
-                        + "  echo 'The following word is supposed to be \\u001B[31mred\\u001B[0m'\n"
-                        + " echo \"TERM=${env.TERM}\""
-                        + "}"
-                    , true));
-                WorkflowRun run = story.j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-                StringWriter writer = new StringWriter();
-                assertTrue(p.getLastBuild().getLogText().writeHtmlTo(0L, writer) > 0);
-                String html = writer.toString();
-                story.j.assertLogContains("TERM=xterm", run);
-                assertTrue(
-                    "Failed to match color attribute in following HTML log output:\n" + html,
-                    html.replaceAll("<!--.+?-->", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*")
-                );
-            }
+        jenkinsRule.then(r -> {
+            WorkflowJob p = jenkinsRule.j.jenkins.createProject(WorkflowJob.class, "p");
+            p.setDefinition(new CpsFlowDefinition(
+                "ansiColor('xterm') {\n"
+                    + "  echo 'The following word is supposed to be \\u001B[31mred\\u001B[0m'\n"
+                    + " echo \"TERM=${env.TERM}\""
+                    + "}"
+                , true));
+            WorkflowRun run = jenkinsRule.j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+            StringWriter writer = new StringWriter();
+            assertTrue(p.getLastBuild().getLogText().writeHtmlTo(0L, writer) > 0);
+            String html = writer.toString();
+            jenkinsRule.j.assertLogContains("TERM=xterm", run);
+            assertTrue(
+                "Failed to match color attribute in following HTML log output:\n" + html,
+                html.replaceAll("<!--.+?-->", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*")
+            );
         });
     }
 
@@ -135,29 +130,25 @@ public class AnsiColorStepTest {
     @Issue("200")
     @Test
     public void canRenderLongOutputWhileBuildStillRunning() {
-        story.addStep(new Statement() {
-
-            @Override
-            public void evaluate() throws Throwable {
-                final String a1k = JenkinsTestSupport.repeat("a", 1024);
-                final String script = "ansiColor('xterm') {\n" +
-                    "for (i = 0; i < 1000; i++) {" +
-                    "echo '\033[32m" + a1k + "\033[0m'\n" +
-                    "}" +
-                    "}";
-                final WorkflowJob project = story.j.jenkins.createProject(WorkflowJob.class, "canRenderLongOutputWhileBuildStillRunning");
-                project.setDefinition(new CpsFlowDefinition(script, true));
-                QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);
-                assertNotNull(runFuture);
-                final WorkflowRun lastBuild = runFuture.waitForStart();
-                await().pollInterval(Duration.ofSeconds(5)).atMost(Duration.ofSeconds(150)).until(() -> {
-                    StringWriter writer = new StringWriter();
-                    final int skipInitialStartAction = 3000;
-                    assertTrue(lastBuild.getLogText().writeHtmlTo(skipInitialStartAction, writer) > 0);
-                    final String html = writer.toString().replaceAll("<!--.+?-->", "");
-                    return !runFuture.isDone() && html.contains("<span style=\"color: #00CD00;\">" + a1k + "</span>") && !html.contains("\033[32m");
-                });
-            }
+        jenkinsRule.then(r -> {
+            final String a1k = JenkinsTestSupport.repeat("a", 1024);
+            final String script = "ansiColor('xterm') {\n" +
+                "for (i = 0; i < 1000; i++) {" +
+                "echo '\033[32m" + a1k + "\033[0m'\n" +
+                "}" +
+                "}";
+            final WorkflowJob project = jenkinsRule.j.jenkins.createProject(WorkflowJob.class, "canRenderLongOutputWhileBuildStillRunning");
+            project.setDefinition(new CpsFlowDefinition(script, true));
+            QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);
+            assertNotNull(runFuture);
+            final WorkflowRun lastBuild = runFuture.waitForStart();
+            await().pollInterval(Duration.ofSeconds(5)).atMost(Duration.ofSeconds(150)).until(() -> {
+                StringWriter writer = new StringWriter();
+                final int skipInitialStartAction = 3000;
+                assertTrue(lastBuild.getLogText().writeHtmlTo(skipInitialStartAction, writer) > 0);
+                final String html = writer.toString().replaceAll("<!--.+?-->", "");
+                return !runFuture.isDone() && html.contains("<span style=\"color: #00CD00;\">" + a1k + "</span>") && !html.contains("\033[32m");
+            });
         });
     }
 
@@ -203,21 +194,17 @@ public class AnsiColorStepTest {
             "\033[33mYellow words, white background.",
             "TERM=null"
         );
-        story.addStep(new Statement() {
+        jenkinsRule.then(r -> {
+            Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).setGlobalColorMapName(globalColorMapName);
 
-            @Override
-            public void evaluate() throws Throwable {
-                Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).setGlobalColorMapName(globalColorMapName);
-
-                final WorkflowJob project = story.j.jenkins.createProject(WorkflowJob.class, "p");
-                project.setDefinition(new CpsFlowDefinition(script, true));
-                story.j.assertBuildStatusSuccess(project.scheduleBuild2(0));
-                StringWriter writer = new StringWriter();
-                assertTrue(project.getLastBuild().getLogText().writeHtmlTo(0, writer) > 0);
-                final String html = writer.toString().replaceAll("<!--.+?-->", "");
-                assertThat(html).contains(expectedOutput);
-                assertThat(html).doesNotContain(notExpectedOutput);
-            }
+            final WorkflowJob project = jenkinsRule.j.jenkins.createProject(WorkflowJob.class, "p");
+            project.setDefinition(new CpsFlowDefinition(script, true));
+            jenkinsRule.j.assertBuildStatusSuccess(project.scheduleBuild2(0));
+            StringWriter writer = new StringWriter();
+            assertTrue(project.getLastBuild().getLogText().writeHtmlTo(0, writer) > 0);
+            final String html = writer.toString().replaceAll("<!--.+?-->", "");
+            assertThat(html).contains(expectedOutput);
+            assertThat(html).doesNotContain(notExpectedOutput);
         });
     }
 
@@ -242,42 +229,34 @@ public class AnsiColorStepTest {
     }
 
     private void assertOutputOnRunningPipeline(Collection<String> expectedOutput, Collection<String> notExpectedOutput, String pipelineScript) {
-        story.addStep(new Statement() {
-
-            @Override
-            public void evaluate() throws Throwable {
-                final WorkflowJob project = story.j.jenkins.createProject(WorkflowJob.class, "p");
-                project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
-                story.j.assertBuildStatusSuccess(project.scheduleBuild2(0));
-                StringWriter writer = new StringWriter();
-                assertTrue(project.getLastBuild().getLogText().writeHtmlTo(0, writer) > 0);
-                final String html = writer.toString().replaceAll("<!--.+?-->", "");
-                assertThat(html).contains(expectedOutput);
-                assertThat(html).doesNotContain(notExpectedOutput);
-            }
+        jenkinsRule.then(r -> {
+            final WorkflowJob project = jenkinsRule.j.jenkins.createProject(WorkflowJob.class, "p");
+            project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
+            jenkinsRule.j.assertBuildStatusSuccess(project.scheduleBuild2(0));
+            StringWriter writer = new StringWriter();
+            assertTrue(project.getLastBuild().getLogText().writeHtmlTo(0, writer) > 0);
+            final String html = writer.toString().replaceAll("<!--.+?-->", "");
+            assertThat(html).contains(expectedOutput);
+            assertThat(html).doesNotContain(notExpectedOutput);
         });
     }
 
     private void assertNlsOnRunningPipeline() {
-        story.addStep(new Statement() {
-
-            @Override
-            public void evaluate() throws Throwable {
-                final String script = "ansiColor('xterm') {\n" +
-                    "echo '\033[34mHello\033[0m \033[33mcolorful\033[0m \033[35mworld!\033[0m'" +
-                    "}";
-                final WorkflowJob project = story.j.jenkins.createProject(WorkflowJob.class, "willPrintAdditionalNl");
-                project.setDefinition(new CpsFlowDefinition(script, true));
-                story.j.assertBuildStatusSuccess(project.scheduleBuild2(0));
-                StringWriter writer = new StringWriter();
-                assertTrue(project.getLastBuild().getLogText().writeHtmlTo(0, writer) > 0);
-                final String html = writer.toString().replaceAll("<!--.+?-->", "")
-                    .replaceAll("</span>", "")
-                    .replaceAll("<span.+?>", "")
-                    .replaceAll("<div.+?/div>", "");
-                final String nl = System.lineSeparator();
-                assertThat(html).contains("ansiColor" + nl + "[Pipeline] {" + nl + nl).contains("[Pipeline] }" + nl + nl + "[Pipeline] // ansiColor");
-            }
+        jenkinsRule.then(r -> {
+            final String script = "ansiColor('xterm') {\n" +
+                "echo '\033[34mHello\033[0m \033[33mcolorful\033[0m \033[35mworld!\033[0m'" +
+                "}";
+            final WorkflowJob project = jenkinsRule.j.jenkins.createProject(WorkflowJob.class, "willPrintAdditionalNlOnKubernetesPlugin");
+            project.setDefinition(new CpsFlowDefinition(script, true));
+            jenkinsRule.j.assertBuildStatusSuccess(project.scheduleBuild2(0));
+            StringWriter writer = new StringWriter();
+            assertTrue(project.getLastBuild().getLogText().writeHtmlTo(0, writer) > 0);
+            final String html = writer.toString().replaceAll("<!--.+?-->", "")
+                .replaceAll("</span>", "")
+                .replaceAll("<span.+?>", "")
+                .replaceAll("<div.+?/div>", "");
+            final String nl = System.lineSeparator();
+            assertThat(html).contains("ansiColor" + nl + "[Pipeline] {" + nl + nl).contains("[Pipeline] }" + nl + nl + "[Pipeline] // ansiColor");
         });
     }
 }

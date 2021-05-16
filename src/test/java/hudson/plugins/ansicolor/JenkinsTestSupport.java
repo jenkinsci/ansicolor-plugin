@@ -5,7 +5,6 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Assume;
 import org.junit.Rule;
-import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
 import java.io.File;
@@ -21,11 +20,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class JenkinsTestSupport {
-    @Rule
-    public RestartableJenkinsRule jenkinsRule = new RestartableJenkinsRule();
     private static final int CONSOLE_TAIL_DEFAULT = 150;
 
-    protected void assertOutputOnRunningPipeline(BooleanSupplier assumption, String expectedOutput, String notExpectedOutput, String pipelineScript, boolean useShortLog, Map<String, String> properties) {
+    @Rule
+    public RestartableJenkinsRule jenkinsRule = new RestartableJenkinsRule();
+
+    protected void assertOutputOnRunningPipeline(
+        BooleanSupplier assumption,
+        String expectedOutput,
+        String notExpectedOutput,
+        String pipelineScript,
+        boolean useShortLog,
+        Map<String, String> properties
+    ) {
         assertOutputOnRunningPipeline(assumption, Collections.singletonList(expectedOutput), Collections.singletonList(notExpectedOutput), pipelineScript, useShortLog, properties);
     }
 
@@ -45,24 +52,20 @@ public class JenkinsTestSupport {
         boolean useShortLog,
         Map<String, String> properties
     ) {
-        jenkinsRule.addStep(new Statement() {
-
-            @Override
-            public void evaluate() throws Throwable {
-                Assume.assumeTrue(assumption.getAsBoolean());
-                properties.forEach(System::setProperty);
-                final WorkflowJob project = jenkinsRule.j.jenkins.createProject(WorkflowJob.class, "test-project-" + JenkinsTestSupport.this.getClass().getSimpleName());
-                project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
-                jenkinsRule.j.assertBuildStatusSuccess(project.scheduleBuild2(0));
-                StringWriter writer = new StringWriter();
-                final WorkflowRun lastBuild = project.getLastBuild();
-                final long start = useShortLog ? new File(lastBuild.getRootDir(), "log").length() - CONSOLE_TAIL_DEFAULT * 1024 : 0;
-                assertTrue(lastBuild.getLogText().writeHtmlTo(start, writer) > 0);
-                properties.keySet().forEach(System::clearProperty);
-                final String html = writer.toString().replaceAll("<!--.+?-->", "");
-                assertThat(html).contains(expectedOutput);
-                assertThat(html).doesNotContain(notExpectedOutput);
-            }
+        jenkinsRule.then(r -> {
+            Assume.assumeTrue(assumption.getAsBoolean());
+            properties.forEach(System::setProperty);
+            final WorkflowJob project = jenkinsRule.j.jenkins.createProject(WorkflowJob.class, "test-project-" + JenkinsTestSupport.this.getClass().getSimpleName());
+            project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
+            jenkinsRule.j.assertBuildStatusSuccess(project.scheduleBuild2(0));
+            StringWriter writer = new StringWriter();
+            final WorkflowRun lastBuild = project.getLastBuild();
+            final long start = useShortLog ? new File(lastBuild.getRootDir(), "log").length() - CONSOLE_TAIL_DEFAULT * 1024 : 0;
+            assertTrue(lastBuild.getLogText().writeHtmlTo(start, writer) > 0);
+            properties.keySet().forEach(System::clearProperty);
+            final String html = writer.toString().replaceAll("<!--.+?-->", "");
+            assertThat(html).contains(expectedOutput);
+            assertThat(html).doesNotContain(notExpectedOutput);
         });
     }
 

@@ -10,7 +10,6 @@ import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.junit.*;
 import org.junit.runner.RunWith;
-import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.*;
 import org.kohsuke.stapler.StaplerRequest;
 import org.mockito.Mock;
@@ -34,6 +33,9 @@ import static org.mockito.Mockito.when;
 public class AnsiColorBuildWrapperTest {
     private static final String ESC = "\033";
     private static final String CLR = ESC + "[2K";
+
+    @ClassRule
+    public static BuildWatcher buildWatcher = new BuildWatcher();
 
     @SuppressWarnings("unused")
     private enum CSI {
@@ -65,6 +67,12 @@ public class AnsiColorBuildWrapperTest {
         }
     }
 
+    @Rule
+    public RestartableJenkinsRule jenkinsRule = new RestartableJenkinsRule();
+
+    @Rule
+    public LoggerRule logging = new LoggerRule().recordPackage(ConsoleNote.class, Level.FINE).record(ColorConsoleAnnotator.class, Level.FINER);
+
     @Test
     public void testGetColorMapNameNull() {
         AnsiColorBuildWrapper instance = new AnsiColorBuildWrapper(null);
@@ -83,16 +91,9 @@ public class AnsiColorBuildWrapperTest {
         assertThat(ansiColorBuildWrapper, instanceOf(AnsiColorBuildWrapper.class));
     }
 
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
-    @Rule
-    public RestartableJenkinsRule story = new RestartableJenkinsRule();
-    @Rule
-    public LoggerRule logging = new LoggerRule().recordPackage(ConsoleNote.class, Level.FINE).record(ColorConsoleAnnotator.class, Level.FINER);
-
     @Test
     public void maven() {
-        story.then(r -> {
+        jenkinsRule.then(r -> {
             FreeStyleProject p = r.createFreeStyleProject();
             p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
             p.getBuildersList().add(new TestBuilder() {
@@ -130,7 +131,7 @@ public class AnsiColorBuildWrapperTest {
 
     @Test
     public void testMultilineEscapeSequence() {
-        story.then(r -> {
+        jenkinsRule.then(r -> {
             FreeStyleProject p = r.createFreeStyleProject();
             p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
             p.getBuildersList().add(new TestBuilder() {
@@ -161,7 +162,7 @@ public class AnsiColorBuildWrapperTest {
 
     @Test
     public void testDefaultForegroundBackground() {
-        story.then(r -> {
+        jenkinsRule.then(r -> {
             FreeStyleProject p = r.createFreeStyleProject();
             // The VGA ColorMap sets default foreground and background colors.
             p.getBuildWrappersList().add(new AnsiColorBuildWrapper("vga"));
@@ -196,38 +197,34 @@ public class AnsiColorBuildWrapperTest {
     @Issue("JENKINS-54133")
     @Test
     public void testWorkflowWrap() {
-        story.addStep(new Statement() {
-
-            @Override
-            public void evaluate() throws Throwable {
-                Assume.assumeTrue(!Functions.isWindows());
-                story.j.createSlave();
-                WorkflowJob p = story.j.jenkins.createProject(WorkflowJob.class, "p");
-                p.setDefinition(new CpsFlowDefinition(
-                    "node('!master') {\n"
-                        + "  wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {\n"
-                        + "    sh(\"\"\"#!/bin/bash\n"
-                        + "      printf 'The following word is supposed to be \\\\e[31mred\\\\e[0m\\\\n'\"\"\"\n"
-                        + "    )\n"
-                        + "  }\n"
-                        + "}"
-                    , false
-                ));
-                story.j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-                StringWriter writer = new StringWriter();
-                assertTrue(p.getLastBuild().getLogText().writeHtmlTo(0L, writer) > 0);
-                String html = writer.toString();
-                assertTrue(
-                    "Failed to match color attribute in following HTML log output:\n" + html,
-                    html.replaceAll("<!--.+?-->", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*")
-                );
-            }
+        jenkinsRule.then(r -> {
+            Assume.assumeTrue(!Functions.isWindows());
+            jenkinsRule.j.createSlave();
+            WorkflowJob p = jenkinsRule.j.jenkins.createProject(WorkflowJob.class, "p");
+            p.setDefinition(new CpsFlowDefinition(
+                "node('!master') {\n"
+                    + "  wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {\n"
+                    + "    sh(\"\"\"#!/bin/bash\n"
+                    + "      printf 'The following word is supposed to be \\\\e[31mred\\\\e[0m\\\\n'\"\"\"\n"
+                    + "    )\n"
+                    + "  }\n"
+                    + "}"
+                , false
+            ));
+            jenkinsRule.j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+            StringWriter writer = new StringWriter();
+            assertTrue(p.getLastBuild().getLogText().writeHtmlTo(0L, writer) > 0);
+            String html = writer.toString();
+            assertTrue(
+                "Failed to match color attribute in following HTML log output:\n" + html,
+                html.replaceAll("<!--.+?-->", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*")
+            );
         });
     }
 
     @Test
     public void testNonAscii() {
-        story.then(r -> {
+        jenkinsRule.then(r -> {
             FreeStyleProject p = r.createFreeStyleProject();
             p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
             p.getBuildersList().add(new TestBuilder() {
@@ -258,7 +255,7 @@ public class AnsiColorBuildWrapperTest {
     @Issue("JENKINS-55139")
     @Test
     public void testTerraform() {
-        story.then(r -> {
+        jenkinsRule.then(r -> {
             FreeStyleProject p = r.createFreeStyleProject();
             p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
             p.getBuildersList().add(new TestBuilder() {
@@ -291,7 +288,7 @@ public class AnsiColorBuildWrapperTest {
     @Issue("JENKINS-55139")
     @Test
     public void testRedundantResets() {
-        story.then(r -> {
+        jenkinsRule.then(r -> {
             FreeStyleProject p = r.createFreeStyleProject();
             p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
             p.getBuildersList().add(new TestBuilder() {
@@ -480,7 +477,7 @@ public class AnsiColorBuildWrapperTest {
     }
 
     private void assertCorrectOutput(Collection<String> expectedOutput, Collection<String> notExpectedOutput, Consumer<PrintStream> inputProvider) {
-        story.then(r -> {
+        jenkinsRule.then(r -> {
             final String html = runBuildWithPlugin(r, inputProvider).replaceAll("<!--.+?-->", "");
             expectedOutput.forEach(s -> assertThat(html, containsString(s)));
             notExpectedOutput.forEach(s -> assertThat("Test failed for sequence: " + s.replace(ESC, "ESC"), html, not(containsString(s))));

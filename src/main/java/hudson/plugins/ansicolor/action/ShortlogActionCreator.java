@@ -3,10 +3,12 @@ package hudson.plugins.ansicolor.action;
 import hudson.Extension;
 import hudson.console.ConsoleNote;
 import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 
+import javax.annotation.Nonnull;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,8 +35,8 @@ public class ShortlogActionCreator {
         this.eol = eol.getBytes(UTF_8);
     }
 
-    public ColorizedAction createActionForShortlog(File logFile, Map<String, ColorizedAction> actions, int shortlogLimit, boolean keepLinesWhole) {
-        final ActionContext lastAction = findLastActionBefore(logFile, actions.keySet(), shortlogLimit, keepLinesWhole);
+    public ColorizedAction createActionForShortlog(File logFile, Map<String, ColorizedAction> actions, int shortlogLimit, boolean keepLinesWhole, long reservedBytes) {
+        final ActionContext lastAction = findLastActionBefore(logFile, actions.keySet(), shortlogLimit, keepLinesWhole, reservedBytes);
         if (!lastAction.isEmpty()) {
             final ColorizedAction colorizedAction = actions.get(lastAction.serializedAction);
             if (ColorizedAction.Command.START.equals(colorizedAction.getCommand())) {
@@ -44,9 +46,9 @@ public class ShortlogActionCreator {
         return null;
     }
 
-    private ActionContext findLastActionBefore(File logFile, Collection<String> serializedActions, int shortlogLimit, boolean keepLinesWhole) {
+    private ActionContext findLastActionBefore(File logFile, Collection<String> serializedActions, int shortlogLimit, boolean keepLinesWhole, long reservedBytes) {
         try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(logFile))) {
-            final long shortlogStart = logFile.length() - shortlogLimit * 1024L;
+            final long shortlogStart = logFile.length() + reservedBytes - shortlogLimit * 1024L;
             if (shortlogStart > 0) {
                 final byte[] buf = new byte[BUFFER_SIZE];
                 int read;
@@ -110,9 +112,10 @@ public class ShortlogActionCreator {
 
     @Extension
     public static class Listener extends RunListener<Run<?, ?>> {
+
         @Override
-        public void onFinalized(Run<?, ?> run) {
-            super.onFinalized(run);
+        public void onCompleted(Run<?, ?> run, @Nonnull TaskListener listener) {
+            super.onCompleted(run, listener);
             final List<ColorizedAction.Command> commands = Arrays.asList(ColorizedAction.Command.START, ColorizedAction.Command.STOP);
             final Map<String, ColorizedAction> actions = run.getActions(ColorizedAction.class).stream()
                 .filter(a -> commands.contains(a.getCommand()))
@@ -127,16 +130,20 @@ public class ShortlogActionCreator {
             if (!actions.isEmpty()) {
                 final File logFile = new File(run.getRootDir(), "log");
                 if (logFile.isFile()) {
-                    final ShortlogActionCreator shortlogActionCreator = new ShortlogActionCreator(new LineIdentifier(), System.lineSeparator());
+                    final String nl = System.lineSeparator();
+                    final ShortlogActionCreator shortlogActionCreator = new ShortlogActionCreator(new LineIdentifier(), nl);
                     final String consoleTail = System.getProperty("hudson.consoleTailKB");
                     final boolean keepLinesWhole = Optional.ofNullable(System.getProperty(PROP_LINES_WHOLE))
                         .map(Boolean::parseBoolean)
                         .orElseGet(() -> Optional.ofNullable(Jenkins.getVersion()).orElse(LINES_WHOLE_SINCE_VERSION).isNewerThan(LINES_WHOLE_SINCE_VERSION));
+                    // ensure all log entries are in log file
+                    listener.getLogger().flush();
                     final ColorizedAction action = shortlogActionCreator.createActionForShortlog(
                         logFile,
                         actions,
                         consoleTail != null ? Integer.parseInt(consoleTail) : CONSOLE_TAIL_DEFAULT,
-                        keepLinesWhole
+                        keepLinesWhole,
+                        Optional.ofNullable(run.getResult()).map(r -> 10 + r.toString().length() + nl.getBytes(UTF_8).length).orElse(0) // "Finished: " + result + new line
                     );
                     if (action != null) {
                         run.addAction(action);

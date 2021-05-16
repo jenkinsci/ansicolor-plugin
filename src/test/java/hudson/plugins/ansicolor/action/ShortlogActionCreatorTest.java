@@ -1,6 +1,7 @@
 package hudson.plugins.ansicolor.action;
 
 import hudson.console.ConsoleNote;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.File;
+import java.net.URL;
 import java.util.HashMap;
 
 import static org.junit.Assert.*;
@@ -66,14 +68,16 @@ public class ShortlogActionCreatorTest {
         final String serializedNote = "<mock-serialized-note-start>";
         when(lineIdentifier.hash(eq(shortlogLine), eq(1L))).thenReturn(lineHash);
 
-        final File file = new File(getClass().getResource(String.join("/", "", getClass().getName().replace('.', '/'), logFile)).getFile());
+        final URL inputFile = getClass().getResource(String.join("/", "", getClass().getName().replace('.', '/'), logFile));
+        Assume.assumeNotNull(inputFile);
+        final File file = new File(inputFile.getFile());
         final HashMap<String, ColorizedAction> startActions = new HashMap<>();
         startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-start0>", new ColorizedAction("css", ColorizedAction.Command.START));
         startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-stop0>", new ColorizedAction("css", ColorizedAction.Command.STOP));
         startActions.put(ConsoleNote.PREAMBLE_STR + serializedNote, colorizedAction);
         startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-stop>", new ColorizedAction("xterm", ColorizedAction.Command.STOP));
         startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-start1>", new ColorizedAction("gnome-terminal", ColorizedAction.Command.START));
-        final ColorizedAction shortlogAction = shortlogActionCreator.createActionForShortlog(file, startActions, 3, keepLinesWhole);
+        final ColorizedAction shortlogAction = shortlogActionCreator.createActionForShortlog(file, startActions, 3, keepLinesWhole, 0);
         assertEquals(colorizedAction.getColorMapName(), shortlogAction.getColorMapName());
         assertEquals(colorizedAction.getCommand(), shortlogAction.getCommand());
         assertNotEquals(colorizedAction.getId(), shortlogAction.getId());
@@ -86,11 +90,13 @@ public class ShortlogActionCreatorTest {
         for (boolean keepLinesWhole : keepLinesWholeOptions) {
             final String serializedNote = "<mock-serialized-note-start>";
             final ColorizedAction colorizedAction = new ColorizedAction("xterm", ColorizedAction.Command.START);
-            final File file = new File(getClass().getResource(String.join("/", "", getClass().getName().replace('.', '/'), "testlog.log")).getFile());
+            final URL inputFile = getClass().getResource(String.join("/", "", getClass().getName().replace('.', '/'), "testlog.log"));
+            Assume.assumeNotNull(inputFile);
+            final File file = new File(inputFile.getFile());
             final HashMap<String, ColorizedAction> startActions = new HashMap<>();
             startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-start0>", new ColorizedAction("css", ColorizedAction.Command.START));
             startActions.put(ConsoleNote.PREAMBLE_STR + serializedNote, colorizedAction);
-            assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 256, keepLinesWhole));
+            assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 256, keepLinesWhole, 0));
             verify(lineIdentifier, never()).hash(anyString(), anyLong());
         }
     }
@@ -99,8 +105,10 @@ public class ShortlogActionCreatorTest {
     public void wontCreateActionIfBuildHasNoStartActions() {
         final boolean[] keepLinesWholeOptions = {true, false};
         for (boolean keepLinesWhole : keepLinesWholeOptions) {
-            final File file = new File(getClass().getResource(String.join("/", "", getClass().getName().replace('.', '/'), "testlog.log")).getFile());
-            assertNull(shortlogActionCreator.createActionForShortlog(file, new HashMap<>(), 3, keepLinesWhole));
+            final URL inputFile = getClass().getResource(String.join("/", "", getClass().getName().replace('.', '/'), "testlog.log"));
+            Assume.assumeNotNull(inputFile);
+            final File file = new File(inputFile.getFile());
+            assertNull(shortlogActionCreator.createActionForShortlog(file, new HashMap<>(), 3, keepLinesWhole, 0));
             verify(lineIdentifier, never()).hash(anyString(), anyLong());
         }
     }
@@ -112,8 +120,10 @@ public class ShortlogActionCreatorTest {
             final HashMap<String, ColorizedAction> startActions = new HashMap<>();
             startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-start0>", new ColorizedAction("css", ColorizedAction.Command.START));
             startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-stop0>", new ColorizedAction("css", ColorizedAction.Command.STOP));
-            final File file = new File(getClass().getResource(String.join("/", "", getClass().getName().replace('.', '/'), "testlog-no-notes.log")).getFile());
-            assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 3, keepLinesWhole));
+            final URL inputFile = getClass().getResource(String.join("/", "", getClass().getName().replace('.', '/'), "testlog-no-notes.log"));
+            Assume.assumeNotNull(inputFile);
+            final File file = new File(inputFile.getFile());
+            assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 3, keepLinesWhole, 0));
             verify(lineIdentifier, never()).hash(anyString(), anyLong());
         }
     }
@@ -125,7 +135,7 @@ public class ShortlogActionCreatorTest {
             final HashMap<String, ColorizedAction> startActions = new HashMap<>();
             startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-start0>", new ColorizedAction("css", ColorizedAction.Command.START));
             final File file = new File("non-existing.log");
-            assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 3, keepLinesWhole));
+            assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 3, keepLinesWhole, 0));
             verify(lineIdentifier, never()).hash(anyString(), anyLong());
         }
     }
@@ -134,12 +144,14 @@ public class ShortlogActionCreatorTest {
     public void wontCreateActionIfActionIsNotActiveAtShortlogLimit() {
         final boolean[] keepLinesWholeOptions = {true, false};
         for (boolean keepLinesWhole : keepLinesWholeOptions) {
-            final File file = new File(getClass().getResource(String.join("/", "", getClass().getName().replace('.', '/'), "testlog-action-not-active.log")).getFile());
+            final URL inputFile = getClass().getResource(String.join("/", "", getClass().getName().replace('.', '/'), "testlog-action-not-active.log"));
+            Assume.assumeNotNull(inputFile);
+            final File file = new File(inputFile.getFile());
             final HashMap<String, ColorizedAction> startActions = new HashMap<>();
             startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-start>", new ColorizedAction("css", ColorizedAction.Command.START));
             startActions.put(ConsoleNote.PREAMBLE_STR + "<mock-serialized-note-stop>", new ColorizedAction("css", ColorizedAction.Command.STOP));
 
-            assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 3, keepLinesWhole));
+            assertNull(shortlogActionCreator.createActionForShortlog(file, startActions, 3, keepLinesWhole, 0));
             verify(lineIdentifier, never()).hash(anyString(), anyLong());
         }
     }
