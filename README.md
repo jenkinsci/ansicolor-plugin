@@ -170,4 +170,4 @@ It uses [JANSI](https://github.com/fusesource/jansi/) (Apache 2.0 License).
 
 # Contributing
 
-See [CONTRIBUTING](CONTRIBUTING.md).
+See [CONTRIBUTING](.github/CONTRIBUTING.md).
