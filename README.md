@@ -76,7 +76,7 @@ ansiColor('xterm') {
 
 ## In a traditional job
 
-Traditional, Jenkins UI defined jobs can also take advantage of `ansicolor` by enabling under "Build Environment" settings.
+Traditional, Jenkins UI defined jobs, can also take advantage of `ansicolor` by enabling it under "Build Environment" settings.
 
 ![enable](images/ansicolor-enable.png "Enable AnsiColor")
 
