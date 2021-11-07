@@ -35,6 +35,10 @@ public class AnsiColorStep extends Step {
             Optional.ofNullable(Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getGlobalColorMapName()).orElse(AnsiColorMap.DefaultName));
     }
 
+    public String getColorMapName() {
+        return colorMapName;
+    }
+
     private static DescriptorImpl getWrapperDescriptor() {
         return Jenkins.get().getDescriptorByType(DescriptorImpl.class);
     }
