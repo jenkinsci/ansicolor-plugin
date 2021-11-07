@@ -228,6 +228,14 @@ public class AnsiColorStepTest {
         );
     }
 
+    @Issue("JENKINS-66684")
+    @Test
+    public void canGetConstructorParametersForSnippetGenerator() {
+        final String colorMapName = AnsiColorMap.VGA.getName();
+        final AnsiColorStep step = new AnsiColorStep(colorMapName);
+        assertThat(step.getColorMapName()).isEqualTo(colorMapName);
+    }
+
     private void assertOutputOnRunningPipeline(Collection<String> expectedOutput, Collection<String> notExpectedOutput, String pipelineScript) {
         jenkinsRule.then(r -> {
             final WorkflowJob project = jenkinsRule.j.jenkins.createProject(WorkflowJob.class, "p");
