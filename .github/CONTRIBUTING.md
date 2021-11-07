@@ -49,7 +49,7 @@ Document any external behavior in the [README](README.md).
 
 #### Update Changelog
 
-Add a line to [CHANGELOG](CHANGELOG.md) under *Next Release*. Make it look like every other line, including your name and link to your Github account.
+Add a line to [CHANGELOG](../CHANGELOG.md) under *Next Release*. Make it look like every other line, including your name and link to your Github account.
 
 #### Commit Changes
 
@@ -89,7 +89,7 @@ git push origin my-feature-branch -f
 
 #### Update CHANGELOG Again
 
-Update the [CHANGELOG](CHANGELOG.md) with the pull request number. A typical entry looks as follows.
+Update the [CHANGELOG](../CHANGELOG.md) with the pull request number. A typical entry looks as follows.
 
 ```
 * [#123](https://github.com/jenkinsci/ansicolor-plugin/pull/123): Reticulated splines - [@contributor](https://github.com/contributor).
