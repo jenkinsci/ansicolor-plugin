@@ -1,8 +1,7 @@
-1.0.1 (Next)
+1.0.1 (11/08/2021)
 ============
 
 * [JENKINS-66684](https://issues.jenkins.io/browse/JENKINS-66684) Pipeline syntax snippet generator fails with ansicolor plugin 1.0.0 - [@tszmytka](https://github.com/tszmytka).
-* Your contribution here.
 
 
 1.0.0 (05/16/2021)
