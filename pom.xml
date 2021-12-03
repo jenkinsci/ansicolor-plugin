@@ -70,6 +70,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-job</artifactId>
+      <version>2.42</version> <!-- TODO https://github.com/jenkinsci/bom/pull/687 -->
       <scope>test</scope>
     </dependency>
     <dependency>
