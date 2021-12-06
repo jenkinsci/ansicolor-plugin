@@ -45,12 +45,11 @@ public class ShortlogActionCreatorIntegrationTest extends JenkinsTestSupport {
         assertOutputOnRunningPipeline(wholeLinesJenkins, "<span style=\"color: #00CD00;\">" + AS_1K + "</span>", "\033", script, true, properties);
     }
 
-    @Ignore("TODO output corrupt for some reason")
     @Test
     public void canAnnotateLongLogOutputInShortlogMultipleStepsLinesWholeFalse() {
         final String script = "echo '\033[32mBeginning\033[0m'\n" +
             "ansiColor('vga') {\n" +
-            repeat("    echo '\033[32m" + AS_1K + "\033[0m'\n", 10) +
+            repeat("    echo '\033[32m" + AS_1K + "\033[0m'\n", 11) +
             "}\n" +
             "ansiColor('xterm') {\n" +
             repeat("    echo '\033[32m" + BS_1K + "\033[0m'\n", 30) +
