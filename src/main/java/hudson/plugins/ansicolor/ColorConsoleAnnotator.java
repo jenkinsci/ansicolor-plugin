@@ -39,8 +39,8 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -65,7 +65,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
     @CheckForNull
     private String colorMapName;
 
-    @Nonnull
+    @NonNull
     private List<AnsiAttributeElement> openTags = Collections.emptyList();
 
     private long lineNo;
@@ -77,7 +77,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
     }
 
     @Override
-    public ConsoleAnnotator<Object> annotate(@Nonnull Object context, @Nonnull MarkupText text) {
+    public ConsoleAnnotator<Object> annotate(@NonNull Object context, @NonNull MarkupText text) {
         lineNo++;
         Run<?, ?> run = runOf(context);
         if (run == null) {
@@ -116,7 +116,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
                 int lastPoint = -1; // multiple HTML tags may be emitted for one control sequence
 
                 @Override
-                public void emitHtml(@Nonnull String html) {
+                public void emitHtml(@NonNull String html) {
                     final int inCount = getIncomingCount();
                     LOGGER.log(Level.FINEST, "emitting {0} @{1}/{2}", new Object[]{html, inCount, s.length()});
                     text.addMarkup(inCount, html);

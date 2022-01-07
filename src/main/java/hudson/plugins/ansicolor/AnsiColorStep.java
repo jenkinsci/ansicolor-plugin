@@ -13,7 +13,7 @@ import org.jenkinsci.plugins.workflow.log.TaskListenerDecorator;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -85,7 +85,7 @@ public class AnsiColorStep extends Step {
     @Extension(optional = true)
     public static class StepDescriptorImpl extends StepDescriptor {
 
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.DisplayName();

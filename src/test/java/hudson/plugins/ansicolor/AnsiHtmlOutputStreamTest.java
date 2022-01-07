@@ -26,7 +26,7 @@ package hudson.plugins.ansicolor;
 import hudson.console.ConsoleNote;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -616,7 +616,7 @@ public class AnsiHtmlOutputStreamTest {
     private String annotate(String text, AnsiColorMap colorMap) throws IOException {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         AnsiHtmlOutputStream ansi = new AnsiHtmlOutputStream(bos, colorMap, new AnsiAttributeElement.Emitter() {
-            public void emitHtml(@Nonnull String html) {
+            public void emitHtml(@NonNull String html) {
                 try {
                     bos.write(html.getBytes(UTF_8));
                 } catch (IOException e) {
