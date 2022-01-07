@@ -8,7 +8,7 @@ import hudson.model.listeners.RunListener;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -114,7 +114,7 @@ public class ShortlogActionCreator {
     public static class Listener extends RunListener<Run<?, ?>> {
 
         @Override
-        public void onCompleted(Run<?, ?> run, @Nonnull TaskListener listener) {
+        public void onCompleted(Run<?, ?> run, @NonNull TaskListener listener) {
             super.onCompleted(run, listener);
             final List<ColorizedAction.Command> commands = Arrays.asList(ColorizedAction.Command.START, ColorizedAction.Command.STOP);
             final Map<String, ColorizedAction> actions = run.getActions(ColorizedAction.class).stream()

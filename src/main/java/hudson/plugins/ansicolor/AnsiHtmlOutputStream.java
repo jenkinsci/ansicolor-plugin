@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Filters an output stream of ANSI escape sequences and emits appropriate HTML elements instead.
@@ -73,7 +73,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
      * underlying stream.
      */
     /*package*/ AnsiHtmlOutputStream(final OutputStream os, final AnsiColorMap colorMap,
-        final AnsiAttributeElement.Emitter emitter, @Nonnull List<AnsiAttributeElement> tagsToOpen) {
+        final AnsiAttributeElement.Emitter emitter, @NonNull List<AnsiAttributeElement> tagsToOpen) {
         super(os);
         this.logOutput = os;
         this.colorMap = colorMap;

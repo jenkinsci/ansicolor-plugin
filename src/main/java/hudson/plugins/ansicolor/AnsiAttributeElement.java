@@ -1,6 +1,6 @@
 package hudson.plugins.ansicolor;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Serializable;
 
 /**
@@ -25,7 +25,7 @@ class AnsiAttributeElement implements Serializable {
     String attributes;
 
     public interface Emitter {
-        void emitHtml(@Nonnull String html);
+        void emitHtml(@NonNull String html);
 
         /**
          * Emit invisible ANSI sequence
