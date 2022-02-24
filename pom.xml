@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.30</version>
+    <version>4.34</version>
     <relativePath />
   </parent>
 
@@ -15,7 +15,7 @@
 
   <name>AnsiColor</name>
   <description>Adds ANSI coloring to the Console Output</description>
-  <url>https://github.com/jenkinsci/ansicolor-plugin</url>
+  <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
   <licenses>
     <license>
       <name>The MIT License</name>
@@ -38,9 +38,9 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-    <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+    <connection>scm:git:git://github.com/${gitHubRepo}.git</connection>
+    <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
+    <url>https://github.com/${gitHubRepo}</url>
     <tag>${scmTag}</tag>
   </scm>
 
@@ -49,6 +49,7 @@
     <changelist>-SNAPSHOT</changelist>
     <jenkins.version>2.289.3</jenkins.version>
     <java.level>8</java.level>
+    <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
   </properties>
 
   <dependencies>
@@ -70,7 +71,6 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-job</artifactId>
-      <version>2.42</version> <!-- TODO https://github.com/jenkinsci/bom/pull/687 -->
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -118,7 +118,7 @@
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-2.289.x</artifactId>
-        <version>1008.vb9e22885c9cf</version>
+        <version>1155.v77b_fd92a_26fc</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
