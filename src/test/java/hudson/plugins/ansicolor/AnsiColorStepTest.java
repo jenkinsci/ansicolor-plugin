@@ -13,6 +13,7 @@ import org.jenkinsci.plugins.workflow.log.TaskListenerDecorator;
 import org.jenkinsci.plugins.workflow.steps.DynamicContext;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.BuildWatcher;
@@ -127,6 +128,7 @@ public class AnsiColorStepTest {
         );
     }
 
+    @Ignore("TODO flaky test")
     @Issue("200")
     @Test
     public void canRenderLongOutputWhileBuildStillRunning() {
