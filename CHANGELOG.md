@@ -1,6 +1,10 @@
 1.0.2 (Next)
 ============
 
+* [#236](https://github.com/jenkinsci/ansicolor-plugin/pull/236): Supress a failing test - [@jglick](https://github.com/jglick).
+* [#238](https://github.com/jenkinsci/ansicolor-plugin/pull/238): EOL JSR 305 - [@basil](https://github.com/basil).
+* [#240](https://github.com/jenkinsci/ansicolor-plugin/pull/240): Remove javaLevel - [@basil](https://github.com/basil).
+* [#241](https://github.com/jenkinsci/ansicolor-plugin/pull/241): Update plugin parent POM and plugin BOM - [@basil](https://github.com/basil).
 * Your contribution here.
 
 
