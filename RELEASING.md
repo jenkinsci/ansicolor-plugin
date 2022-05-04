@@ -36,7 +36,6 @@ mvn test
 ```
 
 Check that the last build succeeded in:
- - [Travis CI](https://travis-ci.org/jenkinsci/ansicolor-plugin)
  - [Jenkins](https://ci.jenkins.io/blue/organizations/jenkins/Plugins%2Fansicolor-plugin/activity)
 
 Ensure that the version in [pom.xml](pom.xml) is correct and effectively ends with `-SNAPSHOT`.
