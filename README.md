@@ -1,6 +1,5 @@
 # Jenkins ANSI Color Plugin
 
-[![Travis Build Status](https://travis-ci.org/jenkinsci/ansicolor-plugin.svg)](https://travis-ci.org/jenkinsci/ansicolor-plugin)
 [![Jenkins Build Status](https://ci.jenkins.io/buildStatus/icon?job=Plugins%2Fansicolor-plugin%2Fmaster)](https://ci.jenkins.io/job/Plugins/job/ansicolor-plugin/job/master/)
 [![Jenkins Plugins](https://img.shields.io/jenkins/plugin/v/ansicolor)](https://plugins.jenkins.io/ansicolor/)
 [![Jenkins Plugin installs](https://img.shields.io/jenkins/plugin/i/ansicolor)](https://plugins.jenkins.io/ansicolor/)
