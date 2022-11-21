@@ -73,6 +73,10 @@ ansiColor('xterm') {
 }
 ```
 
+## Colormaps
+
+The argument to the ansiColor function can be either `term`, `vga`, `gnome-terminal` or `css`. This defines which colors Jenkins should show for some of the escape codes. The exact color values used in each set are defined in [AnsiColorMap.java](https://github.com/jenkinsci/ansicolor-plugin/blob/master/src/main/java/hudson/plugins/ansicolor/AnsiColorMap.java).
+
 ## In a traditional job
 
 Traditional, Jenkins UI defined jobs, can also take advantage of `ansicolor` by enabling it under "Build Environment" settings.
