@@ -1,11 +1,10 @@
-final jenkinsLast = '2.289.1'
-final jenkinsLts = '2.303.1'
-buildPlugin(configurations: [
-    [ platform: 'linux', jdk: '8', jenkins: null ],
-    [ platform: 'linux', jdk: '8', jenkins: jenkinsLast ],
-    [ platform: 'windows', jdk: '8', jenkins: jenkinsLast ],
-    [ platform: 'linux', jdk: '11', jenkins: jenkinsLast ],
-    [ platform: 'linux', jdk: '8', jenkins: jenkinsLts ],
-    [ platform: 'windows', jdk: '8', jenkins: jenkinsLts ],
-    [ platform: 'linux', jdk: '11', jenkins: jenkinsLts ],
+/*
+ See the documentation for more options:
+ https://github.com/jenkins-infra/pipeline-library/
+*/
+buildPlugin(
+  useContainerAgent: true, // Set to `false` if you need to use Docker for containerized tests
+  configurations: [
+    [platform: 'linux', jdk: 17],
+    [platform: 'windows', jdk: 11],
 ])
