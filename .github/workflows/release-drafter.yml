@@ -1,5 +1,6 @@
-name: Release Drafter
-
+# Automates creation of Release Drafts using Release Drafter
+# More Info: https://github.com/jenkinsci/.github/blob/master/.github/release-drafter.adoc
+---
 on:
   push:
     branches:

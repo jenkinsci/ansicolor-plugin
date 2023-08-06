@@ -47,10 +47,6 @@ Make sure that you can build the project and run all tests successfully.
 
 Document any external behavior in the [README](README.md).
 
-#### Update Changelog
-
-Add a line to [CHANGELOG](../CHANGELOG.md) under *Next Release*. Make it look like every other line, including your name and link to your Github account.
-
 #### Commit Changes
 
 Make sure git knows your name and email address:
@@ -84,21 +80,6 @@ If you've been working on a change for a while, rebase with upstream/master.
 ```
 git fetch upstream
 git rebase upstream/master
-git push origin my-feature-branch -f
-```
-
-#### Update CHANGELOG Again
-
-Update the [CHANGELOG](../CHANGELOG.md) with the pull request number. A typical entry looks as follows.
-
-```
-* [#123](https://github.com/jenkinsci/ansicolor-plugin/pull/123): Reticulated splines - [@contributor](https://github.com/contributor).
-```
-
-Amend your previous commit and force push the changes.
-
-```
-git commit --amend
 git push origin my-feature-branch -f
 ```
 

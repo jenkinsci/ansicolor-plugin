@@ -1,8 +1,4 @@
-1.0.3 (Next)
-==================
-
-* Your contribution here.
-
+From 1.0.3 release notes are available from [GitHub](https://github.com/jenkinsci/ansicolor-plugin/releases).
 
 1.0.2 (2022/07/24)
 ==================

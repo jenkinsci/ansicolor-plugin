@@ -50,23 +50,6 @@ Ensure that the version in [pom.xml](pom.xml) is correct and effectively ends wi
 </properties>
 ```
 
-Change "Next Release" in [CHANGELOG.md](CHANGELOG.md) to the new version.
-
-```
-0.4.1 (12/11/2014)
-==================
-```
-
-Remove the line with "Your contribution here.", since there will be no more contributions to this release.
-
-Commit your changes.
-
-```
-git add CHANGELOG.md
-git commit -m "Preparing for release, 0.4.1"
-git push origin master
-```
-
 Make sure that your working directory is clean (no uncommitted changes).
 
 Make a release.
@@ -87,21 +70,4 @@ Please read [Maven Release Plugin](http://maven.apache.org/maven-release/maven-r
 *  Leave the version as provided (plugin will just remove the `-SNAPSHOT` postfix) if the release has bug fixes and/or very minor features, only (e.g. `0.4.1`).
 *  Increment the second number if the release contains major features or breaking API changes (eg. change `0.4.1` to `0.5.0`).
 
-### Prepare for the Next Version
-
-Add the next release to [CHANGELOG.md](CHANGELOG.md).
-
-```
-0.4.2 (Next)
-============
-
-* Your contribution here.
-```
-
-Commit your changes.
-
-```
-git add CHANGELOG.md
-git commit -m "Preparing for next development iteration"
-git push origin master
-```
+Go to the [GitHub releases](https://github.com/jenkinsci/ansicolor-plugin/releases) page, find the draft release notes, and edit/publish them.
