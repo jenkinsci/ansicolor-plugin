@@ -83,7 +83,7 @@ public class ShortlogActionCreatorTest {
         assertEquals(colorizedAction.getCommand(), shortlogAction.getCommand());
         assertNotEquals(colorizedAction.getId(), shortlogAction.getId());
         // TODO needs triage
-        if (Functions.isWindows()) {
+        if (!Functions.isWindows()) {
             assertEquals(lineHash, shortlogAction.getId());
         }
     }
