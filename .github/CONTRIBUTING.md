@@ -5,7 +5,7 @@ You're encouraged to submit [pull requests](https://github.com/jenkinsci/ansicol
 
 #### Writing Jenkins Plugins
 
-Before you begin, check out the [Jenkins-CI Plugin Tutorial](https://wiki.jenkins-ci.org/display/JENKINS/Plugin+tutorial).
+Before you begin, check out the [Jenkins Plugin Tutorial](https://www.jenkins.io/doc/developer/tutorial/).
 
 #### Fork the Project
 
