@@ -16,7 +16,9 @@ import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertTrue;
 
 public class JenkinsTestSupport {
@@ -64,8 +66,12 @@ public class JenkinsTestSupport {
             assertTrue(lastBuild.getLogText().writeHtmlTo(start, writer) > 0);
             properties.keySet().forEach(System::clearProperty);
             final String html = writer.toString().replaceAll("<!--.+?-->", "");
-            assertThat(html).contains(expectedOutput);
-            assertThat(html).doesNotContain(notExpectedOutput);
+            for (String expected : expectedOutput) {
+                assertThat(html, containsString(expected));
+            }
+            for (String notExpected : notExpectedOutput) {
+                assertThat(html, not(containsString(notExpected)));
+            }
         });
     }
 
