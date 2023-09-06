@@ -28,8 +28,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -205,8 +208,12 @@ public class AnsiColorStepTest {
             StringWriter writer = new StringWriter();
             assertTrue(project.getLastBuild().getLogText().writeHtmlTo(0, writer) > 0);
             final String html = writer.toString().replaceAll("<!--.+?-->", "");
-            assertThat(html).contains(expectedOutput);
-            assertThat(html).doesNotContain(notExpectedOutput);
+            for (String expected : expectedOutput) {
+                assertThat(html, containsString(expected));
+            }
+            for (String notExpected : notExpectedOutput) {
+                assertThat(html, not(containsString(notExpected)));
+            }
         });
     }
 
@@ -235,7 +242,7 @@ public class AnsiColorStepTest {
     public void canGetConstructorParametersForSnippetGenerator() {
         final String colorMapName = AnsiColorMap.VGA.getName();
         final AnsiColorStep step = new AnsiColorStep(colorMapName);
-        assertThat(step.getColorMapName()).isEqualTo(colorMapName);
+        assertEquals(colorMapName, step.getColorMapName());
     }
 
     private void assertOutputOnRunningPipeline(Collection<String> expectedOutput, Collection<String> notExpectedOutput, String pipelineScript) {
@@ -246,8 +253,12 @@ public class AnsiColorStepTest {
             StringWriter writer = new StringWriter();
             assertTrue(project.getLastBuild().getLogText().writeHtmlTo(0, writer) > 0);
             final String html = writer.toString().replaceAll("<!--.+?-->", "");
-            assertThat(html).contains(expectedOutput);
-            assertThat(html).doesNotContain(notExpectedOutput);
+            for (String expected : expectedOutput) {
+                assertThat(html, containsString(expected));
+            }
+            for (String notExpected : notExpectedOutput) {
+                assertThat(html, not(containsString(notExpected)));
+            }
         });
     }
 
@@ -266,7 +277,8 @@ public class AnsiColorStepTest {
                 .replaceAll("<span.+?>", "")
                 .replaceAll("<div.+?/div>", "");
             final String nl = System.lineSeparator();
-            assertThat(html).contains("ansiColor" + nl + "[Pipeline] {" + nl + nl).contains("[Pipeline] }" + nl + nl + "[Pipeline] // ansiColor");
+            assertThat(html, containsString("ansiColor" + nl + "[Pipeline] {" + nl + nl));
+            assertThat(html, containsString("[Pipeline] }" + nl + nl + "[Pipeline] // ansiColor"));
         });
     }
 }
