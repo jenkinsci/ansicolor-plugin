@@ -11,11 +11,11 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.*;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringWriter;
@@ -506,7 +506,7 @@ public class AnsiColorBuildWrapperTest {
         private AnsiColorBuildWrapper.DescriptorImpl descriptor;
 
         @Mock
-        private StaplerRequest staplerRequest;
+        private StaplerRequest2 staplerRequest;
 
         @Rule
         public JenkinsRule jenkinsRule = new JenkinsRule();

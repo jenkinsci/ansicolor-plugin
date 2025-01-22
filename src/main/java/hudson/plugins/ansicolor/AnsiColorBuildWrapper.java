@@ -40,9 +40,9 @@ import jenkins.tasks.SimpleBuildWrapper;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -136,7 +136,7 @@ public final class AnsiColorBuildWrapper extends SimpleBuildWrapper implements S
 
 
         @Override
-        public boolean configure(final StaplerRequest req, final JSONObject formData) throws FormException {
+        public boolean configure(final StaplerRequest2 req, final JSONObject formData) throws FormException {
             try {
                 final List<AnsiColorMap> colorMaps = req.bindJSONToList(AnsiColorMap.class, req.getSubmittedForm().get("colorMap"));
                 for (AnsiColorMap colorMap : colorMaps) {
