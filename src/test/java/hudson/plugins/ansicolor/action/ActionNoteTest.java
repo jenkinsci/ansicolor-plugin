@@ -2,22 +2,22 @@ package hudson.plugins.ansicolor.action;
 
 import hudson.MarkupText;
 import hudson.model.FreeStyleBuild;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
 import static hudson.plugins.ansicolor.action.ActionNote.TAG_ACTION_BEGIN;
 import static hudson.plugins.ansicolor.action.ActionNote.TAG_ACTION_END;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ActionNoteTest {
+@ExtendWith(MockitoExtension.class)
+class ActionNoteTest {
     private static final UUID UUID = java.util.UUID.randomUUID();
 
     private ActionNote actionNote;
@@ -28,14 +28,14 @@ public class ActionNoteTest {
     @Mock
     private FreeStyleBuild buildRun;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         when(colorizedAction.getId()).thenReturn(UUID.toString());
         actionNote = new ActionNote(colorizedAction);
     }
 
     @Test
-    public void canAnnotate() {
+    void canAnnotate() {
         final MarkupText markupText = new MarkupText("abc123");
         assertNull(actionNote.annotate(buildRun, markupText, 4));
         final String output = markupText.toString(false);

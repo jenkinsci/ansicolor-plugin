@@ -2,40 +2,56 @@ package hudson.plugins.ansicolor;
 
 import hudson.Functions;
 import hudson.Launcher;
-import hudson.console.ConsoleNote;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
+import hudson.model.Descriptor;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import jakarta.servlet.ServletException;
 import joptsimple.internal.Strings;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
-import org.junit.*;
-import org.junit.runner.RunWith;
-import org.jvnet.hudson.test.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-public class AnsiColorBuildWrapperTest {
+@WithJenkins
+class AnsiColorBuildWrapperTest {
     private static final String ESC = "\033";
     private static final String CLR = ESC + "[2K";
-
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
 
     @SuppressWarnings("unused")
     private enum CSI {
@@ -67,256 +83,236 @@ public class AnsiColorBuildWrapperTest {
         }
     }
 
-    @Rule
-    public RestartableJenkinsRule jenkinsRule = new RestartableJenkinsRule();
-
-    @Rule
-    public LoggerRule logging = new LoggerRule().recordPackage(ConsoleNote.class, Level.FINE).record(ColorConsoleAnnotator.class, Level.FINER);
-
     @Test
-    public void testGetColorMapNameNull() {
+    void testGetColorMapNameNull(JenkinsRule jenkinsRule) {
         AnsiColorBuildWrapper instance = new AnsiColorBuildWrapper(null);
         assertEquals("xterm", instance.getColorMapName());
     }
 
     @Test
-    public void testGetColorMapNameVga() {
+    void testGetColorMapNameVga(JenkinsRule jenkinsRule) {
         AnsiColorBuildWrapper instance = new AnsiColorBuildWrapper("vga");
         assertEquals("vga", instance.getColorMapName());
     }
 
     @Test
-    public void testDecorateLogger() {
+    void testDecorateLogger(JenkinsRule jenkinsRule) {
         AnsiColorBuildWrapper ansiColorBuildWrapper = new AnsiColorBuildWrapper(null);
         assertThat(ansiColorBuildWrapper, instanceOf(AnsiColorBuildWrapper.class));
     }
 
     @Test
-    public void maven() {
-        jenkinsRule.then(r -> {
-            FreeStyleProject p = r.createFreeStyleProject();
-            p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
-            p.getBuildersList().add(new TestBuilder() {
-                @Override
-                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                    // Like Maven 3.6.0 when using (MNG-6380) MAVEN_OPTS=-Djansi.force=true
-                    listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] Scanning for projects...");
-                    listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] ");
-                    listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1m--------------< \u001B[0;36morg.jenkins-ci.plugins:build-token-root\u001B[0;1m >---------------\u001B[m");
-                    listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1mBuilding Build Authorization Token Root Plugin 1.5-SNAPSHOT\u001B[m");
-                    listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1m--------------------------------[ hpi ]---------------------------------\u001B[m");
-                    listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] ");
-                    listener.getLogger()
-                        .println(
-                            "[\u001B[1;34mINFO\u001B[m] \u001B[1m--- \u001B[0;32mmaven-clean-plugin:3.0.0:clean\u001B[m \u001B[1m(default-clean)\u001B[m @ \u001B[36mbuild-token-root\u001B[0;1m ---\u001B[m");
-                    listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1m------------------------------------------------------------------------\u001B[m");
-                    listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1;32mBUILD SUCCESS\u001B[m");
-                    return true;
-                }
-            });
-            FreeStyleBuild b = r.buildAndAssertSuccess(p);
-            StringWriter writer = new StringWriter();
-            assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
-            String html = writer.toString();
-            System.out.print(html);
-            assertThat(
-                html.replaceAll("<!--.+?-->", ""),
-                allOf(
-                    containsString("[<b><span style=\"color: #1E90FF;\">INFO</span></b>]"),
-                    containsString("<b>--------------&lt; </b><span style=\"color: #00CDCD;\">org.jenkins-ci.plugins:build-token-root</span><b> &gt;---------------</b>")
-                )
-            );
+    void maven(JenkinsRule jenkinsRule) throws Exception {
+        FreeStyleProject p = jenkinsRule.createFreeStyleProject();
+        p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                // Like Maven 3.6.0 when using (MNG-6380) MAVEN_OPTS=-Djansi.force=true
+                listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] Scanning for projects...");
+                listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] ");
+                listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1m--------------< \u001B[0;36morg.jenkins-ci.plugins:build-token-root\u001B[0;1m >---------------\u001B[m");
+                listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1mBuilding Build Authorization Token Root Plugin 1.5-SNAPSHOT\u001B[m");
+                listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1m--------------------------------[ hpi ]---------------------------------\u001B[m");
+                listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] ");
+                listener.getLogger()
+                    .println(
+                        "[\u001B[1;34mINFO\u001B[m] \u001B[1m--- \u001B[0;32mmaven-clean-plugin:3.0.0:clean\u001B[m \u001B[1m(default-clean)\u001B[m @ \u001B[36mbuild-token-root\u001B[0;1m ---\u001B[m");
+                listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1m------------------------------------------------------------------------\u001B[m");
+                listener.getLogger().println("[\u001B[1;34mINFO\u001B[m] \u001B[1;32mBUILD SUCCESS\u001B[m");
+                return true;
+            }
         });
+        FreeStyleBuild b = jenkinsRule.buildAndAssertSuccess(p);
+        StringWriter writer = new StringWriter();
+        assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
+        String html = writer.toString();
+        System.out.print(html);
+        assertThat(
+            html.replaceAll("<!--.+?-->", ""),
+            allOf(
+                containsString("[<b><span style=\"color: #1E90FF;\">INFO</span></b>]"),
+                containsString("<b>--------------&lt; </b><span style=\"color: #00CDCD;\">org.jenkins-ci.plugins:build-token-root</span><b> &gt;---------------</b>")
+            )
+        );
     }
 
     @Test
-    public void testMultilineEscapeSequence() {
-        jenkinsRule.then(r -> {
-            FreeStyleProject p = r.createFreeStyleProject();
-            p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
-            p.getBuildersList().add(new TestBuilder() {
-                @Override
-                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                    listener.getLogger().println("\u001B[1;34mThis text should be bold and blue");
-                    listener.getLogger().println("Still bold and blue");
-                    listener.getLogger().println("\u001B[mThis text should be normal");
-                    return true;
-                }
-            });
-            FreeStyleBuild b = r.buildAndAssertSuccess(p);
-            StringWriter writer = new StringWriter();
-            assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
-            String html = writer.toString();
-            System.out.print(html);
-            String nl = System.lineSeparator();
-            assertThat(
-                html.replaceAll("<!--.+?-->", ""),
-                allOf(
-                    containsString("<b><span style=\"color: #1E90FF;\">This text should be bold and blue" + nl + "</span></b>"),
-                    containsString("<b><span style=\"color: #1E90FF;\">Still bold and blue" + nl + "</span></b>"),
-                    not(containsString("\u001B[m"))
-                )
-            );
+    void testMultilineEscapeSequence(JenkinsRule jenkinsRule) throws Exception {
+        FreeStyleProject p = jenkinsRule.createFreeStyleProject();
+        p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                listener.getLogger().println("\u001B[1;34mThis text should be bold and blue");
+                listener.getLogger().println("Still bold and blue");
+                listener.getLogger().println("\u001B[mThis text should be normal");
+                return true;
+            }
         });
+        FreeStyleBuild b = jenkinsRule.buildAndAssertSuccess(p);
+        StringWriter writer = new StringWriter();
+        assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
+        String html = writer.toString();
+        System.out.print(html);
+        String nl = System.lineSeparator();
+        assertThat(
+            html.replaceAll("<!--.+?-->", ""),
+            allOf(
+                containsString("<b><span style=\"color: #1E90FF;\">This text should be bold and blue" + nl + "</span></b>"),
+                containsString("<b><span style=\"color: #1E90FF;\">Still bold and blue" + nl + "</span></b>"),
+                not(containsString("\u001B[m"))
+            )
+        );
     }
 
     @Test
-    public void testDefaultForegroundBackground() {
-        jenkinsRule.then(r -> {
-            FreeStyleProject p = r.createFreeStyleProject();
-            // The VGA ColorMap sets default foreground and background colors.
-            p.getBuildWrappersList().add(new AnsiColorBuildWrapper("vga"));
-            p.getBuildersList().add(new TestBuilder() {
-                @Override
-                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                    listener.getLogger().println("White on black");
-                    listener.getLogger().println("\u001B[1;34mBold and blue on black");
-                    listener.getLogger().println("Still bold and blue on black\u001B[mBack to white on black");
-                    return true;
-                }
-            });
-            FreeStyleBuild b = r.buildAndAssertSuccess(p);
-            StringWriter writer = new StringWriter();
-            assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
-            String html = writer.toString();
-            System.out.print(html);
-            String nl = System.lineSeparator();
-            assertThat(
-                html.replaceAll("<!--.+?-->", ""),
-                allOf(
-                    containsString("<div style=\"background-color: #000000;color: #AAAAAA;\">White on black" + nl + "</div>"),
-                    containsString("<div style=\"background-color: #000000;color: #AAAAAA;\"><b><span style=\"color: #0000AA;\">Bold and blue on black" + nl + "</span></b></div>"),
-                    containsString(
-                        "<div style=\"background-color: #000000;color: #AAAAAA;\"><b><span style=\"color: #0000AA;\">Still bold and blue on black</span></b>Back to white on black" + nl + "</div>"
-                    )
-                )
-            );
+    void testDefaultForegroundBackground(JenkinsRule jenkinsRule) throws Exception {
+        FreeStyleProject p = jenkinsRule.createFreeStyleProject();
+        // The VGA ColorMap sets default foreground and background colors.
+        p.getBuildWrappersList().add(new AnsiColorBuildWrapper("vga"));
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                listener.getLogger().println("White on black");
+                listener.getLogger().println("\u001B[1;34mBold and blue on black");
+                listener.getLogger().println("Still bold and blue on black\u001B[mBack to white on black");
+                return true;
+            }
         });
+        FreeStyleBuild b = jenkinsRule.buildAndAssertSuccess(p);
+        StringWriter writer = new StringWriter();
+        assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
+        String html = writer.toString();
+        System.out.print(html);
+        String nl = System.lineSeparator();
+        assertThat(
+            html.replaceAll("<!--.+?-->", ""),
+            allOf(
+                containsString("<div style=\"background-color: #000000;color: #AAAAAA;\">White on black" + nl + "</div>"),
+                containsString("<div style=\"background-color: #000000;color: #AAAAAA;\"><b><span style=\"color: #0000AA;\">Bold and blue on black" + nl + "</span></b></div>"),
+                containsString(
+                    "<div style=\"background-color: #000000;color: #AAAAAA;\"><b><span style=\"color: #0000AA;\">Still bold and blue on black</span></b>Back to white on black" + nl + "</div>"
+                )
+            )
+        );
     }
 
     @Issue("JENKINS-54133")
     @Test
-    public void testWorkflowWrap() {
-        jenkinsRule.then(r -> {
-            Assume.assumeTrue(!Functions.isWindows());
-            jenkinsRule.j.createSlave();
-            WorkflowJob p = jenkinsRule.j.jenkins.createProject(WorkflowJob.class, "p");
-            p.setDefinition(new CpsFlowDefinition(
-                "node('!master') {\n"
-                    + "  wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {\n"
-                    + "    sh(\"\"\"#!/bin/bash\n"
-                    + "      printf 'The following word is supposed to be \\\\e[31mred\\\\e[0m\\\\n'\"\"\"\n"
-                    + "    )\n"
-                    + "  }\n"
-                    + "}"
-                , false
-            ));
-            jenkinsRule.j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-            StringWriter writer = new StringWriter();
-            assertTrue(p.getLastBuild().getLogText().writeHtmlTo(0L, writer) > 0);
-            String html = writer.toString();
-            assertTrue(
-                "Failed to match color attribute in following HTML log output:\n" + html,
-                html.replaceAll("<!--.+?-->", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*")
-            );
-        });
+    void testWorkflowWrap(JenkinsRule jenkinsRule) throws Exception {
+        assumeFalse(Functions.isWindows());
+        jenkinsRule.createSlave();
+        WorkflowJob p = jenkinsRule.jenkins.createProject(WorkflowJob.class, "p");
+        p.setDefinition(new CpsFlowDefinition(
+            "node('!master') {\n"
+                + "  wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm']) {\n"
+                + "    sh(\"\"\"#!/bin/bash\n"
+                + "      printf 'The following word is supposed to be \\\\e[31mred\\\\e[0m\\\\n'\"\"\"\n"
+                + "    )\n"
+                + "  }\n"
+                + "}"
+            , false
+        ));
+        jenkinsRule.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        StringWriter writer = new StringWriter();
+        assertTrue(p.getLastBuild().getLogText().writeHtmlTo(0L, writer) > 0);
+        String html = writer.toString();
+        assertTrue(
+            html.replaceAll("<!--.+?-->", "").matches("(?s).*<span style=\"color: #CD0000;\">red</span>.*"),
+            "Failed to match color attribute in following HTML log output:\n" + html
+        );
     }
 
     @Test
-    public void testNonAscii() {
-        jenkinsRule.then(r -> {
-            FreeStyleProject p = r.createFreeStyleProject();
-            p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
-            p.getBuildersList().add(new TestBuilder() {
-                @Override
-                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                    listener.getLogger().println("\033[94;1m[ INFO ] Récupération du numéro de version de l'application\033[0m");
-                    listener.getLogger().println("\033[94;1m[ INFO ] ビルドのコンソール出力を取得します。\033[0m");
-                    // There are 3 smiley face emojis in this String
-                    listener.getLogger().println("\033[94;1m[ INFO ] 😀😀\033[0m😀");
-                    return true;
-                }
-            });
-            FreeStyleBuild b = r.buildAndAssertSuccess(p);
-            StringWriter writer = new StringWriter();
-            assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
-            String html = writer.toString();
-            assertThat(
-                html.replaceAll("<!--.+?-->", ""),
-                allOf(
-                    containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] Récupération du numéro de version de l'application</b></span>"),
-                    containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] ビルドのコンソール出力を取得します。</b></span>"),
-                    containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] 😀😀</b></span>😀")
-                )
-            );
+    void testNonAscii(JenkinsRule jenkinsRule) throws Exception {
+        FreeStyleProject p = jenkinsRule.createFreeStyleProject();
+        p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                listener.getLogger().println("\033[94;1m[ INFO ] Récupération du numéro de version de l'application\033[0m");
+                listener.getLogger().println("\033[94;1m[ INFO ] ビルドのコンソール出力を取得します。\033[0m");
+                // There are 3 smiley face emojis in this String
+                listener.getLogger().println("\033[94;1m[ INFO ] 😀😀\033[0m😀");
+                return true;
+            }
         });
+        FreeStyleBuild b = jenkinsRule.buildAndAssertSuccess(p);
+        StringWriter writer = new StringWriter();
+        assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
+        String html = writer.toString();
+        assertThat(
+            html.replaceAll("<!--.+?-->", ""),
+            allOf(
+                containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] Récupération du numéro de version de l'application</b></span>"),
+                containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] ビルドのコンソール出力を取得します。</b></span>"),
+                containsString("<span style=\"color: #4682B4;\"><b>[ INFO ] 😀😀</b></span>😀")
+            )
+        );
     }
 
     @Issue("JENKINS-55139")
     @Test
-    public void testTerraform() {
-        jenkinsRule.then(r -> {
-            FreeStyleProject p = r.createFreeStyleProject();
-            p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
-            p.getBuildersList().add(new TestBuilder() {
-                @Override
-                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                    // Mimics terraform, c.f. `docker run --rm hashicorp/terraform plan 2>&1 | od -t a`
-                    listener.getLogger().println("\033[31m");
-                    listener.getLogger().println("\033[1m\033[31mError: \033[0m\033[0m\033[1mNo configuration files found!");
-                    listener.getLogger().println("bold text blurb\033[0m");
-                    listener.getLogger().println("\033[0m\033[0m\033[0m");
-                    return true;
-                }
-            });
-            FreeStyleBuild b = r.buildAndAssertSuccess(p);
-            StringWriter writer = new StringWriter();
-            assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
-            String html = writer.toString();
-            System.out.print(html);
-            assertThat(
-                html.replaceAll("<!--.+?-->", ""),
-                allOf(
-                    containsString("Error"),
-                    containsString("No configuration files found!"),
-                    not(containsString("\033[0m"))
-                )
-            );
+    void testTerraform(JenkinsRule jenkinsRule) throws Exception {
+        FreeStyleProject p = jenkinsRule.createFreeStyleProject();
+        p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                // Mimics terraform, c.f. `docker run --rm hashicorp/terraform plan 2>&1 | od -t a`
+                listener.getLogger().println("\033[31m");
+                listener.getLogger().println("\033[1m\033[31mError: \033[0m\033[0m\033[1mNo configuration files found!");
+                listener.getLogger().println("bold text blurb\033[0m");
+                listener.getLogger().println("\033[0m\033[0m\033[0m");
+                return true;
+            }
         });
+        FreeStyleBuild b = jenkinsRule.buildAndAssertSuccess(p);
+        StringWriter writer = new StringWriter();
+        assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
+        String html = writer.toString();
+        System.out.print(html);
+        assertThat(
+            html.replaceAll("<!--.+?-->", ""),
+            allOf(
+                containsString("Error"),
+                containsString("No configuration files found!"),
+                not(containsString("\033[0m"))
+            )
+        );
     }
 
     @Issue("JENKINS-55139")
     @Test
-    public void testRedundantResets() {
-        jenkinsRule.then(r -> {
-            FreeStyleProject p = r.createFreeStyleProject();
-            p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
-            p.getBuildersList().add(new TestBuilder() {
-                @Override
-                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                    listener.getLogger().println("[Foo] \033[0m[\033[0m\033[0minfo\033[0m] \033[0m\033[0m\033[32m- this text is green\033[0m\033[0m");
-                    return true;
-                }
-            });
-            FreeStyleBuild b = r.buildAndAssertSuccess(p);
-            StringWriter writer = new StringWriter();
-            assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
-            String html = writer.toString();
-            System.out.print(html);
-            assertThat(
-                html.replaceAll("<!--.+?-->", ""),
-                allOf(
-                    containsString("[Foo]"),
-                    containsString("[info]"),
-                    containsString("<span style=\"color: #00CD00;\">- this text is green</span>"),
-                    not(containsString("\033[0m"))
-                )
-            );
+    void testRedundantResets(JenkinsRule jenkinsRule) throws Exception {
+        FreeStyleProject p = jenkinsRule.createFreeStyleProject();
+        p.getBuildWrappersList().add(new AnsiColorBuildWrapper(null));
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                listener.getLogger().println("[Foo] \033[0m[\033[0m\033[0minfo\033[0m] \033[0m\033[0m\033[32m- this text is green\033[0m\033[0m");
+                return true;
+            }
         });
+        FreeStyleBuild b = jenkinsRule.buildAndAssertSuccess(p);
+        StringWriter writer = new StringWriter();
+        assertTrue(b.getLogText().writeHtmlTo(0L, writer) > 0);
+        String html = writer.toString();
+        System.out.print(html);
+        assertThat(
+            html.replaceAll("<!--.+?-->", ""),
+            allOf(
+                containsString("[Foo]"),
+                containsString("[info]"),
+                containsString("<span style=\"color: #00CD00;\">- this text is green</span>"),
+                not(containsString("\033[0m"))
+            )
+        );
     }
 
     @Test
-    public void canWorkWithMovingSequences() {
+    void canWorkWithMovingSequences(JenkinsRule jenkinsRule) throws Exception {
         final String op1 = "Creating container_1";
         final String op2 = "Creating container_2";
         final String up2lines = csi(2, CSI.CUU);
@@ -335,6 +331,7 @@ public class AnsiColorBuildWrapperTest {
         };
 
         assertCorrectOutput(
+            jenkinsRule,
             Arrays.asList(op1 + " ... done", op2 + " ..."),
             Arrays.asList(up2lines, CLR, down2lines, back7chars, forward4chars),
             inputProvider
@@ -342,19 +339,14 @@ public class AnsiColorBuildWrapperTest {
     }
 
     @Test
-    public void canWorkWithVariousCsiSequences() {
+    void canWorkWithVariousCsiSequences(JenkinsRule jenkinsRule) throws Exception {
         final String txt0 = "Test various sequences begin";
-        final List<String> csiSequences = Arrays.stream(CSI.values()).map(csi -> {
-            switch (csi.paramsAmount) {
-                case 0:
-                    return csi(csi);
-                case 1:
-                    return csi(6, csi);
-                case 2:
-                    return csi(6, 4, csi);
-            }
-            throw new IllegalArgumentException("Not supported amount of params");
-        }).collect(Collectors.toList());
+        final List<String> csiSequences = Arrays.stream(CSI.values()).map(csi -> switch (csi.paramsAmount) {
+            case 0 -> csi(csi);
+            case 1 -> csi(6, csi);
+            case 2 -> csi(6, 4, csi);
+            default -> throw new IllegalArgumentException("Not supported amount of params");
+        }).toList();
         final String txt1 = "Test various sequences end";
         final Consumer<PrintStream> inputProvider = stream -> {
             stream.println(txt0);
@@ -362,12 +354,12 @@ public class AnsiColorBuildWrapperTest {
             stream.println(txt1);
         };
 
-        assertCorrectOutput(Arrays.asList(txt0, txt1), csiSequences, inputProvider);
+        assertCorrectOutput(jenkinsRule, Arrays.asList(txt0, txt1), csiSequences, inputProvider);
     }
 
     @Issue("172")
     @Test
-    public void canRenderSgrNormalIntensity() {
+    void canRenderSgrNormalIntensity(JenkinsRule jenkinsRule) throws Exception {
         final String sgrReset = sgr(0);
         final String msg0 = "lightgreen and reset sgr ";
         final String sgrLightGreen = sgr(92);
@@ -388,6 +380,7 @@ public class AnsiColorBuildWrapperTest {
             stream.println(sgrNormal + msg5 + sgrReset);
         };
         assertCorrectOutput(
+            jenkinsRule,
             Arrays.asList(
                 "<span style=\"color: #00FF00;\">" + msg0 + "</span>",
                 "<span style=\"color: #00FF00;\">" + msg1 + "</span>",
@@ -402,7 +395,7 @@ public class AnsiColorBuildWrapperTest {
     }
 
     @Test
-    public void canRenderSgrFaintIntensity() {
+    void canRenderSgrFaintIntensity(JenkinsRule jenkinsRule) throws Exception {
         final String sgrReset = sgr(0);
         final String msg0 = "lightblue and also faint";
         final String sgrLightBlueFaint = sgr(94, 2);
@@ -419,6 +412,7 @@ public class AnsiColorBuildWrapperTest {
             stream.println(sgrLightBlue + sgrFaint + sgrNormal + msg3 + sgrReset);
         };
         assertCorrectOutput(
+            jenkinsRule,
             Arrays.asList(
                 "<span style=\"color: #4682B4;\"><span style=\"font-weight: lighter;\">" + msg0 + "</span></span>",
                 "<span style=\"color: #4682B4;\">" + msg1 + "<span style=\"font-weight: lighter;\">" + msg2 + "</span></span>",
@@ -431,10 +425,11 @@ public class AnsiColorBuildWrapperTest {
 
     @Issue("158")
     @Test
-    public void canHandleSgrsWithMultipleOptions() {
+    void canHandleSgrsWithMultipleOptions(JenkinsRule jenkinsRule) throws Exception {
         final String input = "\u001B[33mbanana_1  |\u001B[0m 19:59:14.353\u001B[0;38m [debug] Lager installed handler {lager_file_backend,\"banana.log\"} into lager_event\u001B[0m\n";
         final Consumer<PrintStream> inputProvider = stream -> stream.println(input);
         assertCorrectOutput(
+            jenkinsRule,
             Collections.singletonList("<span style=\"color: #CDCD00;\">banana_1  |</span> 19:59:14.353 [debug] Lager installed handler {lager_file_backend,\"banana.log\"} into lager_event"),
             Collections.singletonList(ESC),
             inputProvider
@@ -443,10 +438,11 @@ public class AnsiColorBuildWrapperTest {
 
     @Issue("186")
     @Test
-    public void canHandleSgrsWithRgbColors() {
+    void canHandleSgrsWithRgbColors(JenkinsRule jenkinsRule) throws Exception {
         final String input = "\u001B[1;38;5;4m[fe1.k8sf.atom.us-west-2 ]\u001B[0m\n\u001B[1;38;5;13m[fe1b.k8sf.atom.us-east-2]\u001B[0m";
         final Consumer<PrintStream> inputProvider = stream -> stream.println(input);
         assertCorrectOutput(
+            jenkinsRule,
             Arrays.asList(
                 "<b><span style=\"color: #1E90FF;\">[fe1.k8sf.atom.us-west-2 ]</span></b>",
                 "<b><span style=\"color: #FF00FF;\">[fe1b.k8sf.atom.us-east-2]</span></b>"
@@ -476,12 +472,10 @@ public class AnsiColorBuildWrapperTest {
         return ESC + "[" + Arrays.stream(sgrParam).boxed().map(String::valueOf).collect(Collectors.joining(";")) + "m";
     }
 
-    private void assertCorrectOutput(Collection<String> expectedOutput, Collection<String> notExpectedOutput, Consumer<PrintStream> inputProvider) {
-        jenkinsRule.then(r -> {
-            final String html = runBuildWithPlugin(r, inputProvider).replaceAll("<!--.+?-->", "");
-            expectedOutput.forEach(s -> assertThat(html, containsString(s)));
-            notExpectedOutput.forEach(s -> assertThat("Test failed for sequence: " + s.replace(ESC, "ESC"), html, not(containsString(s))));
-        });
+    private void assertCorrectOutput(JenkinsRule rule, Collection<String> expectedOutput, Collection<String> notExpectedOutput, Consumer<PrintStream> inputProvider) throws Exception {
+        final String html = runBuildWithPlugin(rule, inputProvider).replaceAll("<!--.+?-->", "");
+        expectedOutput.forEach(s -> assertThat(html, containsString(s)));
+        notExpectedOutput.forEach(s -> assertThat("Test failed for sequence: " + s.replace(ESC, "ESC"), html, not(containsString(s))));
     }
 
     private String runBuildWithPlugin(JenkinsRule rule, Consumer<PrintStream> inputProvider) throws Exception {
@@ -501,24 +495,25 @@ public class AnsiColorBuildWrapperTest {
     }
 
 
-    @RunWith(MockitoJUnitRunner.class)
-    public static final class DescriptorImplTest {
+    @Nested
+    @WithJenkins
+    @ExtendWith(MockitoExtension.class)
+    class DescriptorImplTest {
         private AnsiColorBuildWrapper.DescriptorImpl descriptor;
 
         @Mock
         private StaplerRequest2 staplerRequest;
 
-        @Rule
-        public JenkinsRule jenkinsRule = new JenkinsRule();
+        private JenkinsRule jenkinsRule;
 
-
-        @Before
-        public void setUp() throws Exception {
+        @BeforeEach
+        public void setUp(JenkinsRule jenkinsRule) throws Exception {
+            this.jenkinsRule = jenkinsRule;
             descriptor = new AnsiColorBuildWrapper.DescriptorImpl();
         }
 
         @Test
-        public void canValidateCorrectInputData() throws Exception {
+        void canValidateCorrectInputData() throws Exception {
             final List<AnsiColorMap> ansiColorMaps = Arrays.asList(AnsiColorMap.XTerm, AnsiColorMap.CSS);
             final String globalMapName = "xterm";
             final String colorMap = "{'abc' : 123}";
@@ -531,12 +526,12 @@ public class AnsiColorBuildWrapperTest {
 
             assertTrue(descriptor.configure(staplerRequest, form));
             final List<AnsiColorMap> savedMaps = Arrays.asList(descriptor.getColorMaps());
-            ansiColorMaps.forEach(map -> assertTrue("Expected map no there: " + map, savedMaps.contains(map)));
+            ansiColorMaps.forEach(map -> assertTrue(savedMaps.contains(map), "Expected map no there: " + map));
             assertEquals(globalMapName, descriptor.getGlobalColorMapName());
         }
 
         @Test
-        public void emptyGlobalColorNameWontBeStored() throws Exception {
+        void emptyGlobalColorNameWontBeStored() throws Exception {
             final HashMap<String, String> formData = new HashMap<>();
             final String colorMap = "{'abc' : 123}";
             formData.put("colorMap", colorMap);
@@ -549,8 +544,8 @@ public class AnsiColorBuildWrapperTest {
             assertNull(descriptor.getGlobalColorMapName());
         }
 
-        @Test(expected = Descriptor.FormException.class)
-        public void wontAllowGlobalColorNameTooLong() throws Exception {
+        @Test
+        void wontAllowGlobalColorNameTooLong() throws Exception {
             final HashMap<String, String> formData = new HashMap<>();
             final String colorMap = "{'abc' : 123}";
             formData.put("colorMap", colorMap);
@@ -558,12 +553,13 @@ public class AnsiColorBuildWrapperTest {
             final JSONObject form = JSONObject.fromObject(formData);
             when(staplerRequest.getSubmittedForm()).thenReturn(form);
             when(staplerRequest.bindJSONToList(eq(AnsiColorMap.class), eq(colorMap))).thenReturn(Collections.emptyList());
+            assertThrows(Descriptor.FormException.class, () ->
 
-            descriptor.configure(staplerRequest, form);
+                descriptor.configure(staplerRequest, form));
         }
 
         @Test
-        public void wontAllowColorNameTooLong() throws Exception {
+        void wontAllowColorNameTooLong() throws Exception {
             final String tooLong = Strings.repeat('x', 257);
             assertAllColorMapsInvalid(new AnsiColorMap[]{
                 new AnsiColorMap(
@@ -575,8 +571,8 @@ public class AnsiColorBuildWrapperTest {
             });
         }
 
-        @Test(expected = Descriptor.FormException.class)
-        public void wontAllowGlobalColorNameNotMatchingOneColorMap() throws Exception {
+        @Test
+        void wontAllowGlobalColorNameNotMatchingOneColorMap() throws Exception {
             final List<AnsiColorMap> ansiColorMaps = Arrays.asList(AnsiColorMap.XTerm, AnsiColorMap.VGA);
             final HashMap<String, String> formData = new HashMap<>();
             final String colorMap = "{'abc' : 123}";
@@ -585,13 +581,14 @@ public class AnsiColorBuildWrapperTest {
             final JSONObject form = JSONObject.fromObject(formData);
             when(staplerRequest.getSubmittedForm()).thenReturn(form);
             when(staplerRequest.bindJSONToList(eq(AnsiColorMap.class), eq(colorMap))).thenReturn(ansiColorMaps);
+            assertThrows(Descriptor.FormException.class, () ->
 
-            descriptor.configure(staplerRequest, form);
+                descriptor.configure(staplerRequest, form));
         }
 
 
         @Test
-        public void wontAllowColorLiteralEmpty() throws Exception {
+        void wontAllowColorLiteralEmpty() throws Exception {
             final AnsiColorMap[] colorMapsEmptyColors = {
                 new AnsiColorMap(
                     "test-map",
@@ -694,7 +691,7 @@ public class AnsiColorBuildWrapperTest {
         }
 
         @Test
-        public void wontAllowColorLiteralTooLong() throws ServletException {
+        void wontAllowColorLiteralTooLong() throws ServletException {
             final String tooLong = Strings.repeat('a', 65);
             final AnsiColorMap[] colorMapsTooLongColors = {
                 new AnsiColorMap(
@@ -816,18 +813,14 @@ public class AnsiColorBuildWrapperTest {
 
         private void assertAllColorMapsInvalid(AnsiColorMap[] invalidColorMaps) throws ServletException {
             for (AnsiColorMap invalidColorMap : invalidColorMaps) {
-                try {
-                    final List<AnsiColorMap> ansiColorMaps = Arrays.asList(AnsiColorMap.XTerm, invalidColorMap);
-                    final HashMap<String, String> formData = new HashMap<>();
-                    final String colorMap = "{'abc' : 123}";
-                    formData.put("colorMap", colorMap);
-                    final JSONObject form = JSONObject.fromObject(formData);
-                    when(staplerRequest.getSubmittedForm()).thenReturn(form);
-                    when(staplerRequest.bindJSONToList(eq(AnsiColorMap.class), eq(colorMap))).thenReturn(ansiColorMaps);
-                    descriptor.configure(staplerRequest, form);
-                    fail("Invalid color map has not triggered exception: " + invalidColorMap);
-                } catch (Descriptor.FormException ignore) {
-                }
+                final List<AnsiColorMap> ansiColorMaps = Arrays.asList(AnsiColorMap.XTerm, invalidColorMap);
+                final HashMap<String, String> formData = new HashMap<>();
+                final String colorMap = "{'abc' : 123}";
+                formData.put("colorMap", colorMap);
+                final JSONObject form = JSONObject.fromObject(formData);
+                when(staplerRequest.getSubmittedForm()).thenReturn(form);
+                when(staplerRequest.bindJSONToList(eq(AnsiColorMap.class), eq(colorMap))).thenReturn(ansiColorMaps);
+                assertThrows(Descriptor.FormException.class, () -> descriptor.configure(staplerRequest, form), "Invalid color map has not triggered exception: " + invalidColorMap);
             }
         }
     }
