@@ -114,34 +114,33 @@ class AnsiHtmlOutputStreamTest {
         // simple tests
         assertThatAnnotateIs(
             "\033[7mon\033[moff",
-            "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\">on</span></span>off");
+            "<span style=\"background-color: var(--text-color); color: var(--background);\">on</span>off");
 
         assertThatAnnotateIs(
             "\033[7mon\033[27moff",
-            "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\">on</span></span>off");
+            "<span style=\"background-color: var(--text-color); color: var(--background);\">on</span>off");
 
         assertThatAnnotateIs(
             "\033[33;7mon\033[27moff",
             "<span style=\"color: #CDCD00;\"></span>" +                                                            // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: #CDCD00; color: #FFFFFF;\">on</span>" +
+                "<span style=\"background-color: #CDCD00; color: var(--background);\">on</span>" +
                 "<span style=\"color: #CDCD00;\">off</span>");
 
         assertThatAnnotateIs(
             "\033[7;33mon\033[27moff",
-            "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\"></span></span>" +     // unnecessary <span> tag, could be removed …
-                "<span style=\"color: #FFFFFF;\"><span style=\"background-color: #CDCD00;\">on</span></span>" +        // could be optimized to be a single <span> tag
+            "<span style=\"background-color: var(--text-color); color: var(--background);\">" +
+                "<span style=\"background-color: #CDCD00;\">on</span></span>" +
                 "<span style=\"color: #CDCD00;\">off</span>");
 
         assertThatAnnotateIs(
             "\033[41;7mon\033[27moff",
             "<span style=\"background-color: #CD0000;\"></span>" +                                                 // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: currentColor;\"><span style=\"color: #CD0000;\">on</span></span>" +
+                "<span style=\"background-color: var(--text-color); color: #CD0000;\">on</span>" +
                 "<span style=\"background-color: #CD0000;\">off</span>");
 
         assertThatAnnotateIs(
             "\033[7;41mon\033[27moff",
-            "<span style=\"background-color: currentColor;\">" +
-                "<span style=\"color: #FFFFFF;\"></span>" +                                                          // unnecessary <span> tag, could be removed …
+            "<span style=\"background-color: var(--text-color); color: var(--background);\">" +
                 "<span style=\"color: #CD0000;\">on</span>" +
                 "</span>" +
                 "<span style=\"background-color: #CD0000;\">off</span>");
@@ -154,9 +153,8 @@ class AnsiHtmlOutputStreamTest {
 
         assertThatAnnotateIs(
             "\033[7;33;41mon\033[27moff",
-            "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\"></span></span>" +     // unnecessary <span> tag, could be removed …
-                "<span style=\"color: #FFFFFF;\"><span style=\"background-color: #CDCD00;\"></span></span>" +          // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">on</span></span>" +        // could be optimized to be a single <span> tag
+            "<span style=\"background-color: var(--text-color); color: var(--background);\">" +
+                "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">on</span></span></span>" +        // could be optimized to be a single <span> tag
                 "<span style=\"background-color: #CD0000; color: #CDCD00;\">off</span>");
 
 
@@ -164,61 +162,56 @@ class AnsiHtmlOutputStreamTest {
         assertThatAnnotateIs(
             "\033[33;7mon\033[39mdefault",
             "<span style=\"color: #CDCD00;\"></span>" +                                                            // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: #CDCD00; color: #FFFFFF;\">on</span>" +
-                "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\">default</span></span>");
+                "<span style=\"background-color: #CDCD00; color: var(--background);\">on" +
+                "<span style=\"background-color: var(--text-color);\">default</span></span>");
 
         assertThatAnnotateIs(
             "\033[7;33mon\033[39mdefault",
-            "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\"></span></span>" +     // unnecessary <span> tag, could be removed …
-                "<span style=\"color: #FFFFFF;\"><span style=\"background-color: #CDCD00;\">on</span></span>" +        // could be optimized to be a single <span> tag
-                "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\">default</span></span>");
+            "<span style=\"background-color: var(--text-color); color: var(--background);\">" +
+                "<span style=\"background-color: #CDCD00;\">on</span>" +
+                "<span style=\"background-color: var(--text-color);\">default</span></span>");
 
         assertThatAnnotateIs(
             "\033[41;7mon\033[49mdefault",
             "<span style=\"background-color: #CD0000;\"></span>" +                                                 // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: currentColor;\">" +
-                "<span style=\"color: #CD0000;\">on</span>" +
-                "<span style=\"color: #FFFFFF;\">default</span>" +
+                "<span style=\"background-color: var(--text-color); color: #CD0000;\">on" +
+                "<span style=\"color: var(--background);\">default</span>" +
                 "</span>");
 
         assertThatAnnotateIs(
             "\033[7;41mon\033[49mdefault",
-            "<span style=\"background-color: currentColor;\">" +
-                "<span style=\"color: #FFFFFF;\"></span>" +                                                          // unnecessary <span> tag, could be removed …
+            "<span style=\"background-color: var(--text-color); color: var(--background);\">" +
                 "<span style=\"color: #CD0000;\">on</span>" +
-                "<span style=\"color: #FFFFFF;\">default</span>" +
+                "<span style=\"color: var(--background);\">default</span>" +
                 "</span>");
 
         assertThatAnnotateIs(
             "\033[33;41;7mon\033[39mdefault",
             "<span style=\"color: #CDCD00;\"><span style=\"background-color: #CD0000;\"></span></span>" +          // unnecessary <span> tag, could be removed …
-                "<span style=\"background-color: #CDCD00; color: #CD0000;\">on</span>" +
-                "<span style=\"background-color: currentColor;\"><span style=\"color: #CD0000;\">default</span></span>");
+                "<span style=\"background-color: #CDCD00; color: #CD0000;\">on" +
+                "<span style=\"background-color: var(--text-color);\">default</span></span>");
 
         assertThatAnnotateIs(
             "\033[7;33;41mon\033[39mdefault",
-            "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\"></span></span>" +     // unnecessary <span> tag, could be removed …
-                "<span style=\"color: #FFFFFF;\"><span style=\"background-color: #CDCD00;\"></span></span>" +          // unnecessary <span> tag, could be removed …
+            "<span style=\"background-color: var(--text-color); color: var(--background);\">" +
                 "<span style=\"background-color: #CDCD00;\"><span style=\"color: #CD0000;\">on</span></span>" +
-                "<span style=\"background-color: currentColor;\"><span style=\"color: #CD0000;\">default</span></span>");
+                "<span style=\"color: #CD0000;\"><span style=\"background-color: var(--text-color);\">default</span></span></span>");
 
         assertThatAnnotateIs(
             "\033[33;41;7mon\033[49mdefault",
             "<span style=\"color: #CDCD00;\"><span style=\"background-color: #CD0000;\"></span></span>" +          // unnecessary <span> tag, could be removed …
                 "<span style=\"background-color: #CDCD00; color: #CD0000;\">" +
                 "on" +
-                "<span style=\"color: #FFFFFF;\">default</span>" +
+                "<span style=\"color: var(--background);\">default</span>" +
                 "</span>");
 
         assertThatAnnotateIs(
             "\033[7;33;41mon\033[49mdefault",
-            "<span style=\"background-color: currentColor;\"><span style=\"color: #FFFFFF;\"></span></span>" +     // unnecessary <span> tag, could be removed …
-                "<span style=\"color: #FFFFFF;\"><span style=\"background-color: #CDCD00;\"></span></span>" +          // unnecessary <span> tag, could be removed …
+            "<span style=\"background-color: var(--text-color); color: var(--background);\">" +
                 "<span style=\"background-color: #CDCD00;\">" +
                 "<span style=\"color: #CD0000;\">on</span>" +
-                "<span style=\"color: #FFFFFF;\">default</span>" +
-                "</span>");
-
+                "<span style=\"color: var(--background);\">default</span>" +
+                "</span></span>");
 
         // simple tests with dark theme, as there has been default foreground / background colors defined (in contrast to xterm scheme)
         assertThatAnnotateIs(AnsiColorMap.VGA,
