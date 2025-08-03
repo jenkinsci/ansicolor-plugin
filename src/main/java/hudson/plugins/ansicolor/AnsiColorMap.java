@@ -3,8 +3,7 @@ package hudson.plugins.ansicolor;
 import java.io.Serializable;
 import java.util.EnumMap;
 import java.util.Map;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import java.util.Objects;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -113,13 +112,7 @@ public final class AnsiColorMap implements Serializable {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(41, 89).
-                append(name).
-                append(normalMap).
-                append(brightMap).
-                append(defaultForeground).
-                append(defaultBackground).
-                toHashCode();
+        return Objects.hash(name, normalMap, brightMap, defaultForeground, defaultBackground);
     }
     
     @Override
@@ -133,13 +126,11 @@ public final class AnsiColorMap implements Serializable {
 
         AnsiColorMap ansiColorMap = (AnsiColorMap) obj;
 
-        return new EqualsBuilder().
-                append(name, ansiColorMap.name).                
-                append(normalMap, ansiColorMap.normalMap).
-                append(brightMap, ansiColorMap.brightMap).
-                append(defaultForeground, ansiColorMap.defaultForeground).
-                append(defaultBackground, ansiColorMap.defaultBackground).
-                isEquals();
+        return Objects.equals(name, ansiColorMap.name)
+                && Objects.equals(normalMap, ansiColorMap.normalMap)
+                && Objects.equals(brightMap, ansiColorMap.brightMap)
+                && Objects.equals(defaultForeground, ansiColorMap.defaultForeground)
+                && Objects.equals(defaultBackground, ansiColorMap.defaultBackground);
     }
 
     // Those are nullable to not impose any default color on the output.
