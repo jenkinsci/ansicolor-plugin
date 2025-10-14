@@ -26,7 +26,6 @@ package hudson.plugins.ansicolor;
 import static hudson.plugins.ansicolor.AnsiAttributeElement.AnsiAttrType;
 
 import hudson.console.ConsoleNote;
-import hudson.util.NullStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -101,7 +100,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
      * Both the start- and stop-Method are idempotent and may be called regardless of current concealing state.
      */
     private void startConcealing() {
-        this.out = new NullStream();
+        this.out = OutputStream.nullOutputStream();
     }
 
     private void stopConcealing() {
