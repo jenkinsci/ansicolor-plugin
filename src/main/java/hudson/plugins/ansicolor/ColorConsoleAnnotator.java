@@ -34,7 +34,6 @@ import hudson.plugins.ansicolor.action.ColorizedAction;
 import hudson.plugins.ansicolor.action.LineIdentifier;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -42,6 +41,7 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -109,7 +109,7 @@ final class ColorConsoleAnnotator extends ConsoleAnnotator<Object> {
         List<AnsiAttributeElement> nextOpenTags = openTags;
         AnsiColorMap colorMap = Jenkins.get().getDescriptorByType(AnsiColorBuildWrapper.DescriptorImpl.class).getColorMap(colorMapName);
         if (s.indexOf('\u001B') != -1 || !openTags.isEmpty() || colorMap.getDefaultBackground() != null || colorMap.getDefaultForeground() != null) {
-            CountingOutputStream outgoing = new CountingOutputStream(new NullOutputStream());
+            CountingOutputStream outgoing = new CountingOutputStream(OutputStream.nullOutputStream());
             class EmitterImpl implements AnsiAttributeElement.Emitter {
                 CountingOutputStream incoming;
                 int adjustment;
