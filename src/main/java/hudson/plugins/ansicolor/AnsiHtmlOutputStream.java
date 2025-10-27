@@ -312,27 +312,8 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         Integer defaultFgIndex = colorMap.getDefaultForeground();
         if (defaultFgIndex != null) color = colorMap.getNormal(defaultFgIndex);
         if (color == null) {
-            // with no default foreground set, we need to guess about (currently happened in xterm and css themes)
-            // possible approaches are:
-            // • hardcoded black "#000000"
-            // • colorMap.getNormal(0)
-            // • "currentColor" → see also: http://stackoverflow.com/a/42586457/2880699
-            //   but note, that this approach only works, if all <span style="color: …"> are currently closed
-
-            // Note that in my default szenario with, the default text color is #333333. Tested with:
-            // • Jenkins 1.6.5.3, AnsiColor plugin 0.4.3, xterm scheme
-            // • Firefox 51.0.1, Kubuntu 16.04
-            // • Chromium 56.0.2924.76, Kubuntu 16.04
-            // • Firefox 51.0.1, Windows XP
-
-            // So I finally decide for the "currentColor" approach, because:
-            // • It gives the best results for negative / inverse text (what is the major reason for implementing this function).
-            // • It looks also the best alternative, if e.g. someone customizes Jenkins colors.
-            // • Finally, the clause "only works, if all <span style="color: …"> are currently closed" is fulfilled for the negative / inverse case
-
-            // color = "#000000";              // hardcoded black
-            // color = colorMap.getNormal(0);  // hardcoded index 0
-            color = "currentColor";            // see http://stackoverflow.com/a/42586457/2880699
+            // with no default foreground set, use the default theme text color
+            color = "var(--text-color)";
         }
         return color;
     }
@@ -342,16 +323,8 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         Integer defaultBgIndex = colorMap.getDefaultBackground();
         if (defaultBgIndex != null) color = colorMap.getNormal(defaultBgIndex);
         if (color == null) {
-            // with no default foreground set, we need to guess about (currently happened in xterm and css themes)
-            // possible approaches are:
-            // • hardcoded white "#FFFFFF"
-            // • colorMap.getNormal(7)
-            // • colorMap.getBright(7)
-            // I finally decide for colorMap.getBright(7).
-
-            //color "#FFFFFF";                 // hardcoded white
-            //color = colorMap.getNormal(7);   // hardcoded normal index 7
-            color = colorMap.getBright(7);     // hardcoded bright index 7
+            // with no default foreground set, use the default theme background color
+            color = "var(--background)";
         }
         return color;
     }
@@ -361,22 +334,9 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
         AnsiAttrType attrType = !swapColors ? AnsiAttrType.FG : AnsiAttrType.BG;
         String attrName = !swapColors ? "color" : "background-color";
         if (color == null && swapColors) color = getDefaultForegroundColor();
-        boolean restorebg = false;
-        if (swapColors && color.equals("currentColor")) {
-            // need also to temporarily unwind textcolor, to having correct access to the "currentColor" value
-            closeTagOfType(AnsiAttrType.FGBG);
-            restorebg = true;
-        } else {
-            closeTagOfType(attrType);
-        }
+        closeTagOfType(attrType);
         if (color != null)
             openTag(new AnsiAttributeElement(attrType, "span", "style=\"" + attrName + ": " + color + ";\""));
-        if (restorebg) {
-            // Because of the "currentColor" trick, we always need to use two seperate <span> tags for this case.
-            String bg = currentBackgroundColor;
-            if (bg == null) bg = getDefaultBackgroundColor();
-            openTag(new AnsiAttributeElement(AnsiAttrType.FG, "span", "style=\"color: " + bg + ";\""));
-        }
         currentForegroundColor = color;
     }
 
@@ -474,9 +434,7 @@ public class AnsiHtmlOutputStream extends AnsiOutputStream {
                 bg = tmp;
             }
             closeTagOfType(AnsiAttrType.FGBG);
-            if (fg != null && bg != null && !bg.equals("currentColor")) {
-                // In case of "currentColor" trick, we need to use two seperate <span> tags.
-                // But if not, then we can use one single <span> tag to set both background and foreground color.
+            if (fg != null && bg != null) {
                 openTag(new AnsiAttributeElement(AnsiAttrType.FGBG, "span", "style=\"background-color: " + bg + "; color: " + fg + ";\""));
             } else {
                 if (bg != null) openTag(new AnsiAttributeElement(AnsiAttrType.BG, "span", "style=\"background-color: " + bg + ";\""));
