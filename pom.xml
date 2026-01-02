@@ -9,10 +9,9 @@
   </parent>
 
   <artifactId>ansicolor</artifactId>
-  <version>${revision}${changelist}</version>
+  <version>${changelist}</version>
   <packaging>hpi</packaging>
   <name>AnsiColor</name>
-  <description>Adds ANSI coloring to the Console Output</description>
   <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
 
   <licenses>
@@ -44,10 +43,9 @@
   </scm>
 
   <properties>
-    <revision>1.0.7</revision>
-    <changelist>-SNAPSHOT</changelist>
+    <changelist>999999-SNAPSHOT</changelist>
     <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
-    <jenkins.baseline>2.479</jenkins.baseline>
+    <jenkins.baseline>2.504</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
@@ -59,7 +57,7 @@
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>5054.v620b_5d2b_d5e6</version>
+        <version>5857.vb_f3dd0731f44</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

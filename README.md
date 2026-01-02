@@ -170,7 +170,3 @@ RSpec formatters detect whether RSpec is running in a terminal or not, therefore
 The ANSI Color Plugin is licensed under the MIT License.
 
 It uses [JANSI](https://github.com/fusesource/jansi/) (Apache 2.0 License).
-
-# Contributing
-
-See [CONTRIBUTING](.github/CONTRIBUTING.md).
