@@ -20,6 +20,17 @@ and has [a page](https://wiki.jenkins-ci.org/display/JENKINS/AnsiColor+Plugin) o
 ```
 java -jar jenkins-cli.jar install-plugin ansicolor
 ```
+## Use
+
+After installing the AnsiColor plugin:
+
+1. Go to your Jenkins job configuration.
+2. In "Build Environment", enable **Color ANSI Console Output**.
+3. Choose an ANSI color map (e.g., xterm).
+4. Save and run the job.
+
+This will display colored console output correctly.
+
 # Enable
 
 ## In a Pipeline
@@ -170,3 +181,4 @@ RSpec formatters detect whether RSpec is running in a terminal or not, therefore
 The ANSI Color Plugin is licensed under the MIT License.
 
 It uses [JANSI](https://github.com/fusesource/jansi/) (Apache 2.0 License).
+
