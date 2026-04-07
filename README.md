@@ -20,7 +20,7 @@ and has [a page](https://wiki.jenkins-ci.org/display/JENKINS/AnsiColor+Plugin) o
 ```
 java -jar jenkins-cli.jar install-plugin ansicolor
 ```
-## Use
+## Enable and Usage
 
 After installing the AnsiColor plugin:
 
@@ -31,7 +31,7 @@ After installing the AnsiColor plugin:
 
 This will display colored console output correctly.
 
-# Enable
+
 
 ## In a Pipeline
 
