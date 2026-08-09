@@ -34,7 +34,7 @@ import hudson.plugins.ansicolor.action.ColorizedAction;
 import hudson.plugins.ansicolor.action.LineIdentifier;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 
